@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Habboub Admin</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -16,6 +21,21 @@
       font-family: Arial, sans-serif;
       background: #07090d;
       color: #fff;
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #07090d;
+      z-index: 9999;
+      font-size: 20px;
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     .sidebar {
@@ -56,6 +76,7 @@
       color: #aeb5c0;
       background: transparent;
       cursor: pointer;
+      font-size: 14px;
     }
 
     .menu button:hover,
@@ -78,6 +99,7 @@
 
     h1 {
       font-size: 32px;
+      margin-top: 5px;
     }
 
     .admin {
@@ -85,6 +107,16 @@
       border: 1px solid #252a33;
       border-radius: 10px;
       color: #aaa;
+    }
+
+    .logout {
+      margin-left: 10px;
+      padding: 10px 15px;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: white;
+      background: #14171c;
+      cursor: pointer;
     }
 
     .cards {
@@ -177,25 +209,21 @@
     }
 
     .dot.live {
-      background: #fff;
+      background: white;
       box-shadow: 0 0 15px white;
     }
 
-    .table {
-      width: 100%;
-      border-collapse: collapse;
+    .message {
+      margin-top: 15px;
+      color: #aaa;
     }
 
-    .table th,
-    .table td {
-      padding: 15px;
-      border-bottom: 1px solid #1c2028;
-      text-align: left;
+    .success {
+      color: #7dffae;
     }
 
-    .table th {
-      color: #777f8a;
-      font-size: 12px;
+    .error {
+      color: #ff7c85;
     }
 
     @media(max-width:900px) {
@@ -215,359 +243,807 @@
         grid-template-columns: repeat(2,1fr);
       }
     }
+
   </style>
+
 </head>
 
 <body>
 
-  <aside class="sidebar">
-
-    <div class="logo">
-      <span>H</span> Habboub
-    </div>
-
-    <div class="menu">
-
-      <button class="active" onclick="showPanel('overview', this)">
-        📊 Overview
-      </button>
-
-      <button onclick="showPanel('live', this)">
-        🎥 Live
-      </button>
-
-      <button onclick="showPanel('announcements', this)">
-        📢 Announcements
-      </button>
-
-      <button onclick="showPanel('courses', this)">
-        🎓 Courses
-      </button>
-
-      <button onclick="showPanel('users', this)">
-        👥 Users
-      </button>
-
-      <button onclick="showPanel('settings', this)">
-        ⚙️ Settings
-      </button>
-
-    </div>
-
-  </aside>
+  <div id="loading" class="loading">
+    Checking administrator access...
+  </div>
 
 
-  <main class="main">
+  <div id="app" class="hidden">
 
-    <div class="top">
+    <aside class="sidebar">
 
-      <div>
-        <span style="color:#777f8a">
-          HABBOUB ADMINISTRATION
-        </span>
-
-        <h1>Dashboard</h1>
+      <div class="logo">
+        <span>H</span> Habboub
       </div>
 
-      <div class="admin">
-        👑 Administrator
+      <div class="menu">
+
+        <button class="active"
+          onclick="showPanel('overview', this)">
+          📊 Overview
+        </button>
+
+        <button onclick="showPanel('live', this)">
+          🎥 Live
+        </button>
+
+        <button onclick="showPanel('announcements', this)">
+          📢 Announcements
+        </button>
+
+        <button onclick="showPanel('courses', this)">
+          🎓 Courses
+        </button>
+
+        <button onclick="showPanel('users', this)">
+          👥 Users
+        </button>
+
+        <button onclick="showPanel('settings', this)">
+          ⚙️ Settings
+        </button>
+
       </div>
 
-    </div>
+    </aside>
 
 
-    <!-- OVERVIEW -->
+    <main class="main">
 
-    <section id="overview" class="panel active">
+      <div class="top">
 
-      <h2>Overview</h2>
+        <div>
 
-      <div class="cards">
+          <span style="color:#777f8a">
+            HABBOUB ADMINISTRATION
+          </span>
 
-        <div class="card">
-          <span>USERS</span>
-          <h2>0</h2>
+          <h1>Dashboard</h1>
+
         </div>
 
-        <div class="card">
-          <span>LIVE VIEWERS</span>
-          <h2>0</h2>
-        </div>
+        <div>
 
-        <div class="card">
-          <span>COURSES</span>
-          <h2>0</h2>
-        </div>
+          <span class="admin">
+            👑 Administrator
+          </span>
 
-        <div class="card">
-          <span>ANNOUNCEMENTS</span>
-          <h2>0</h2>
+          <button class="logout" onclick="logout()">
+            Logout
+          </button>
+
         </div>
 
       </div>
 
-    </section>
+
+      <!-- OVERVIEW -->
+
+      <section id="overview" class="panel active">
+
+        <h2>Overview</h2>
+
+        <div class="cards">
+
+          <div class="card">
+            <span>USERS</span>
+            <h2 id="usersCount">0</h2>
+          </div>
+
+          <div class="card">
+            <span>LIVE VIEWERS</span>
+            <h2>0</h2>
+          </div>
+
+          <div class="card">
+            <span>COURSES</span>
+            <h2 id="coursesCount">0</h2>
+          </div>
+
+          <div class="card">
+            <span>ANNOUNCEMENTS</span>
+            <h2 id="announcementsCount">0</h2>
+          </div>
+
+        </div>
+
+      </section>
 
 
-    <!-- LIVE -->
+      <!-- LIVE -->
 
-    <section id="live" class="panel">
+      <section id="live" class="panel">
 
-      <h2>Live Control</h2>
+        <h2>Live Control</h2>
 
-      <div class="live-status">
+        <div class="live-status">
 
-        <div class="dot" id="liveDot"></div>
+          <div class="dot" id="liveDot"></div>
 
-        <strong id="liveStatus">
-          Offline
-        </strong>
+          <strong id="liveStatus">
+            Offline
+          </strong>
 
-      </div>
+        </div>
 
-      <input
-        id="liveTitle"
-        placeholder="Live title"
-      >
+        <input
+          id="liveTitle"
+          placeholder="Live title"
+        >
 
-      <textarea
-        id="liveDescription"
-        placeholder="Live description"
-      ></textarea>
+        <textarea
+          id="liveDescription"
+          placeholder="Live description"
+        ></textarea>
 
-      <button
-        class="btn primary"
-        onclick="startLive()"
-      >
-        ▶ Start Live
-      </button>
+        <input
+          id="streamUrl"
+          placeholder="Stream URL"
+        >
 
-      <button
-        class="btn danger"
-        onclick="stopLive()"
-      >
-        ■ Stop Live
-      </button>
+        <br>
 
-    </section>
+        <button
+          class="btn primary"
+          onclick="startLive()">
+          ▶ Start Live
+        </button>
 
+        <button
+          class="btn danger"
+          onclick="stopLive()">
+          ■ Stop Live
+        </button>
 
-    <!-- ANNOUNCEMENTS -->
+        <div id="liveMessage" class="message"></div>
 
-    <section id="announcements" class="panel">
-
-      <h2>Create Announcement</h2>
-
-      <input
-        id="announcementTitle"
-        placeholder="Announcement title"
-      >
-
-      <textarea
-        id="announcementText"
-        placeholder="Announcement text"
-      ></textarea>
-
-      <button
-        class="btn primary"
-        onclick="publishAnnouncement()"
-      >
-        Publish Announcement
-      </button>
-
-    </section>
+      </section>
 
 
-    <!-- COURSES -->
+      <!-- ANNOUNCEMENTS -->
 
-    <section id="courses" class="panel">
+      <section id="announcements" class="panel">
 
-      <h2>Add Course</h2>
+        <h2>Create Announcement</h2>
 
-      <input
-        id="courseTitle"
-        placeholder="Course title"
-      >
+        <input
+          id="announcementTitle"
+          placeholder="Announcement title"
+        >
 
-      <textarea
-        id="courseDescription"
-        placeholder="Course description"
-      ></textarea>
+        <textarea
+          id="announcementText"
+          placeholder="Announcement text"
+        ></textarea>
 
-      <button
-        class="btn primary"
-        onclick="addCourse()"
-      >
-        Add Course
-      </button>
+        <input
+          id="announcementImage"
+          placeholder="Image URL (optional)"
+        >
 
-    </section>
+        <input
+          id="announcementLink"
+          placeholder="Link URL (optional)"
+        >
 
+        <button
+          class="btn primary"
+          onclick="publishAnnouncement()">
+          Publish Announcement
+        </button>
 
-    <!-- USERS -->
+        <div id="announcementMessage" class="message"></div>
 
-    <section id="users" class="panel">
-
-      <h2>Users</h2>
-
-      <table class="table">
-
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-
-        <tbody id="usersTable">
-
-          <tr>
-            <td colspan="3">
-              No users yet.
-            </td>
-          </tr>
-
-        </tbody>
-
-      </table>
-
-    </section>
+      </section>
 
 
-    <!-- SETTINGS -->
+      <!-- COURSES -->
 
-    <section id="settings" class="panel">
+      <section id="courses" class="panel">
 
-      <h2>Settings</h2>
+        <h2>Add Course</h2>
 
-      <input
-        placeholder="Website name"
-        value="Habboub"
-      >
+        <input
+          id="courseTitle"
+          placeholder="Course title"
+        >
 
-      <input
-        placeholder="Admin email"
-      >
+        <textarea
+          id="courseDescription"
+          placeholder="Course description"
+        ></textarea>
 
-      <button class="btn primary">
-        Save Settings
-      </button>
+        <input
+          id="courseThumbnail"
+          placeholder="Thumbnail URL (optional)"
+        >
 
-    </section>
+        <button
+          class="btn primary"
+          onclick="addCourse()">
+          Add Course
+        </button>
 
-  </main>
+        <div id="courseMessage" class="message"></div>
+
+      </section>
 
 
-  <script>
+      <!-- USERS -->
 
-    function showPanel(id, button) {
+      <section id="users" class="panel">
 
+        <h2>Users</h2>
+
+        <p style="color:#777f8a">
+          User management will be connected to the authentication
+          system in the next stage.
+        </p>
+
+      </section>
+
+
+      <!-- SETTINGS -->
+
+      <section id="settings" class="panel">
+
+        <h2>Settings</h2>
+
+        <p style="color:#777f8a">
+          Habboub Admin
+        </p>
+
+        <br>
+
+        <button
+          class="btn danger"
+          onclick="logout()">
+          Logout
+        </button>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+<script>
+
+  /* =========================================
+     SUPABASE
+  ========================================= */
+
+  const SUPABASE_URL =
+    "https://feoyjasuvrqxzhskqzye.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+
+  /* =========================================
+     AUTHENTICATION
+  ========================================= */
+
+  async function checkAdmin() {
+
+    const {
+      data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+
+      window.location.href = "login.html";
+
+      return;
+
+    }
+
+
+    const {
+      data: isAdmin,
+      error
+    } = await supabaseClient.rpc("is_admin");
+
+
+    if (error || !isAdmin) {
+
+      alert("Access denied.");
+
+      await supabaseClient.auth.signOut();
+
+      window.location.href = "login.html";
+
+      return;
+
+    }
+
+
+    document
+      .getElementById("loading")
+      .classList.add("hidden");
+
+    document
+      .getElementById("app")
+      .classList.remove("hidden");
+
+
+    loadStats();
+
+  }
+
+
+  /* =========================================
+     NAVIGATION
+  ========================================= */
+
+  function showPanel(id, button) {
+
+    document
+      .querySelectorAll(".panel")
+      .forEach(panel => {
+
+        panel.classList.remove("active");
+
+      });
+
+
+    document
+      .getElementById(id)
+      .classList.add("active");
+
+
+    document
+      .querySelectorAll(".menu button")
+      .forEach(btn => {
+
+        btn.classList.remove("active");
+
+      });
+
+
+    button.classList.add("active");
+
+  }
+
+
+  /* =========================================
+     STATS
+  ========================================= */
+
+  async function loadStats() {
+
+    const courses =
+      await supabaseClient
+        .from("courses")
+        .select("*", { count: "exact", head: true });
+
+
+    const announcements =
+      await supabaseClient
+        .from("announcements")
+        .select("*", { count: "exact", head: true });
+
+
+    document
+      .getElementById("coursesCount")
+      .textContent =
+      courses.count || 0;
+
+
+    document
+      .getElementById("announcementsCount")
+      .textContent =
+      announcements.count || 0;
+
+  }
+
+
+  /* =========================================
+     LIVE
+  ========================================= */
+
+  async function startLive() {
+
+    const title =
       document
-        .querySelectorAll(".panel")
-        .forEach(panel => {
-          panel.classList.remove("active");
+        .getElementById("liveTitle")
+        .value
+        .trim();
+
+
+    const description =
+      document
+        .getElementById("liveDescription")
+        .value
+        .trim();
+
+
+    const streamUrl =
+      document
+        .getElementById("streamUrl")
+        .value
+        .trim();
+
+
+    if (!title) {
+
+      showMessage(
+        "liveMessage",
+        "Please enter a live title.",
+        true
+      );
+
+      return;
+
+    }
+
+
+    const { error } =
+      await supabaseClient
+        .from("live_sessions")
+        .insert({
+
+          title: title,
+
+          description: description,
+
+          stream_url: streamUrl,
+
+          is_live: true,
+
+          started_at: new Date().toISOString()
+
         });
 
-      document
-        .getElementById(id)
-        .classList.add("active");
 
-      document
-        .querySelectorAll(".menu button")
-        .forEach(btn => {
-          btn.classList.remove("active");
-        });
+    if (error) {
 
-      button.classList.add("active");
+      showMessage(
+        "liveMessage",
+        error.message,
+        true
+      );
 
-    }
-
-
-    function startLive() {
-
-      const title =
-        document.getElementById("liveTitle").value;
-
-      if (!title) {
-        alert("Enter a live title first.");
-        return;
-      }
-
-      document
-        .getElementById("liveDot")
-        .classList.add("live");
-
-      document
-        .getElementById("liveStatus")
-        .textContent =
-        "LIVE — " + title;
-
-      alert("Live session created.");
+      return;
 
     }
 
 
-    function stopLive() {
+    document
+      .getElementById("liveDot")
+      .classList.add("live");
 
-      document
-        .getElementById("liveDot")
-        .classList.remove("live");
 
-      document
-        .getElementById("liveStatus")
-        .textContent =
-        "Offline";
+    document
+      .getElementById("liveStatus")
+      .textContent =
+      "LIVE — " + title;
+
+
+    showMessage(
+      "liveMessage",
+      "Live session started successfully.",
+      false
+    );
+
+  }
+
+
+  async function stopLive() {
+
+    const { error } =
+      await supabaseClient
+        .from("live_sessions")
+        .update({
+
+          is_live: false,
+
+          ended_at:
+            new Date().toISOString()
+
+        })
+        .eq("is_live", true);
+
+
+    if (error) {
+
+      showMessage(
+        "liveMessage",
+        error.message,
+        true
+      );
+
+      return;
 
     }
 
 
-    function publishAnnouncement() {
+    document
+      .getElementById("liveDot")
+      .classList.remove("live");
 
-      const title =
-        document.getElementById("announcementTitle").value;
 
-      if (!title) {
-        alert("Enter an announcement title.");
-        return;
-      }
+    document
+      .getElementById("liveStatus")
+      .textContent =
+      "Offline";
 
-      alert("Announcement published.");
 
+    showMessage(
+      "liveMessage",
+      "Live stopped.",
+      false
+    );
+
+  }
+
+
+  /* =========================================
+     ANNOUNCEMENTS
+  ========================================= */
+
+  async function publishAnnouncement() {
+
+    const title =
       document
         .getElementById("announcementTitle")
-        .value = "";
+        .value
+        .trim();
 
+
+    const content =
       document
         .getElementById("announcementText")
-        .value = "";
+        .value
+        .trim();
+
+
+    const imageUrl =
+      document
+        .getElementById("announcementImage")
+        .value
+        .trim();
+
+
+    const linkUrl =
+      document
+        .getElementById("announcementLink")
+        .value
+        .trim();
+
+
+    if (!title) {
+
+      showMessage(
+        "announcementMessage",
+        "Please enter a title.",
+        true
+      );
+
+      return;
 
     }
 
 
-    function addCourse() {
+    const { error } =
+      await supabaseClient
+        .from("announcements")
+        .insert({
 
-      const title =
-        document.getElementById("courseTitle").value;
+          title: title,
 
-      if (!title) {
-        alert("Enter a course title.");
-        return;
-      }
+          content: content,
 
-      alert("Course added.");
+          image_url: imageUrl || null,
 
+          link_url: linkUrl || null,
+
+          is_active: true
+
+        });
+
+
+    if (error) {
+
+      showMessage(
+        "announcementMessage",
+        error.message,
+        true
+      );
+
+      return;
+
+    }
+
+
+    showMessage(
+      "announcementMessage",
+      "Announcement published successfully.",
+      false
+    );
+
+
+    document
+      .getElementById("announcementTitle")
+      .value = "";
+
+
+    document
+      .getElementById("announcementText")
+      .value = "";
+
+
+    document
+      .getElementById("announcementImage")
+      .value = "";
+
+
+    document
+      .getElementById("announcementLink")
+      .value = "";
+
+
+    loadStats();
+
+  }
+
+
+  /* =========================================
+     COURSES
+  ========================================= */
+
+  async function addCourse() {
+
+    const title =
       document
         .getElementById("courseTitle")
-        .value = "";
+        .value
+        .trim();
 
+
+    const description =
       document
         .getElementById("courseDescription")
-        .value = "";
+        .value
+        .trim();
+
+
+    const thumbnail =
+      document
+        .getElementById("courseThumbnail")
+        .value
+        .trim();
+
+
+    if (!title) {
+
+      showMessage(
+        "courseMessage",
+        "Please enter a course title.",
+        true
+      );
+
+      return;
 
     }
 
-  </script>
+
+    const { error } =
+      await supabaseClient
+        .from("courses")
+        .insert({
+
+          title: title,
+
+          description: description,
+
+          thumbnail_url:
+            thumbnail || null,
+
+          is_published: true
+
+        });
+
+
+    if (error) {
+
+      showMessage(
+        "courseMessage",
+        error.message,
+        true
+      );
+
+      return;
+
+    }
+
+
+    showMessage(
+      "courseMessage",
+      "Course added successfully.",
+      false
+    );
+
+
+    document
+      .getElementById("courseTitle")
+      .value = "";
+
+
+    document
+      .getElementById("courseDescription")
+      .value = "";
+
+
+    document
+      .getElementById("courseThumbnail")
+      .value = "";
+
+
+    loadStats();
+
+  }
+
+
+  /* =========================================
+     LOGOUT
+  ========================================= */
+
+  async function logout() {
+
+    await supabaseClient.auth.signOut();
+
+    window.location.href = "login.html";
+
+  }
+
+
+  /* =========================================
+     MESSAGE
+  ========================================= */
+
+  function showMessage(
+    elementId,
+    message,
+    isError
+  ) {
+
+    const element =
+      document.getElementById(elementId);
+
+
+    element.textContent = message;
+
+
+    element.className =
+      isError
+        ? "message error"
+        : "message success";
+
+  }
+
+
+  /* =========================================
+     START
+  ========================================= */
+
+  checkAdmin();
+
+</script>
 
 </body>
 </html>
