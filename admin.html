@@ -1,57 +1,68 @@
+```javascript
 async function startLive() {
 
-  const titleInput =
-    document.getElementById("liveTitle");
+  const titleInput = document.getElementById("liveTitle");
+  const descriptionInput = document.getElementById("liveDescription");
 
-  const descriptionInput =
-    document.getElementById("liveDescription");
-
-  const title =
-    titleInput?.value.trim();
-
-  const description =
-    descriptionInput?.value.trim() || "";
+  const title = titleInput ? titleInput.value.trim() : "";
+  const description = descriptionInput
+    ? descriptionInput.value.trim()
+    : "";
 
   if (!title) {
     alert("Enter a live title first.");
     return;
   }
 
-  // تأكد أن المستخدم مسجل دخول
-  const {
-    data: { user },
-    error: authError
-  } = await supabaseClient.auth.getUser();
+  try {
 
-  if (authError || !user) {
-    alert("You must be logged in as an administrator.");
-    return;
-  }
+    // ================================
+    // CHECK LOGIN
+    // ================================
 
-  // تأكد أن المستخدم Admin
-  const {
-    data: adminRole,
-    error: adminError
-  } = await supabaseClient
-    .from("admin_roles")
-    .select("role")
-    .eq("user_id", user.id)
-    .maybeSingle();
+    const {
+      data: { user },
+      error: authError
+    } = await supabaseClient.auth.getUser();
 
-  if (adminError) {
-    console.error(adminError);
-    alert("Could not verify administrator permissions.");
-    return;
-  }
+    if (authError || !user) {
+      alert("You must be logged in.");
+      return;
+    }
 
-  if (!adminRole || adminRole.role !== "admin") {
-    alert("This account is not an administrator.");
-    return;
-  }
 
-  // إيقاف أي بث قديم
-  const { error: stopError } =
-    await supabaseClient
+    // ================================
+    // CHECK ADMIN
+    // ================================
+
+    const {
+      data: adminRole,
+      error: adminError
+    } = await supabaseClient
+      .from("admin_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (adminError) {
+      console.error("Admin check error:", adminError);
+      alert("Could not verify administrator permissions.");
+      return;
+    }
+
+    if (!adminRole || adminRole.role !== "admin") {
+      alert("This account is not an administrator.");
+      return;
+    }
+
+
+    // ================================
+    // STOP CURRENT LIVE
+    // ================================
+
+    const {
+      error: stopError
+    } = await supabaseClient
       .from("live_sessions")
       .update({
         is_live: false,
@@ -59,15 +70,21 @@ async function startLive() {
       })
       .eq("is_live", true);
 
-  if (stopError) {
-    console.error(stopError);
-    alert("Could not close previous live session.");
-    return;
-  }
+    if (stopError) {
+      console.error("Stop previous live error:", stopError);
+      alert("Could not close the previous live session.");
+      return;
+    }
 
-  // إنشاء البث الجديد
-  const { data, error } =
-    await supabaseClient
+
+    // ================================
+    // CREATE NEW LIVE SESSION
+    // ================================
+
+    const {
+      data: liveSession,
+      error: liveError
+    } = await supabaseClient
       .from("live_sessions")
       .insert({
         title: title,
@@ -80,28 +97,70 @@ async function startLive() {
       .select()
       .single();
 
-  if (error) {
-    console.error("Start Live Error:", error);
-    alert("Could not start live: " + error.message);
-    return;
+
+    if (liveError) {
+
+      console.error(
+        "Create live session error:",
+        liveError
+      );
+
+      alert(
+        "Could not start live:\n" +
+        liveError.message
+      );
+
+      return;
+    }
+
+
+    // ================================
+    // UPDATE ADMIN PANEL
+    // ================================
+
+    const liveDot =
+      document.getElementById("liveDot");
+
+    const liveStatus =
+      document.getElementById("liveStatus");
+
+
+    if (liveDot) {
+      liveDot.classList.add("live");
+    }
+
+
+    if (liveStatus) {
+      liveStatus.textContent =
+        "🔴 LIVE — " + liveSession.title;
+    }
+
+
+    // ================================
+    // SUCCESS
+    // ================================
+
+    alert(
+      "🔴 Habboub Live started successfully!"
+    );
+
+    console.log(
+      "Live session created:",
+      liveSession
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Unexpected Start Live Error:",
+      error
+    );
+
+    alert(
+      "Something went wrong while starting the live."
+    );
+
   }
-
-  // تحديث واجهة الأدمن
-  const dot =
-    document.getElementById("liveDot");
-
-  const status =
-    document.getElementById("liveStatus");
-
-  if (dot) {
-    dot.classList.add("live");
-  }
-
-  if (status) {
-    status.textContent =
-      "LIVE — " + title;
-  }
-
-  alert("🔴 Live started successfully!");
 
 }
+```
