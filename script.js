@@ -1,6 +1,5 @@
 // ======================================
 // HABBOUB FRONTEND
-// SUPABASE CONNECTION
 // ======================================
 
 const SUPABASE_URL =
@@ -16,7 +15,7 @@ const supabaseClient = supabase.createClient(
 
 
 // ======================================
-// PAGE LOADER
+// LOADER
 // ======================================
 
 window.addEventListener("load", function () {
@@ -35,37 +34,19 @@ window.addEventListener("load", function () {
 
 
 // ======================================
-// AUTH
-// ======================================
-
-async function getCurrentUser() {
-
-  const { data, error } =
-    await supabaseClient.auth.getUser();
-
-  if (error) {
-    console.warn("Auth:", error.message);
-    return null;
-  }
-
-  return data.user || null;
-}
-
-
-// ======================================
-// LOGIN MODAL
+// MODALS
 // ======================================
 
 function openLogin() {
 
   closeModals();
 
-  const modal =
-    document.getElementById("loginModal");
+  const modal = document.getElementById("loginModal");
 
   if (modal) {
     modal.classList.add("active");
   }
+
 }
 
 
@@ -73,12 +54,12 @@ function openRegister() {
 
   closeModals();
 
-  const modal =
-    document.getElementById("registerModal");
+  const modal = document.getElementById("registerModal");
 
   if (modal) {
     modal.classList.add("active");
   }
+
 }
 
 
@@ -91,257 +72,6 @@ function closeModals() {
       modal.classList.remove("active");
 
     });
-
-}
-
-
-// ======================================
-// LOGIN
-// ======================================
-
-async function loginUser() {
-
-  const emailElement =
-    document.getElementById("loginEmail");
-
-  const passwordElement =
-    document.getElementById("loginPassword");
-
-  const message =
-    document.getElementById("loginMessage");
-
-  const button =
-    document.getElementById("loginButton");
-
-  if (!emailElement || !passwordElement) {
-    console.error("Login fields not found.");
-    return;
-  }
-
-  const email =
-    emailElement.value.trim();
-
-  const password =
-    passwordElement.value;
-
-  if (!email || !password) {
-
-    if (message) {
-      message.textContent =
-        "Please enter your email and password.";
-    }
-
-    return;
-  }
-
-  if (button) {
-    button.disabled = true;
-    button.textContent = "Logging in...";
-  }
-
-  const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-
-  if (error) {
-
-    if (message) {
-      message.textContent =
-        error.message;
-    }
-
-    if (button) {
-      button.disabled = false;
-      button.textContent = "Login";
-    }
-
-    return;
-  }
-
-  if (message) {
-    message.textContent =
-      "Login successful.";
-  }
-
-  await loadUserProfile(data.user);
-
-  setTimeout(function () {
-
-    closeModals();
-
-    if (button) {
-      button.disabled = false;
-      button.textContent = "Login";
-    }
-
-  }, 600);
-
-}
-
-
-// ======================================
-// REGISTER
-// ======================================
-
-async function registerUser() {
-
-  const nameElement =
-    document.getElementById("registerName");
-
-  const emailElement =
-    document.getElementById("registerEmail");
-
-  const passwordElement =
-    document.getElementById("registerPassword");
-
-  const message =
-    document.getElementById("registerMessage");
-
-  const button =
-    document.getElementById("registerButton");
-
-  if (!nameElement || !emailElement || !passwordElement) {
-    console.error("Register fields not found.");
-    return;
-  }
-
-  const fullName =
-    nameElement.value.trim();
-
-  const email =
-    emailElement.value.trim();
-
-  const password =
-    passwordElement.value;
-
-  if (!fullName || !email || !password) {
-
-    if (message) {
-      message.textContent =
-        "Please complete all fields.";
-    }
-
-    return;
-  }
-
-  if (password.length < 6) {
-
-    if (message) {
-      message.textContent =
-        "Password must be at least 6 characters.";
-    }
-
-    return;
-  }
-
-  if (button) {
-    button.disabled = true;
-    button.textContent = "Creating...";
-  }
-
-  const { data, error } =
-    await supabaseClient.auth.signUp({
-
-      email: email,
-
-      password: password,
-
-      options: {
-        data: {
-          full_name: fullName
-        }
-      }
-
-    });
-
-  if (error) {
-
-    if (message) {
-      message.textContent =
-        error.message;
-    }
-
-    if (button) {
-      button.disabled = false;
-      button.textContent = "Create Account";
-    }
-
-    return;
-  }
-
-  if (data.user) {
-
-    const { error: profileError } =
-      await supabaseClient
-        .from("profiles")
-        .upsert({
-          id: data.user.id,
-          full_name: fullName,
-          email: email
-        });
-
-    if (profileError) {
-      console.warn(
-        "Profile:",
-        profileError.message
-      );
-    }
-
-  }
-
-  if (message) {
-    message.textContent =
-      "Account created. Check your email if confirmation is required.";
-  }
-
-  if (button) {
-    button.disabled = false;
-    button.textContent = "Create Account";
-  }
-
-}
-
-
-// ======================================
-// PROFILE
-// ======================================
-
-async function loadUserProfile(user) {
-
-  if (!user) return;
-
-  const { data, error } =
-    await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-
-  if (error) {
-
-    console.warn(
-      "Profile:",
-      error.message
-    );
-
-    return;
-  }
-
-  if (!data) {
-
-    await supabaseClient
-      .from("profiles")
-      .insert({
-        id: user.id,
-        full_name:
-          user.user_metadata?.full_name || "",
-        email:
-          user.email || ""
-      });
-
-  }
 
 }
 
@@ -367,6 +97,156 @@ function enterGuest() {
 
 
 // ======================================
+// AI
+// ======================================
+
+function openAI() {
+
+  const ai =
+    document.getElementById("aiWindow");
+
+  if (ai) {
+    ai.classList.add("active");
+  }
+
+}
+
+
+function closeAI() {
+
+  const ai =
+    document.getElementById("aiWindow");
+
+  if (ai) {
+    ai.classList.remove("active");
+  }
+
+}
+
+
+function handleAI(event) {
+
+  if (event.key === "Enter") {
+    sendAI();
+  }
+
+}
+
+
+async function sendAI() {
+
+  const input =
+    document.getElementById("aiInput");
+
+  const messages =
+    document.getElementById("aiMessages");
+
+  if (!input || !messages) {
+    return;
+  }
+
+  const text =
+    input.value.trim();
+
+  if (!text) {
+    return;
+  }
+
+
+  const userMessage =
+    document.createElement("div");
+
+  userMessage.className =
+    "ai-message";
+
+  userMessage.textContent =
+    text;
+
+  messages.appendChild(userMessage);
+
+  input.value = "";
+
+
+  const response =
+    document.createElement("div");
+
+  response.className =
+    "ai-message";
+
+  response.textContent =
+    "Habboub AI backend is not connected yet.";
+
+  messages.appendChild(response);
+
+  messages.scrollTop =
+    messages.scrollHeight;
+
+}
+
+
+// ======================================
+// MARKET
+// ======================================
+
+function updateConnectionStatus() {
+
+  const price =
+    document.getElementById("goldPrice");
+
+  const change =
+    document.getElementById("goldChange");
+
+  if (!price || !change) {
+    return;
+  }
+
+  price.textContent =
+    "Connecting...";
+
+  change.textContent =
+    "Waiting for live market provider";
+
+}
+
+updateConnectionStatus();
+
+
+// ======================================
+// SAFE TEXT
+// ======================================
+
+function setText(id, value) {
+
+  const element =
+    document.getElementById(id);
+
+  if (element) {
+    element.textContent = value;
+  }
+
+}
+
+
+function escapeHTML(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeAttribute(value) {
+
+  return escapeHTML(value);
+
+}
+
+
+// ======================================
 // ANNOUNCEMENTS
 // ======================================
 
@@ -377,9 +257,12 @@ async function loadAnnouncements() {
       "announcementsContainer"
     );
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
-  const { data, error } =
+
+  const result =
     await supabaseClient
       .from("announcements")
       .select("*")
@@ -388,25 +271,33 @@ async function loadAnnouncements() {
         ascending: false
       });
 
-  if (error) {
 
-    console.warn(
+  if (result.error) {
+
+    console.error(
       "Announcements:",
-      error.message
+      result.error
     );
 
     return;
   }
 
-  if (!data || data.length === 0) {
 
-    container.innerHTML = "";
+  if (!result.data || result.data.length === 0) {
+
+    container.innerHTML = `
+      <div class="dashboard-card">
+        <h3>No announcements</h3>
+        <p>There are no active announcements right now.</p>
+      </div>
+    `;
 
     return;
   }
 
+
   container.innerHTML =
-    data.map(function (item) {
+    result.data.map(function (item) {
 
       return `
         <article class="dashboard-card">
@@ -422,32 +313,6 @@ async function loadAnnouncements() {
           <p>
             ${escapeHTML(item.content || "")}
           </p>
-
-          ${
-            item.image_url
-              ? `
-                <img
-                  src="${escapeAttribute(item.image_url)}"
-                  alt="Announcement"
-                  style="max-width:100%;border-radius:12px;margin-top:15px;"
-                >
-              `
-              : ""
-          }
-
-          ${
-            item.link_url
-              ? `
-                <a
-                  href="${escapeAttribute(item.link_url)}"
-                  target="_blank"
-                  rel="noopener"
-                  class="primary-btn">
-                  Open
-                </a>
-              `
-              : ""
-          }
 
         </article>
       `;
@@ -468,9 +333,12 @@ async function loadCourses() {
       "courseContainer"
     );
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
-  const { data, error } =
+
+  const result =
     await supabaseClient
       .from("courses")
       .select("*")
@@ -479,23 +347,26 @@ async function loadCourses() {
         ascending: false
       });
 
-  if (error) {
 
-    console.warn(
+  if (result.error) {
+
+    console.error(
       "Courses:",
-      error.message
+      result.error
     );
 
     return;
   }
 
-  if (!data || data.length === 0) {
+
+  if (!result.data || result.data.length === 0) {
 
     return;
   }
 
+
   container.innerHTML =
-    data.map(function (course, index) {
+    result.data.map(function (course, index) {
 
       return `
         <article class="course-card">
@@ -503,18 +374,6 @@ async function loadCourses() {
           <span class="course-number">
             ${String(index + 1).padStart(2, "0")}
           </span>
-
-          ${
-            course.thumbnail_url
-              ? `
-                <img
-                  src="${escapeAttribute(course.thumbnail_url)}"
-                  alt="${escapeAttribute(course.title)}"
-                  style="width:100%;border-radius:12px;margin:12px 0;"
-                >
-              `
-              : ""
-          }
 
           <h3>
             ${escapeHTML(course.title)}
@@ -524,8 +383,7 @@ async function loadCourses() {
             ${escapeHTML(course.description || "")}
           </p>
 
-          <button
-            onclick="openCourse('${course.id}')">
+          <button onclick="openCourse('${course.id}')">
             View Course →
           </button>
 
@@ -543,7 +401,7 @@ async function loadCourses() {
 
 async function openCourse(courseId) {
 
-  const { data, error } =
+  const result =
     await supabaseClient
       .from("course_lessons")
       .select("*")
@@ -552,26 +410,25 @@ async function openCourse(courseId) {
         ascending: true
       });
 
-  if (error) {
 
-    alert(
-      "Unable to load course lessons."
-    );
+  if (result.error) {
+
+    alert("Unable to load course lessons.");
+
+    return;
+  }
+
+
+  if (!result.data || result.data.length === 0) {
+
+    alert("This course does not have lessons yet.");
 
     return;
   }
 
-  if (!data || data.length === 0) {
-
-    alert(
-      "This course does not have lessons yet."
-    );
-
-    return;
-  }
 
   const lessons =
-    data.map(function (lesson) {
+    result.data.map(function (lesson) {
 
       return (
         lesson.lesson_order +
@@ -580,6 +437,7 @@ async function openCourse(courseId) {
       );
 
     }).join("\n");
+
 
   alert(
     "Course lessons:\n\n" +
@@ -595,7 +453,7 @@ async function openCourse(courseId) {
 
 async function loadLive() {
 
-  const { data, error } =
+  const result =
     await supabaseClient
       .from("live_sessions")
       .select("*")
@@ -603,8 +461,26 @@ async function loadLive() {
       .order("started_at", {
         ascending: false
       })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
+
+
+  if (result.error) {
+
+    console.error(
+      "Live:",
+      result.error
+    );
+
+    return;
+  }
+
+
+  const data =
+    result.data &&
+    result.data.length
+      ? result.data[0]
+      : null;
+
 
   const indicator =
     document.getElementById(
@@ -626,44 +502,45 @@ async function loadLive() {
       "liveScreen"
     );
 
-  if (error) {
-
-    console.warn(
-      "Live:",
-      error.message
-    );
-
-    return;
-  }
 
   if (!data) {
 
-    if (indicator)
+    if (indicator) {
       indicator.textContent =
         "● OFFLINE";
+    }
 
-    if (title)
+    if (title) {
       title.textContent =
         "No live broadcast";
+    }
 
-    if (description)
+    if (description) {
       description.textContent =
         "The administrator can start a live session from the Admin Panel.";
+    }
 
     return;
   }
 
-  if (indicator)
+
+  if (indicator) {
     indicator.textContent =
       "● LIVE";
+  }
 
-  if (title)
+
+  if (title) {
     title.textContent =
       data.title || "Habboub Live";
+  }
 
-  if (description)
+
+  if (description) {
     description.textContent =
       data.description || "";
+  }
+
 
   if (screen && data.stream_url) {
 
@@ -688,7 +565,7 @@ async function loadLive() {
 function subscribeToLive() {
 
   supabaseClient
-    .channel("live-sessions")
+    .channel("habboub-live")
     .on(
       "postgres_changes",
       {
@@ -697,7 +574,9 @@ function subscribeToLive() {
         table: "live_sessions"
       },
       function () {
+
         loadLive();
+
       }
     )
     .subscribe();
@@ -712,7 +591,7 @@ function subscribeToLive() {
 function subscribeToAnnouncements() {
 
   supabaseClient
-    .channel("announcements")
+    .channel("habboub-announcements")
     .on(
       "postgres_changes",
       {
@@ -721,7 +600,9 @@ function subscribeToAnnouncements() {
         table: "announcements"
       },
       function () {
+
         loadAnnouncements();
+
       }
     )
     .subscribe();
@@ -736,7 +617,7 @@ function subscribeToAnnouncements() {
 function subscribeToCourses() {
 
   supabaseClient
-    .channel("courses")
+    .channel("habboub-courses")
     .on(
       "postgres_changes",
       {
@@ -745,7 +626,9 @@ function subscribeToCourses() {
         table: "courses"
       },
       function () {
+
         loadCourses();
+
       }
     )
     .subscribe();
@@ -759,7 +642,7 @@ function subscribeToCourses() {
 
 async function loadMarketAnalysis() {
 
-  const { data, error } =
+  const result =
     await supabaseClient
       .from("market_analysis")
       .select("*")
@@ -767,60 +650,31 @@ async function loadMarketAnalysis() {
       .order("created_at", {
         ascending: false
       })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
 
-  if (error) {
 
-    console.warn(
+  if (result.error) {
+
+    console.error(
       "Market analysis:",
-      error.message
+      result.error
     );
 
     return;
   }
 
-  if (!data) return;
 
-  setText(
-    "marketTradeStatus",
-    data.trade_status || "WAIT"
-  );
+  const data =
+    result.data &&
+    result.data.length
+      ? result.data[0]
+      : null;
 
-  setText(
-    "marketCondition",
-    data.market_condition || "Unknown"
-  );
 
-  setText(
-    "marketRisk",
-    data.risk_level || "--"
-  );
+  if (!data) {
+    return;
+  }
 
-  setText(
-    "marketConfidence",
-    data.confidence ?? "--"
-  );
-
-  setText(
-    "marketAnalysisText",
-    data.analysis || ""
-  );
-
-  setText(
-    "analysisSymbol",
-    data.symbol || "XAUUSD"
-  );
-
-  setText(
-    "analysisStatus",
-    data.trade_status || "WAIT"
-  );
-
-  setText(
-    "analysisDescription",
-    data.analysis || ""
-  );
 
   setText(
     "htfBias",
@@ -833,7 +687,32 @@ async function loadMarketAnalysis() {
   );
 
   setText(
-    "tradeDecisionText",
+    "analysisStatus",
+    data.trade_status || "WAIT"
+  );
+
+  setText(
+    "analysisSymbol",
+    data.symbol || "XAUUSD"
+  );
+
+  setText(
+    "marketRisk",
+    data.risk_level || "--"
+  );
+
+  setText(
+    "marketCondition",
+    data.market_condition || "--"
+  );
+
+  setText(
+    "marketConfidence",
+    data.confidence ?? "--"
+  );
+
+  setText(
+    "marketAnalysisText",
     data.analysis || ""
   );
 
@@ -844,22 +723,32 @@ async function loadMarketAnalysis() {
 // JOURNAL
 // ======================================
 
+async function getCurrentUser() {
+
+  const result =
+    await supabaseClient.auth.getUser();
+
+  if (result.error) {
+    return null;
+  }
+
+  return result.data.user || null;
+
+}
+
+
 async function loadJournal() {
 
   const user =
     await getCurrentUser();
 
+
   if (!user) {
-
-    setText("journalWinRate", "--");
-    setText("journalProfitFactor", "--");
-    setText("journalAverageR", "--");
-    setText("journalDrawdown", "--");
-
     return;
   }
 
-  const { data, error } =
+
+  const result =
     await supabaseClient
       .from("trading_journal")
       .select("*")
@@ -868,22 +757,20 @@ async function loadJournal() {
         ascending: false
       });
 
-  if (error) {
 
-    console.warn(
+  if (result.error) {
+
+    console.error(
       "Journal:",
-      error.message
+      result.error
     );
 
     return;
   }
 
-  renderJournalStats(
-    data || []
-  );
 
-  renderJournalTrades(
-    data || []
+  renderJournalStats(
+    result.data || []
   );
 
 }
@@ -893,26 +780,44 @@ function renderJournalStats(trades) {
 
   if (!trades.length) {
 
-    setText("journalWinRate", "0%");
-    setText("journalProfitFactor", "0");
-    setText("journalAverageR", "0");
-    setText("journalDrawdown", "0");
+    setText(
+      "journalWinRate",
+      "0%"
+    );
+
+    setText(
+      "journalProfitFactor",
+      "0"
+    );
+
+    setText(
+      "journalAverageR",
+      "0"
+    );
 
     return;
   }
 
+
   const results =
     trades.map(function (trade) {
+
       return Number(trade.result) || 0;
+
     });
+
 
   const wins =
     results.filter(function (r) {
+
       return r > 0;
+
     }).length;
+
 
   const winRate =
     (wins / results.length) * 100;
+
 
   const grossProfit =
     results
@@ -922,6 +827,7 @@ function renderJournalStats(trades) {
       .reduce(function (sum, r) {
         return sum + r;
       }, 0);
+
 
   const grossLoss =
     Math.abs(
@@ -934,15 +840,18 @@ function renderJournalStats(trades) {
         }, 0)
     );
 
+
   const profitFactor =
     grossLoss === 0
       ? grossProfit
       : grossProfit / grossLoss;
 
+
   const average =
     results.reduce(function (sum, r) {
       return sum + r;
     }, 0) / results.length;
+
 
   setText(
     "journalWinRate",
@@ -959,322 +868,11 @@ function renderJournalStats(trades) {
     average.toFixed(2)
   );
 
-  setText(
-    "journalDrawdown",
-    "--"
-  );
-
-}
-
-
-function renderJournalTrades(trades) {
-
-  const container =
-    document.getElementById(
-      "journalTrades"
-    );
-
-  if (!container) return;
-
-  container.innerHTML =
-    trades.slice(0, 10)
-      .map(function (trade) {
-
-        return `
-          <div class="dashboard-card">
-
-            <span class="eyebrow">
-              ${escapeHTML(
-                trade.journal_type || "TRADE"
-              )}
-            </span>
-
-            <h3>
-              ${escapeHTML(
-                trade.symbol || "--"
-              )}
-            </h3>
-
-            <p>
-              ${escapeHTML(
-                trade.direction || "--"
-              )}
-            </p>
-
-            <strong>
-              Result:
-              ${trade.result ?? "--"}
-            </strong>
-
-          </div>
-        `;
-
-      })
-      .join("");
-
 }
 
 
 // ======================================
-// SAVE JOURNAL
-// ======================================
-
-async function saveJournalTrade() {
-
-  const user =
-    await getCurrentUser();
-
-  const message =
-    document.getElementById(
-      "journalMessage"
-    );
-
-  if (!user) {
-
-    if (message) {
-      message.textContent =
-        "Please login before adding a trade.";
-    }
-
-    return;
-  }
-
-  const symbol =
-    document
-      .getElementById("journalSymbol")
-      ?.value.trim() || "";
-
-  const direction =
-    document
-      .getElementById("journalDirection")
-      ?.value.trim() || "";
-
-  const entry =
-    Number(
-      document
-        .getElementById("journalEntry")
-        ?.value
-    );
-
-  const stop =
-    Number(
-      document
-        .getElementById("journalStop")
-        ?.value
-    );
-
-  const take =
-    Number(
-      document
-        .getElementById("journalTake")
-        ?.value
-    );
-
-  const result =
-    Number(
-      document
-        .getElementById("journalResult")
-        ?.value
-    );
-
-  const notes =
-    document
-      .getElementById("journalNotes")
-      ?.value.trim() || "";
-
-  const { error } =
-    await supabaseClient
-      .from("trading_journal")
-      .insert({
-
-        user_id: user.id,
-
-        journal_type: "manual",
-
-        symbol: symbol,
-
-        direction: direction,
-
-        entry_price:
-          Number.isFinite(entry)
-            ? entry
-            : null,
-
-        stop_loss:
-          Number.isFinite(stop)
-            ? stop
-            : null,
-
-        take_profit:
-          Number.isFinite(take)
-            ? take
-            : null,
-
-        result:
-          Number.isFinite(result)
-            ? result
-            : null,
-
-        notes: notes
-
-      });
-
-  if (error) {
-
-    if (message) {
-      message.textContent =
-        error.message;
-    }
-
-    return;
-  }
-
-  if (message) {
-    message.textContent =
-      "Trade saved successfully.";
-  }
-
-  await loadJournal();
-
-}
-
-
-// ======================================
-// AI
-// ======================================
-
-function openAI() {
-
-  const aiWindow =
-    document.getElementById(
-      "aiWindow"
-    );
-
-  if (aiWindow) {
-    aiWindow.classList.add("active");
-  }
-
-}
-
-
-function closeAI() {
-
-  const aiWindow =
-    document.getElementById(
-      "aiWindow"
-    );
-
-  if (aiWindow) {
-    aiWindow.classList.remove("active");
-  }
-
-}
-
-
-function handleAI(event) {
-
-  if (event.key === "Enter") {
-    sendAI();
-  }
-
-}
-
-
-async function sendAI() {
-
-  const input =
-    document.getElementById(
-      "aiInput"
-    );
-
-  const messages =
-    document.getElementById(
-      "aiMessages"
-    );
-
-  if (!input || !messages) return;
-
-  const text =
-    input.value.trim();
-
-  if (!text) return;
-
-  const userMessage =
-    document.createElement("div");
-
-  userMessage.className =
-    "ai-message";
-
-  userMessage.textContent =
-    text;
-
-  messages.appendChild(
-    userMessage
-  );
-
-  input.value = "";
-
-  const response =
-    document.createElement("div");
-
-  response.className =
-    "ai-message";
-
-  response.textContent =
-    "Habboub AI is being connected to the backend.";
-
-  messages.appendChild(
-    response
-  );
-
-  messages.scrollTop =
-    messages.scrollHeight;
-
-}
-
-
-// ======================================
-// UTILITIES
-// ======================================
-
-function setText(id, value) {
-
-  const element =
-    document.getElementById(id);
-
-  if (element) {
-    element.textContent =
-      value;
-  }
-
-}
-
-
-// ======================================
-// SAFE HTML
-// ======================================
-
-function escapeHTML(value) {
-
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-}
-
-
-function escapeAttribute(value) {
-
-  return escapeHTML(value);
-
-}
-
-
-// ======================================
-// MODAL OUTSIDE CLICK
+// MODAL CLICK
 // ======================================
 
 document
@@ -1299,27 +897,25 @@ document
 // SCROLL ANIMATION
 // ======================================
 
-if ("IntersectionObserver" in window) {
+try {
 
   const observer =
     new IntersectionObserver(
       function (entries) {
 
-        entries.forEach(
-          function (entry) {
+        entries.forEach(function (entry) {
 
-            if (entry.isIntersecting) {
+          if (entry.isIntersecting) {
 
-              entry.target.style.opacity =
-                "1";
+            entry.target.style.opacity =
+              "1";
 
-              entry.target.style.transform =
-                "translateY(0)";
-
-            }
+            entry.target.style.transform =
+              "translateY(0)";
 
           }
-        );
+
+        });
 
       },
       {
@@ -1345,6 +941,13 @@ if ("IntersectionObserver" in window) {
       observer.observe(element);
 
     });
+
+} catch (error) {
+
+  console.warn(
+    "Animation unavailable:",
+    error
+  );
 
 }
 
