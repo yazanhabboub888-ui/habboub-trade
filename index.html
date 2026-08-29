@@ -1,314 +1,689 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>HABBOUB | Trading Assistant</title>
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habboub — Smart Trading</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="logo">HABBOUB</div>
+  <div id="loader">
+    <div class="loader-logo">H</div>
+    <p>Loading Habboub...</p>
+  </div>
 
-        <div class="nav-links">
-            <a href="#dashboard">Dashboard</a>
-            <a href="#analysis">Analysis</a>
-            <a href="#journal">Journal</a>
-        </div>
+  <header class="navbar">
+    <div class="logo">
+      <span>H</span> Habboub
+    </div>
 
-        <button class="login-btn">Login</button>
+    <nav>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#markets">Markets</a>
+      <a href="#analysis">Analysis</a>
+      <a href="#journal">Journal</a>
+      <a href="#academy">Academy</a>
+      <a href="#live">Live</a>
     </nav>
 
+    <div class="nav-actions">
+      <button class="ghost-btn" onclick="openLogin()">Login</button>
+      <button class="primary-btn" onclick="openRegister()">Get Started</button>
+    </div>
+  </header>
+
+
+  <main>
 
     <!-- HERO -->
     <section class="hero">
 
-        <div class="hero-content">
+      <div class="hero-content">
 
-            <span class="badge">TRADING INTELLIGENCE PLATFORM</span>
+        <div class="badge">
+          ● SMART TRADING PLATFORM
+        </div>
 
-            <h1>
-                Trade Smarter.<br>
-                <span>Not Harder.</span>
-            </h1>
+        <h1>
+          Trade smarter.<br>
+          <span>Think like the market.</span>
+        </h1>
 
-            <p>
-                HABBOUB helps traders analyze the market,
-                manage risk and make smarter trading decisions.
-            </p>
+        <p>
+          Habboub combines market intelligence, ICT analysis,
+          trading journals, news and AI tools in one platform.
+        </p>
 
-            <div class="hero-buttons">
-                <button class="primary-btn" onclick="startTrading()">
-                    Start Trading
-                </button>
+        <div class="hero-buttons">
+          <button class="primary-btn big" onclick="enterGuest()">
+            Explore Habboub →
+          </button>
 
-                <button class="secondary-btn" onclick="scrollToAnalysis()">
-                    Explore Analysis
-                </button>
+          <button class="ghost-btn big" onclick="openRegister()">
+            Create Account
+          </button>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <strong>24/7</strong>
+            <small>Market Intelligence</small>
+          </div>
+
+          <div>
+            <strong>AI</strong>
+            <small>Trading Assistant</small>
+          </div>
+
+          <div>
+            <strong>ICT</strong>
+            <small>Market Analysis</small>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="hero-panel">
+
+        <div class="panel-top">
+          <span>MARKET OVERVIEW</span>
+          <span class="live-dot">● LIVE</span>
+        </div>
+
+        <div class="market-preview">
+
+          <div class="preview-row">
+            <div>
+              <small>GOLD</small>
+              <h3 id="heroGold">XAUUSD</h3>
             </div>
+            <div class="price">
+              <strong>Live</strong>
+              <small>Market Data</small>
+            </div>
+          </div>
+
+          <div class="preview-row">
+            <div>
+              <small>NASDAQ</small>
+              <h3>NAS100</h3>
+            </div>
+            <div class="price">
+              <strong>Live</strong>
+              <small>Market Data</small>
+            </div>
+          </div>
+
+          <div class="preview-row">
+            <div>
+              <small>S&P 500</small>
+              <h3>SPX</h3>
+            </div>
+            <div class="price">
+              <strong>Live</strong>
+              <small>Market Data</small>
+            </div>
+          </div>
 
         </div>
+
+      </div>
 
     </section>
 
 
     <!-- DASHBOARD -->
-    <section id="dashboard" class="dashboard-section">
+    <section id="dashboard" class="section">
 
-        <div class="section-title">
-            <span>MARKET OVERVIEW</span>
-            <h2>Live Market Dashboard</h2>
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">COMMAND CENTER</span>
+          <h2>Your trading dashboard</h2>
+        </div>
+
+        <span class="status">
+          ● SYSTEM ONLINE
+        </span>
+      </div>
+
+
+      <div class="dashboard-grid">
+
+        <div class="dashboard-card large-card">
+          <div class="card-header">
+            <div>
+              <span class="eyebrow">MARKET STATUS</span>
+              <h3>How is the market?</h3>
+            </div>
+            <span class="neutral">WAIT</span>
+          </div>
+
+          <div class="market-score">
+            <div class="score-circle">
+              <strong>--</strong>
+              <span>/100</span>
+            </div>
+
+            <div class="score-info">
+              <h3>Waiting for market data</h3>
+              <p>
+                Connect a real market-data provider to calculate
+                the live Habboub market score.
+              </p>
+
+              <div class="risk">
+                <span>Risk</span>
+                <strong>--</strong>
+              </div>
+            </div>
+          </div>
         </div>
 
 
-        <div class="market-grid">
+        <div class="dashboard-card">
 
-            <div class="market-card">
+          <div class="card-header">
+            <span class="eyebrow">AI</span>
+            <span>🤖</span>
+          </div>
 
-                <div class="card-top">
-                    <span>XAUUSD</span>
-                    <span class="green">+0.82%</span>
-                </div>
+          <h3>Habboub AI</h3>
 
-                <h3>$3,425.80</h3>
+          <p>
+            Ask about market structure, ICT concepts,
+            risk management and trading setups.
+          </p>
 
-                <p>Gold / US Dollar</p>
-
-            </div>
-
-
-            <div class="market-card">
-
-                <div class="card-top">
-                    <span>EURUSD</span>
-                    <span class="green">+0.31%</span>
-                </div>
-
-                <h3>1.1718</h3>
-
-                <p>Euro / US Dollar</p>
-
-            </div>
-
-
-            <div class="market-card">
-
-                <div class="card-top">
-                    <span>GBPUSD</span>
-                    <span class="red">-0.18%</span>
-                </div>
-
-                <h3>1.3482</h3>
-
-                <p>British Pound / US Dollar</p>
-
-            </div>
-
-
-            <div class="market-card">
-
-                <div class="card-top">
-                    <span>BTCUSD</span>
-                    <span class="green">+1.24%</span>
-                </div>
-
-                <h3>$112,840</h3>
-
-                <p>Bitcoin / US Dollar</p>
-
-            </div>
+          <button class="primary-btn full" onclick="openAI()">
+            Open AI Assistant
+          </button>
 
         </div>
+
+
+        <div class="dashboard-card">
+
+          <div class="card-header">
+            <span class="eyebrow">NEWS</span>
+            <span>●</span>
+          </div>
+
+          <h3>USD News</h3>
+
+          <div class="news-mini">
+            <div>
+              <strong>USD</strong>
+              <span>Economic Calendar</span>
+            </div>
+
+            <b>Live Data</b>
+          </div>
+
+          <button class="ghost-btn full">
+            View News
+          </button>
+
+        </div>
+
+      </div>
 
     </section>
 
 
-    <!-- ANALYSIS -->
-    <section id="analysis" class="analysis-section">
+    <!-- MARKETS -->
+    <section id="markets" class="section">
 
-        <div class="section-title">
-            <span>SMART ANALYSIS</span>
-            <h2>Market Analysis</h2>
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">LIVE MARKETS</span>
+          <h2>Markets</h2>
+        </div>
+      </div>
+
+      <div class="market-grid">
+
+        <div class="asset-card">
+          <div class="asset-top">
+            <span>🥇</span>
+            <small>XAUUSD</small>
+          </div>
+
+          <h3>Gold</h3>
+
+          <div class="asset-price" id="goldPrice">
+            Loading...
+          </div>
+
+          <div class="asset-change" id="goldChange">
+            Connecting...
+          </div>
+
+          <div class="mini-chart"></div>
         </div>
 
 
-        <div class="analysis-container">
+        <div class="asset-card">
+          <div class="asset-top">
+            <span>📊</span>
+            <small>NAS100</small>
+          </div>
 
-            <div class="analysis-panel">
+          <h3>NASDAQ</h3>
 
-                <h3>Select Market</h3>
+          <div class="asset-price">
+            Live Data
+          </div>
 
-                <select id="asset">
+          <div class="asset-change">
+            Waiting for provider
+          </div>
 
-                    <option value="XAUUSD">XAUUSD — Gold</option>
-
-                    <option value="EURUSD">EURUSD</option>
-
-                    <option value="GBPUSD">GBPUSD</option>
-
-                    <option value="BTCUSD">BTCUSD</option>
-
-                </select>
-
-
-                <h3>Timeframe</h3>
-
-                <div class="timeframes">
-
-                    <button onclick="selectTimeframe(this)">1M</button>
-                    <button onclick="selectTimeframe(this)">5M</button>
-                    <button onclick="selectTimeframe(this)">15M</button>
-                    <button onclick="selectTimeframe(this)">1H</button>
-                    <button onclick="selectTimeframe(this)">4H</button>
-
-                </div>
-
-
-                <button class="analyze-btn" onclick="analyzeMarket()">
-                    Analyze Market
-                </button>
-
-            </div>
-
-
-            <div class="signal-panel">
-
-                <span class="signal-label">CURRENT SIGNAL</span>
-
-                <div id="signal" class="signal-neutral">
-                    WAIT
-                </div>
-
-                <p id="signal-description">
-                    Select an asset and timeframe to generate analysis.
-                </p>
-
-            </div>
-
+          <div class="mini-chart"></div>
         </div>
+
+
+        <div class="asset-card">
+          <div class="asset-top">
+            <span>📈</span>
+            <small>SPX</small>
+          </div>
+
+          <h3>S&P 500</h3>
+
+          <div class="asset-price">
+            Live Data
+          </div>
+
+          <div class="asset-change">
+            Waiting for provider
+          </div>
+
+          <div class="mini-chart"></div>
+        </div>
+
+      </div>
 
     </section>
 
 
-    <!-- RISK MANAGEMENT -->
-    <section class="risk-section">
+    <!-- ICT -->
+    <section id="analysis" class="section dark-section">
 
-        <div class="section-title">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">ICT ENGINE</span>
+          <h2>Market Intelligence</h2>
+        </div>
+      </div>
 
-            <span>RISK MANAGEMENT</span>
+      <div class="analysis-grid">
 
-            <h2>Protect Your Capital</h2>
+        <div class="analysis-main">
+
+          <div class="analysis-title">
+            <span>XAUUSD</span>
+            <span class="neutral">NO SETUP</span>
+          </div>
+
+          <h3>ICT Market Analysis</h3>
+
+          <p>
+            The engine will evaluate liquidity,
+            market structure, FVG, MSS, sessions and
+            higher-timeframe bias using live data.
+          </p>
+
+          <div class="signals">
+
+            <div>
+              <span>HTF Bias</span>
+              <strong>--</strong>
+            </div>
+
+            <div>
+              <span>Liquidity</span>
+              <strong>--</strong>
+            </div>
+
+            <div>
+              <span>MSS</span>
+              <strong>--</strong>
+            </div>
+
+            <div>
+              <span>FVG</span>
+              <strong>--</strong>
+            </div>
+
+          </div>
 
         </div>
 
 
-        <div class="risk-calculator">
+        <div class="risk-card">
 
-            <div class="input-group">
+          <span class="eyebrow">TRADE DECISION</span>
 
-                <label>Account Balance</label>
+          <div class="decision">
+            WAIT
+          </div>
 
-                <input
-                    type="number"
-                    id="balance"
-                    placeholder="10000"
-                >
+          <p>
+            No trade recommendation is generated
+            until sufficient live data is available.
+          </p>
 
-            </div>
+          <div class="risk-meter">
+            <div style="width:0%"></div>
+          </div>
 
-
-            <div class="input-group">
-
-                <label>Risk %</label>
-
-                <input
-                    type="number"
-                    id="risk"
-                    placeholder="1"
-                    step="0.1"
-                >
-
-            </div>
-
-
-            <button
-                class="calculate-btn"
-                onclick="calculateRisk()"
-            >
-                Calculate Risk
-            </button>
-
-
-            <div class="risk-result">
-
-                <span>Maximum Risk</span>
-
-                <strong id="risk-result">
-                    $0
-                </strong>
-
-            </div>
+          <small>Risk level unavailable</small>
 
         </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- COT -->
+    <section class="section">
+
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">COT INTELLIGENCE</span>
+          <h2>Commitment of Traders</h2>
+        </div>
+      </div>
+
+      <div class="cot-card">
+
+        <div class="cot-item">
+          <span>Commercial</span>
+          <strong>--</strong>
+        </div>
+
+        <div class="cot-item">
+          <span>Managed Money</span>
+          <strong>--</strong>
+        </div>
+
+        <div class="cot-item">
+          <span>Net Position</span>
+          <strong>--</strong>
+        </div>
+
+        <div class="cot-item">
+          <span>Habboub Bias</span>
+          <strong>WAITING</strong>
+        </div>
+
+      </div>
 
     </section>
 
 
     <!-- JOURNAL -->
-    <section id="journal" class="journal-section">
+    <section id="journal" class="section">
 
-        <div class="section-title">
-
-            <span>TRADING JOURNAL</span>
-
-            <h2>Track Your Performance</h2>
-
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">TRADING JOURNAL</span>
+          <h2>Track every trade</h2>
         </div>
 
+        <button class="primary-btn">
+          + Add Trade
+        </button>
+      </div>
 
-        <div class="journal-box">
+      <div class="journal-grid">
 
-            <textarea
-                id="journalText"
-                placeholder="Write your trade notes here..."
-            ></textarea>
-
-            <button
-                class="primary-btn"
-                onclick="saveJournal()"
-            >
-                Save Journal
-            </button>
-
-            <p id="saveMessage"></p>
-
+        <div class="journal-stat">
+          <span>Win Rate</span>
+          <strong>--</strong>
         </div>
+
+        <div class="journal-stat">
+          <span>Profit Factor</span>
+          <strong>--</strong>
+        </div>
+
+        <div class="journal-stat">
+          <span>Average R</span>
+          <strong>--</strong>
+        </div>
+
+        <div class="journal-stat">
+          <span>Drawdown</span>
+          <strong>--</strong>
+        </div>
+
+      </div>
 
     </section>
 
 
-    <!-- FOOTER -->
-    <footer>
+    <!-- LIVE -->
+    <section id="live" class="section dark-section">
 
-        <div class="logo">HABBOUB</div>
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">HABBOUB LIVE</span>
+          <h2>Live Trading Room</h2>
+        </div>
 
-        <p>
-            Trading intelligence for disciplined traders.
-        </p>
+        <span class="live-dot">● OFFLINE</span>
+      </div>
 
-        <small>
-            © 2026 HABBOUB. All rights reserved.
-        </small>
+      <div class="live-container">
 
-    </footer>
+        <div class="live-screen">
+          <div>
+            <span class="play-icon">▶</span>
+            <h3>No live broadcast</h3>
+            <p>
+              The administrator can start a live session
+              from the Admin Panel.
+            </p>
+          </div>
+        </div>
+
+        <div class="live-info">
+
+          <span class="eyebrow">UPCOMING</span>
+
+          <h3>Habboub Live Sessions</h3>
+
+          <p>
+            Watch live market analysis,
+            educational sessions and trading discussions.
+          </p>
+
+          <button class="ghost-btn full">
+            Notify Me
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
 
 
-    <script src="script.js"></script>
+    <!-- ACADEMY -->
+    <section id="academy" class="section">
+
+      <div class="section-heading">
+
+        <div>
+          <span class="eyebrow">HABBOUB ACADEMY</span>
+          <h2>Learn the market</h2>
+        </div>
+
+        <button class="ghost-btn">
+          View All Courses
+        </button>
+
+      </div>
+
+
+      <div class="course-grid">
+
+        <div class="course-card">
+          <span class="course-number">01</span>
+          <h3>Trading Fundamentals</h3>
+          <p>Build your trading foundation.</p>
+          <button>Start Course →</button>
+        </div>
+
+        <div class="course-card">
+          <span class="course-number">02</span>
+          <h3>Market Structure</h3>
+          <p>Understand price movement.</p>
+          <button>Start Course →</button>
+        </div>
+
+        <div class="course-card">
+          <span class="course-number">03</span>
+          <h3>Liquidity & FVG</h3>
+          <p>Explore key ICT concepts.</p>
+          <button>Start Course →</button>
+        </div>
+
+        <div class="course-card">
+          <span class="course-number">04</span>
+          <h3>Risk Management</h3>
+          <p>Protect your trading capital.</p>
+          <button>Start Course →</button>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+
+    <div class="footer-logo">
+      Habboub
+    </div>
+
+    <p>
+      Smart tools for smarter traders.
+    </p>
+
+    <div>
+      © 2026 Habboub
+    </div>
+
+  </footer>
+
+
+  <!-- LOGIN MODAL -->
+  <div class="modal" id="loginModal">
+
+    <div class="modal-box">
+
+      <button class="close" onclick="closeModals()">×</button>
+
+      <span class="eyebrow">WELCOME BACK</span>
+
+      <h2>Login to Habboub</h2>
+
+      <input type="email" placeholder="Email">
+      <input type="password" placeholder="Password">
+
+      <button class="primary-btn full">
+        Login
+      </button>
+
+      <p>
+        Don't have an account?
+        <button class="text-btn" onclick="openRegister()">
+          Create one
+        </button>
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- REGISTER MODAL -->
+  <div class="modal" id="registerModal">
+
+    <div class="modal-box">
+
+      <button class="close" onclick="closeModals()">×</button>
+
+      <span class="eyebrow">JOIN HABBOUB</span>
+
+      <h2>Create your account</h2>
+
+      <input type="text" placeholder="Full name">
+      <input type="email" placeholder="Email">
+      <input type="password" placeholder="Password">
+
+      <button class="primary-btn full">
+        Create Account
+      </button>
+
+      <p>
+        Already have an account?
+        <button class="text-btn" onclick="openLogin()">
+          Login
+        </button>
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- AI -->
+  <div class="ai-window" id="aiWindow">
+
+    <div class="ai-header">
+      <div>
+        <strong>Habboub AI</strong>
+        <small>Trading Assistant</small>
+      </div>
+
+      <button onclick="closeAI()">×</button>
+    </div>
+
+    <div class="ai-messages" id="aiMessages">
+
+      <div class="ai-message">
+        👋 Welcome to Habboub AI.
+        <br><br>
+        Ask me about ICT, market structure,
+        risk management or trading concepts.
+      </div>
+
+    </div>
+
+    <div class="ai-input">
+
+      <input
+        id="aiInput"
+        placeholder="Ask Habboub AI..."
+        onkeydown="handleAI(event)"
+      >
+
+      <button onclick="sendAI()">↑</button>
+
+    </div>
+
+  </div>
+
+
+  <script src="script.js"></script>
 
 </body>
 </html>
