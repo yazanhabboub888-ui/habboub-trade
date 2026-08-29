@@ -1,166 +1,1085 @@
-```javascript
-async function startLive() {
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  const titleInput = document.getElementById("liveTitle");
-  const descriptionInput = document.getElementById("liveDescription");
+  <title>Habboub Admin</title>
 
-  const title = titleInput ? titleInput.value.trim() : "";
-  const description = descriptionInput
-    ? descriptionInput.value.trim()
-    : "";
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  if (!title) {
-    alert("Enter a live title first.");
-    return;
-  }
-
-  try {
-
-    // ================================
-    // CHECK LOGIN
-    // ================================
-
-    const {
-      data: { user },
-      error: authError
-    } = await supabaseClient.auth.getUser();
-
-    if (authError || !user) {
-      alert("You must be logged in.");
-      return;
+  <style>
+    * {
+      box-sizing: border-box;
     }
 
-
-    // ================================
-    // CHECK ADMIN
-    // ================================
-
-    const {
-      data: adminRole,
-      error: adminError
-    } = await supabaseClient
-      .from("admin_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (adminError) {
-      console.error("Admin check error:", adminError);
-      alert("Could not verify administrator permissions.");
-      return;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #07090d;
+      color: white;
     }
 
-    if (!adminRole || adminRole.role !== "admin") {
-      alert("This account is not an administrator.");
-      return;
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 240px;
+      height: 100vh;
+      padding: 30px 20px;
+      background: #0b0e13;
+      border-right: 1px solid #1c2028;
     }
 
-
-    // ================================
-    // STOP CURRENT LIVE
-    // ================================
-
-    const {
-      error: stopError
-    } = await supabaseClient
-      .from("live_sessions")
-      .update({
-        is_live: false,
-        ended_at: new Date().toISOString()
-      })
-      .eq("is_live", true);
-
-    if (stopError) {
-      console.error("Stop previous live error:", stopError);
-      alert("Could not close the previous live session.");
-      return;
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 45px;
     }
 
+    .logo span {
+      display: inline-grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      margin-right: 8px;
+      border-radius: 10px;
+      background: white;
+      color: black;
+    }
 
-    // ================================
-    // CREATE NEW LIVE SESSION
-    // ================================
+    .menu button {
+      width: 100%;
+      padding: 13px;
+      margin-bottom: 8px;
+      border: 0;
+      border-radius: 10px;
+      text-align: left;
+      color: #aeb5c0;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+    }
 
-    const {
-      data: liveSession,
-      error: liveError
-    } = await supabaseClient
-      .from("live_sessions")
-      .insert({
-        title: title,
-        description: description,
-        stream_url: "",
-        thumbnail_url: "",
-        is_live: true,
-        started_at: new Date().toISOString()
-      })
-      .select()
-      .single();
+    .menu button:hover,
+    .menu button.active {
+      color: white;
+      background: #181c23;
+    }
+
+    .main {
+      margin-left: 240px;
+      padding: 45px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .eyebrow {
+      color: #777f8a;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+    }
+
+    h1 {
+      margin: 7px 0 0;
+      font-size: 32px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .admin {
+      padding: 10px 15px;
+      border: 1px solid #252a33;
+      border-radius: 10px;
+      color: #aaa;
+    }
+
+    .panel {
+      display: none;
+      padding: 30px;
+      border: 1px solid #1c2028;
+      border-radius: 15px;
+      background: #0d1015;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .card {
+      padding: 25px;
+      border: 1px solid #1c2028;
+      border-radius: 15px;
+      background: #10141a;
+    }
+
+    .card span {
+      color: #777f8a;
+      font-size: 11px;
+    }
+
+    .card h2 {
+      margin: 10px 0 0;
+      font-size: 30px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 13px;
+      border: 1px solid #252a33;
+      border-radius: 9px;
+      outline: none;
+      background: #090c10;
+      color: white;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .btn {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 9px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .primary {
+      background: white;
+      color: black;
+    }
+
+    .danger {
+      background: #2a1518;
+      color: #ff7c85;
+    }
+
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #555;
+    }
+
+    .dot.live {
+      background: white;
+      box-shadow: 0 0 15px white;
+    }
+
+    .message {
+      margin-top: 15px;
+      color: #aaa;
+      min-height: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        position: relative;
+        width: auto;
+        height: auto;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 25px;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>H</span> Habboub
+    </div>
+
+    <div class="menu">
+
+      <button class="active" onclick="showPanel('overview', this)">
+        📊 Overview
+      </button>
+
+      <button onclick="showPanel('live', this)">
+        🎥 Live
+      </button>
+
+      <button onclick="showPanel('announcements', this)">
+        📢 Announcements
+      </button>
+
+      <button onclick="showPanel('courses', this)">
+        🎓 Courses
+      </button>
+
+      <button onclick="showPanel('users', this)">
+        👥 Users
+      </button>
+
+    </div>
+
+  </aside>
 
 
-    if (liveError) {
+  <main class="main">
 
-      console.error(
-        "Create live session error:",
-        liveError
+    <div class="top">
+
+      <div>
+        <span class="eyebrow">
+          HABBOUB ADMINISTRATION
+        </span>
+
+        <h1>Dashboard</h1>
+      </div>
+
+      <div class="admin">
+        👑 Administrator
+      </div>
+
+    </div>
+
+
+    <!-- OVERVIEW -->
+
+    <section id="overview" class="panel active">
+
+      <h2>Overview</h2>
+
+      <div class="cards">
+
+        <div class="card">
+          <span>USERS</span>
+          <h2 id="usersCount">0</h2>
+        </div>
+
+        <div class="card">
+          <span>LIVE</span>
+          <h2 id="liveCount">0</h2>
+        </div>
+
+        <div class="card">
+          <span>COURSES</span>
+          <h2 id="coursesCount">0</h2>
+        </div>
+
+        <div class="card">
+          <span>ANNOUNCEMENTS</span>
+          <h2 id="announcementsCount">0</h2>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- LIVE -->
+
+    <section id="live" class="panel">
+
+      <h2>Live Control</h2>
+
+      <div class="live-status">
+
+        <div class="dot" id="liveDot"></div>
+
+        <strong id="liveStatus">
+          Offline
+        </strong>
+
+      </div>
+
+      <input
+        id="liveTitle"
+        type="text"
+        placeholder="Live title"
+      >
+
+      <textarea
+        id="liveDescription"
+        placeholder="Live description"
+      ></textarea>
+
+      <input
+        id="liveStreamUrl"
+        type="url"
+        placeholder="Stream URL / Embed URL (optional)"
+      >
+
+      <button
+        class="btn primary"
+        onclick="startLive()"
+      >
+        ▶ Start Live
+      </button>
+
+      <button
+        class="btn danger"
+        onclick="stopLive()"
+      >
+        ■ Stop Live
+      </button>
+
+      <div
+        id="liveMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+    <!-- ANNOUNCEMENTS -->
+
+    <section id="announcements" class="panel">
+
+      <h2>Create Announcement</h2>
+
+      <input
+        id="announcementTitle"
+        placeholder="Announcement title"
+      >
+
+      <textarea
+        id="announcementText"
+        placeholder="Announcement text"
+      ></textarea>
+
+      <input
+        id="announcementImage"
+        type="url"
+        placeholder="Image URL (optional)"
+      >
+
+      <input
+        id="announcementLink"
+        type="url"
+        placeholder="Link URL (optional)"
+      >
+
+      <button
+        class="btn primary"
+        onclick="publishAnnouncement()"
+      >
+        Publish Announcement
+      </button>
+
+      <div
+        id="announcementMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+    <!-- COURSES -->
+
+    <section id="courses" class="panel">
+
+      <h2>Add Course</h2>
+
+      <input
+        id="courseTitle"
+        placeholder="Course title"
+      >
+
+      <textarea
+        id="courseDescription"
+        placeholder="Course description"
+      ></textarea>
+
+      <input
+        id="courseThumbnail"
+        type="url"
+        placeholder="Thumbnail URL (optional)"
+      >
+
+      <button
+        class="btn primary"
+        onclick="addCourse()"
+      >
+        Add Course
+      </button>
+
+      <div
+        id="courseMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+    <!-- USERS -->
+
+    <section id="users" class="panel">
+
+      <h2>Users</h2>
+
+      <p style="color:#777f8a">
+        User management will be connected to Supabase.
+      </p>
+
+    </section>
+
+  </main>
+
+
+  <script>
+
+    // ==========================================
+    // SUPABASE
+    // ==========================================
+
+    const SUPABASE_URL =
+      "https://feoyjasuvrqxzhskqzye.supabase.co";
+
+    const SUPABASE_ANON_KEY =
+      "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
       );
 
-      alert(
-        "Could not start live:\n" +
-        liveError.message
+
+    // ==========================================
+    // PANEL NAVIGATION
+    // ==========================================
+
+    function showPanel(id, button) {
+
+      document
+        .querySelectorAll(".panel")
+        .forEach(panel => {
+          panel.classList.remove("active");
+        });
+
+      document
+        .getElementById(id)
+        .classList.add("active");
+
+      document
+        .querySelectorAll(".menu button")
+        .forEach(btn => {
+          btn.classList.remove("active");
+        });
+
+      button.classList.add("active");
+    }
+
+
+    // ==========================================
+    // ADMIN CHECK
+    // ==========================================
+
+    async function checkAdmin() {
+
+      const {
+        data: { user },
+        error: authError
+      } = await supabaseClient.auth.getUser();
+
+      if (authError || !user) {
+
+        alert("Please login first.");
+
+        window.location.href =
+          "login.html";
+
+        return false;
+      }
+
+
+      const {
+        data: role,
+        error
+      } = await supabaseClient
+        .from("admin_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+
+      if (error) {
+
+        console.error(error);
+
+        alert(
+          "Could not verify administrator permissions."
+        );
+
+        return false;
+      }
+
+
+      if (!role || role.role !== "admin") {
+
+        alert(
+          "This account is not an administrator."
+        );
+
+        return false;
+      }
+
+
+      return true;
+    }
+
+
+    // ==========================================
+    // START LIVE
+    // ==========================================
+
+    async function startLive() {
+
+      const allowed =
+        await checkAdmin();
+
+      if (!allowed) return;
+
+
+      const title =
+        document
+          .getElementById("liveTitle")
+          .value
+          .trim();
+
+
+      const description =
+        document
+          .getElementById("liveDescription")
+          .value
+          .trim();
+
+
+      const streamUrl =
+        document
+          .getElementById("liveStreamUrl")
+          .value
+          .trim();
+
+
+      const message =
+        document.getElementById(
+          "liveMessage"
+        );
+
+
+      if (!title) {
+
+        message.textContent =
+          "Enter a live title first.";
+
+        return;
+      }
+
+
+      // Stop previous live sessions
+
+      const {
+        error: stopError
+      } = await supabaseClient
+        .from("live_sessions")
+        .update({
+          is_live: false,
+          ended_at:
+            new Date().toISOString()
+        })
+        .eq("is_live", true);
+
+
+      if (stopError) {
+
+        console.error(stopError);
+
+        message.textContent =
+          "Could not stop previous live.";
+
+        return;
+      }
+
+
+      // Create new live session
+
+      const {
+        data,
+        error
+      } = await supabaseClient
+        .from("live_sessions")
+        .insert({
+
+          title: title,
+
+          description:
+            description || null,
+
+          stream_url:
+            streamUrl || null,
+
+          thumbnail_url:
+            null,
+
+          is_live: true,
+
+          started_at:
+            new Date().toISOString()
+
+        })
+        .select()
+        .single();
+
+
+      if (error) {
+
+        console.error(error);
+
+        message.textContent =
+          "Could not start live: " +
+          error.message;
+
+        return;
+      }
+
+
+      // Update interface
+
+      document
+        .getElementById("liveDot")
+        .classList.add("live");
+
+
+      document
+        .getElementById("liveStatus")
+        .textContent =
+          "🔴 LIVE — " + data.title;
+
+
+      message.textContent =
+        "Live started successfully.";
+
+
+      console.log(
+        "Live session:",
+        data
       );
 
-      return;
     }
 
 
-    // ================================
-    // UPDATE ADMIN PANEL
-    // ================================
+    // ==========================================
+    // STOP LIVE
+    // ==========================================
 
-    const liveDot =
-      document.getElementById("liveDot");
+    async function stopLive() {
 
-    const liveStatus =
-      document.getElementById("liveStatus");
+      const allowed =
+        await checkAdmin();
+
+      if (!allowed) return;
 
 
-    if (liveDot) {
-      liveDot.classList.add("live");
+      const {
+        error
+      } = await supabaseClient
+        .from("live_sessions")
+        .update({
+
+          is_live: false,
+
+          ended_at:
+            new Date().toISOString()
+
+        })
+        .eq("is_live", true);
+
+
+      if (error) {
+
+        console.error(error);
+
+        document
+          .getElementById("liveMessage")
+          .textContent =
+            "Could not stop live: " +
+            error.message;
+
+        return;
+      }
+
+
+      document
+        .getElementById("liveDot")
+        .classList.remove("live");
+
+
+      document
+        .getElementById("liveStatus")
+        .textContent =
+          "Offline";
+
+
+      document
+        .getElementById("liveMessage")
+        .textContent =
+          "Live stopped.";
+
     }
 
 
-    if (liveStatus) {
-      liveStatus.textContent =
-        "🔴 LIVE — " + liveSession.title;
+    // ==========================================
+    // ANNOUNCEMENT
+    // ==========================================
+
+    async function publishAnnouncement() {
+
+      const allowed =
+        await checkAdmin();
+
+      if (!allowed) return;
+
+
+      const title =
+        document
+          .getElementById(
+            "announcementTitle"
+          )
+          .value
+          .trim();
+
+
+      const content =
+        document
+          .getElementById(
+            "announcementText"
+          )
+          .value
+          .trim();
+
+
+      const imageUrl =
+        document
+          .getElementById(
+            "announcementImage"
+          )
+          .value
+          .trim();
+
+
+      const linkUrl =
+        document
+          .getElementById(
+            "announcementLink"
+          )
+          .value
+          .trim();
+
+
+      const message =
+        document.getElementById(
+          "announcementMessage"
+        );
+
+
+      if (!title || !content) {
+
+        message.textContent =
+          "Title and text are required.";
+
+        return;
+      }
+
+
+      const {
+        error
+      } = await supabaseClient
+        .from("announcements")
+        .insert({
+
+          title: title,
+
+          content: content,
+
+          image_url:
+            imageUrl || null,
+
+          link_url:
+            linkUrl || null,
+
+          is_active: true
+
+        });
+
+
+      if (error) {
+
+        console.error(error);
+
+        message.textContent =
+          "Could not publish: " +
+          error.message;
+
+        return;
+      }
+
+
+      message.textContent =
+        "Announcement published successfully.";
+
+
+      document
+        .getElementById(
+          "announcementTitle"
+        )
+        .value = "";
+
+
+      document
+        .getElementById(
+          "announcementText"
+        )
+        .value = "";
+
+
+      document
+        .getElementById(
+          "announcementImage"
+        )
+        .value = "";
+
+
+      document
+        .getElementById(
+          "announcementLink"
+        )
+        .value = "";
+
     }
 
 
-    // ================================
-    // SUCCESS
-    // ================================
+    // ==========================================
+    // COURSE
+    // ==========================================
 
-    alert(
-      "🔴 Habboub Live started successfully!"
-    );
+    async function addCourse() {
 
-    console.log(
-      "Live session created:",
-      liveSession
-    );
+      const allowed =
+        await checkAdmin();
 
-  } catch (error) {
+      if (!allowed) return;
 
-    console.error(
-      "Unexpected Start Live Error:",
-      error
-    );
 
-    alert(
-      "Something went wrong while starting the live."
-    );
+      const title =
+        document
+          .getElementById("courseTitle")
+          .value
+          .trim();
 
-  }
 
-}
+      const description =
+        document
+          .getElementById(
+            "courseDescription"
+          )
+          .value
+          .trim();
+
+
+      const thumbnail =
+        document
+          .getElementById(
+            "courseThumbnail"
+          )
+          .value
+          .trim();
+
+
+      const message =
+        document.getElementById(
+          "courseMessage"
+        );
+
+
+      if (!title) {
+
+        message.textContent =
+          "Enter a course title.";
+
+        return;
+      }
+
+
+      const {
+        error
+      } = await supabaseClient
+        .from("courses")
+        .insert({
+
+          title: title,
+
+          description:
+            description || null,
+
+          thumbnail_url:
+            thumbnail || null,
+
+          is_published: true
+
+        });
+
+
+      if (error) {
+
+        console.error(error);
+
+        message.textContent =
+          "Could not add course: " +
+          error.message;
+
+        return;
+      }
+
+
+      message.textContent =
+        "Course added successfully.";
+
+
+      document
+        .getElementById("courseTitle")
+        .value = "";
+
+
+      document
+        .getElementById(
+          "courseDescription"
+        )
+        .value = "";
+
+
+      document
+        .getElementById(
+          "courseThumbnail"
+        )
+        .value = "";
+
+    }
+
+
+    // ==========================================
+    // LOAD CURRENT LIVE STATUS
+    // ==========================================
+
+    async function loadLiveStatus() {
+
+      const {
+        data,
+        error
+      } = await supabaseClient
+        .from("live_sessions")
+        .select("*")
+        .eq("is_live", true)
+        .order(
+          "started_at",
+          {
+            ascending: false
+          }
+        )
+        .limit(1)
+        .maybeSingle();
+
+
+      if (error) {
+
+        console.error(error);
+
+        return;
+      }
+
+
+      if (!data) {
+
+        document
+          .getElementById("liveDot")
+          .classList.remove("live");
+
+        document
+          .getElementById(
+            "liveStatus"
+          )
+          .textContent =
+            "Offline";
+
+        return;
+      }
+
+
+      document
+        .getElementById("liveDot")
+        .classList.add("live");
+
+
+      document
+        .getElementById(
+          "liveStatus"
+        )
+        .textContent =
+          "🔴 LIVE — " +
+          data.title;
+
+    }
+
+
+    // ==========================================
+    // INITIALIZE
+    // ==========================================
+
+    async function initializeAdmin() {
+
+      const allowed =
+        await checkAdmin();
+
+      if (!allowed) return;
+
+      await loadLiveStatus();
+
+    }
+
+
+    initializeAdmin();
+
+  </script>
+
+</body>
+</html>
 ```
