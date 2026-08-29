@@ -1,1 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>HABBOUB | Trading Assistant</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">HABBOUB</div>
+
+        <div class="nav-links">
+            <a href="#dashboard">Dashboard</a>
+            <a href="#analysis">Analysis</a>
+            <a href="#journal">Journal</a>
+        </div>
+
+        <button class="login-btn">Login</button>
+    </nav>
+
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <span class="badge">TRADING INTELLIGENCE PLATFORM</span>
+
+            <h1>
+                Trade Smarter.<br>
+                <span>Not Harder.</span>
+            </h1>
+
+            <p>
+                HABBOUB helps traders analyze the market,
+                manage risk and make smarter trading decisions.
+            </p>
+
+            <div class="hero-buttons">
+                <button class="primary-btn" onclick="startTrading()">
+                    Start Trading
+                </button>
+
+                <button class="secondary-btn" onclick="scrollToAnalysis()">
+                    Explore Analysis
+                </button>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="dashboard-section">
+
+        <div class="section-title">
+            <span>MARKET OVERVIEW</span>
+            <h2>Live Market Dashboard</h2>
+        </div>
+
+
+        <div class="market-grid">
+
+            <div class="market-card">
+
+                <div class="card-top">
+                    <span>XAUUSD</span>
+                    <span class="green">+0.82%</span>
+                </div>
+
+                <h3>$3,425.80</h3>
+
+                <p>Gold / US Dollar</p>
+
+            </div>
+
+
+            <div class="market-card">
+
+                <div class="card-top">
+                    <span>EURUSD</span>
+                    <span class="green">+0.31%</span>
+                </div>
+
+                <h3>1.1718</h3>
+
+                <p>Euro / US Dollar</p>
+
+            </div>
+
+
+            <div class="market-card">
+
+                <div class="card-top">
+                    <span>GBPUSD</span>
+                    <span class="red">-0.18%</span>
+                </div>
+
+                <h3>1.3482</h3>
+
+                <p>British Pound / US Dollar</p>
+
+            </div>
+
+
+            <div class="market-card">
+
+                <div class="card-top">
+                    <span>BTCUSD</span>
+                    <span class="green">+1.24%</span>
+                </div>
+
+                <h3>$112,840</h3>
+
+                <p>Bitcoin / US Dollar</p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ANALYSIS -->
+    <section id="analysis" class="analysis-section">
+
+        <div class="section-title">
+            <span>SMART ANALYSIS</span>
+            <h2>Market Analysis</h2>
+        </div>
+
+
+        <div class="analysis-container">
+
+            <div class="analysis-panel">
+
+                <h3>Select Market</h3>
+
+                <select id="asset">
+
+                    <option value="XAUUSD">XAUUSD — Gold</option>
+
+                    <option value="EURUSD">EURUSD</option>
+
+                    <option value="GBPUSD">GBPUSD</option>
+
+                    <option value="BTCUSD">BTCUSD</option>
+
+                </select>
+
+
+                <h3>Timeframe</h3>
+
+                <div class="timeframes">
+
+                    <button onclick="selectTimeframe(this)">1M</button>
+                    <button onclick="selectTimeframe(this)">5M</button>
+                    <button onclick="selectTimeframe(this)">15M</button>
+                    <button onclick="selectTimeframe(this)">1H</button>
+                    <button onclick="selectTimeframe(this)">4H</button>
+
+                </div>
+
+
+                <button class="analyze-btn" onclick="analyzeMarket()">
+                    Analyze Market
+                </button>
+
+            </div>
+
+
+            <div class="signal-panel">
+
+                <span class="signal-label">CURRENT SIGNAL</span>
+
+                <div id="signal" class="signal-neutral">
+                    WAIT
+                </div>
+
+                <p id="signal-description">
+                    Select an asset and timeframe to generate analysis.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- RISK MANAGEMENT -->
+    <section class="risk-section">
+
+        <div class="section-title">
+
+            <span>RISK MANAGEMENT</span>
+
+            <h2>Protect Your Capital</h2>
+
+        </div>
+
+
+        <div class="risk-calculator">
+
+            <div class="input-group">
+
+                <label>Account Balance</label>
+
+                <input
+                    type="number"
+                    id="balance"
+                    placeholder="10000"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>Risk %</label>
+
+                <input
+                    type="number"
+                    id="risk"
+                    placeholder="1"
+                    step="0.1"
+                >
+
+            </div>
+
+
+            <button
+                class="calculate-btn"
+                onclick="calculateRisk()"
+            >
+                Calculate Risk
+            </button>
+
+
+            <div class="risk-result">
+
+                <span>Maximum Risk</span>
+
+                <strong id="risk-result">
+                    $0
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- JOURNAL -->
+    <section id="journal" class="journal-section">
+
+        <div class="section-title">
+
+            <span>TRADING JOURNAL</span>
+
+            <h2>Track Your Performance</h2>
+
+        </div>
+
+
+        <div class="journal-box">
+
+            <textarea
+                id="journalText"
+                placeholder="Write your trade notes here..."
+            ></textarea>
+
+            <button
+                class="primary-btn"
+                onclick="saveJournal()"
+            >
+                Save Journal
+            </button>
+
+            <p id="saveMessage"></p>
+
+        </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+        <div class="logo">HABBOUB</div>
+
+        <p>
+            Trading intelligence for disciplined traders.
+        </p>
+
+        <small>
+            © 2026 HABBOUB. All rights reserved.
+        </small>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
