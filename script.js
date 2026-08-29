@@ -1,112 +1,100 @@
+```javascript
 // ======================================
 // HABBOUB FRONTEND
 // SUPABASE CONNECTION
 // ======================================
 
 const SUPABASE_URL =
-"https://feoyjasuvrqxzhskqzye.supabase.co";
+  "https://feoyjasuvrqxzhskqzye.supabase.co";
 
 const SUPABASE_ANON_KEY =
-"sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+  "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
 
-const supabaseClient =
-supabase.createClient(
-SUPABASE_URL,
-SUPABASE_ANON_KEY
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
 );
+
 
 // ======================================
 // PAGE LOADER
 // ======================================
 
 window.addEventListener("load", () => {
+  setTimeout(() => {
+    const loader = document.getElementById("loader");
 
-setTimeout(() => {
-
-```
-const loader =
-  document.getElementById("loader");
-
-if (loader) {
-  loader.classList.add("hidden");
-}
-```
-
-}, 900);
-
+    if (loader) {
+      loader.classList.add("hidden");
+    }
+  }, 900);
 });
+
 
 // ======================================
 // AUTH
 // ======================================
 
 async function getCurrentUser() {
+  const {
+    data: { user },
+    error
+  } = await supabaseClient.auth.getUser();
 
-const {
-data: {
-user
-}
-} = await supabaseClient.auth.getUser();
+  if (error) {
+    console.error("Auth error:", error.message);
+    return null;
+  }
 
-return user || null;
+  return user || null;
 }
+
 
 // ======================================
 // LOGIN MODAL
 // ======================================
 
 function openLogin() {
+  closeModals();
 
-closeModals();
+  const modal = document.getElementById("loginModal");
 
-const modal =
-document.getElementById("loginModal");
-
-if (modal) {
-modal.classList.add("active");
+  if (modal) {
+    modal.classList.add("active");
+  }
 }
 
-}
 
 function openRegister() {
+  closeModals();
 
-closeModals();
+  const modal = document.getElementById("registerModal");
 
-const modal =
-document.getElementById("registerModal");
-
-if (modal) {
-modal.classList.add("active");
+  if (modal) {
+    modal.classList.add("active");
+  }
 }
 
-}
 
 function openJournal() {
+  closeModals();
 
-closeModals();
+  const modal = document.getElementById("journalModal");
 
-const modal =
-document.getElementById("journalModal");
-
-if (modal) {
-modal.classList.add("active");
+  if (modal) {
+    modal.classList.add("active");
+  }
 }
 
-}
 
 function closeModals() {
-
-document
-.querySelectorAll(".modal")
-.forEach(modal => {
-
-```
-  modal.classList.remove("active");
-
-});
-```
-
+  document
+    .querySelectorAll(".modal")
+    .forEach(modal => {
+      modal.classList.remove("active");
+    });
 }
+
 
 // ======================================
 // LOGIN
@@ -114,89 +102,96 @@ document
 
 async function loginUser() {
 
-const email =
-document
-.getElementById("loginEmail")
-.value
-.trim();
+  const emailElement =
+    document.getElementById("loginEmail");
 
-const password =
-document
-.getElementById("loginPassword")
-.value;
+  const passwordElement =
+    document.getElementById("loginPassword");
 
-const message =
-document
-.getElementById("loginMessage");
+  const message =
+    document.getElementById("loginMessage");
 
-const button =
-document
-.getElementById("loginButton");
+  const button =
+    document.getElementById("loginButton");
 
-if (!email || !password) {
 
-```
-message.textContent =
-  "Please enter your email and password.";
+  if (!emailElement || !passwordElement) {
+    console.error("Login fields not found.");
+    return;
+  }
 
-return;
-```
 
+  const email =
+    emailElement.value.trim();
+
+  const password =
+    passwordElement.value;
+
+
+  if (!email || !password) {
+
+    if (message) {
+      message.textContent =
+        "Please enter your email and password.";
+    }
+
+    return;
+  }
+
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Logging in...";
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+
+  if (error) {
+
+    if (message) {
+      message.textContent =
+        error.message;
+    }
+
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Login";
+    }
+
+    return;
+  }
+
+
+  if (message) {
+    message.textContent =
+      "Login successful.";
+  }
+
+
+  await loadUserProfile(data.user);
+
+
+  setTimeout(() => {
+
+    closeModals();
+
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Login";
+    }
+
+  }, 600);
 }
 
-button.disabled = true;
-
-button.textContent =
-"Logging in...";
-
-const {
-data,
-error
-} =
-await supabaseClient.auth.signInWithPassword({
-
-```
-  email,
-  password
-
-});
-```
-
-if (error) {
-
-```
-message.textContent =
-  error.message;
-
-button.disabled = false;
-
-button.textContent =
-  "Login";
-
-return;
-```
-
-}
-
-message.textContent =
-"Login successful.";
-
-await loadUserProfile(data.user);
-
-setTimeout(() => {
-
-```
-closeModals();
-
-button.disabled = false;
-
-button.textContent =
-  "Login";
-```
-
-}, 600);
-
-}
 
 // ======================================
 // REGISTER
@@ -204,123 +199,142 @@ button.textContent =
 
 async function registerUser() {
 
-const fullName =
-document
-.getElementById("registerName")
-.value
-.trim();
+  const nameElement =
+    document.getElementById("registerName");
 
-const email =
-document
-.getElementById("registerEmail")
-.value
-.trim();
+  const emailElement =
+    document.getElementById("registerEmail");
 
-const password =
-document
-.getElementById("registerPassword")
-.value;
+  const passwordElement =
+    document.getElementById("registerPassword");
 
-const message =
-document
-.getElementById("registerMessage");
+  const message =
+    document.getElementById("registerMessage");
 
-const button =
-document
-.getElementById("registerButton");
+  const button =
+    document.getElementById("registerButton");
 
-if (!fullName || !email || !password) {
 
-```
-message.textContent =
-  "Please complete all fields.";
-
-return;
-```
-
-}
-
-if (password.length < 6) {
-
-```
-message.textContent =
-  "Password must be at least 6 characters.";
-
-return;
-```
-
-}
-
-button.disabled = true;
-
-button.textContent =
-"Creating...";
-
-const {
-data,
-error
-} =
-await supabaseClient.auth.signUp({
-
-```
-  email,
-
-  password,
-
-  options: {
-
-    data: {
-      full_name: fullName
-    }
-
+  if (
+    !nameElement ||
+    !emailElement ||
+    !passwordElement
+  ) {
+    console.error("Registration fields not found.");
+    return;
   }
 
-});
-```
 
-if (error) {
+  const fullName =
+    nameElement.value.trim();
 
-```
-message.textContent =
-  error.message;
+  const email =
+    emailElement.value.trim();
 
-button.disabled = false;
+  const password =
+    passwordElement.value;
 
-button.textContent =
-  "Create Account";
 
-return;
-```
+  if (!fullName || !email || !password) {
 
+    if (message) {
+      message.textContent =
+        "Please complete all fields.";
+    }
+
+    return;
+  }
+
+
+  if (password.length < 6) {
+
+    if (message) {
+      message.textContent =
+        "Password must be at least 6 characters.";
+    }
+
+    return;
+  }
+
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Creating...";
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.signUp({
+
+      email,
+
+      password,
+
+      options: {
+        data: {
+          full_name: fullName
+        }
+      }
+
+    });
+
+
+  if (error) {
+
+    if (message) {
+      message.textContent =
+        error.message;
+    }
+
+    if (button) {
+      button.disabled = false;
+      button.textContent =
+        "Create Account";
+    }
+
+    return;
+  }
+
+
+  if (data.user) {
+
+    const {
+      error: profileError
+    } =
+    await supabaseClient
+      .from("profiles")
+      .upsert({
+        id: data.user.id,
+        full_name: fullName,
+        email: email
+      });
+
+
+    if (profileError) {
+      console.warn(
+        "Profile creation:",
+        profileError.message
+      );
+    }
+  }
+
+
+  if (message) {
+    message.textContent =
+      "Account created. Check your email if confirmation is required.";
+  }
+
+
+  if (button) {
+    button.disabled = false;
+    button.textContent =
+      "Create Account";
+  }
 }
 
-if (data.user) {
-
-```
-await supabaseClient
-  .from("profiles")
-  .upsert({
-
-    id: data.user.id,
-
-    full_name: fullName,
-
-    email: email
-
-  });
-```
-
-}
-
-message.textContent =
-"Account created. Check your email if confirmation is required.";
-
-button.disabled = false;
-
-button.textContent =
-"Create Account";
-
-}
 
 // ======================================
 // PROFILE
@@ -328,53 +342,60 @@ button.textContent =
 
 async function loadUserProfile(user) {
 
-if (!user) return;
+  if (!user) return;
 
-const {
-data,
-error
-} =
-await supabaseClient
-.from("profiles")
-.select("*")
-.eq("id", user.id)
-.maybeSingle();
 
-if (error) {
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
 
-```
-console.warn(
-  "Profile error:",
-  error.message
-);
 
-return;
-```
+  if (error) {
 
+    console.warn(
+      "Profile error:",
+      error.message
+    );
+
+    return;
+  }
+
+
+  if (!data) {
+
+    const {
+      error: insertError
+    } =
+    await supabaseClient
+      .from("profiles")
+      .insert({
+
+        id: user.id,
+
+        full_name:
+          user.user_metadata?.full_name || "",
+
+        email:
+          user.email || ""
+
+      });
+
+
+    if (insertError) {
+      console.warn(
+        "Profile insert:",
+        insertError.message
+      );
+    }
+  }
 }
 
-if (!data) {
-
-```
-await supabaseClient
-  .from("profiles")
-  .insert({
-
-    id: user.id,
-
-    full_name:
-      user.user_metadata?.full_name ||
-      "",
-
-    email:
-      user.email || ""
-
-  });
-```
-
-}
-
-}
 
 // ======================================
 // GUEST
@@ -382,20 +403,18 @@ await supabaseClient
 
 function enterGuest() {
 
-const dashboard =
-document.getElementById("dashboard");
+  const dashboard =
+    document.getElementById("dashboard");
 
-if (dashboard) {
+  if (dashboard) {
 
-```
-dashboard.scrollIntoView({
-  behavior: "smooth"
-});
-```
+    dashboard.scrollIntoView({
+      behavior: "smooth"
+    });
 
+  }
 }
 
-}
 
 // ======================================
 // ANNOUNCEMENTS
@@ -403,113 +422,117 @@ dashboard.scrollIntoView({
 
 async function loadAnnouncements() {
 
-const container =
-document.getElementById(
-"announcementsContainer"
-);
+  const container =
+    document.getElementById(
+      "announcementsContainer"
+    );
 
-if (!container) return;
 
-const {
-data,
-error
-} =
-await supabaseClient
-.from("announcements")
-.select("*")
-.eq("is_active", true)
-.order(
-"created_at",
-{
-ascending: false
+  if (!container) return;
+
+
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("announcements")
+    .select("*")
+    .eq("is_active", true)
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "Announcements:",
+      error.message
+    );
+
+    container.innerHTML = `
+      <div class="dashboard-card">
+        <h3>Announcements unavailable</h3>
+        <p>Unable to load announcements.</p>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    container.innerHTML = `
+      <div class="dashboard-card">
+        <h3>No announcements</h3>
+        <p>
+          There are no active announcements right now.
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  container.innerHTML =
+    data.map(item => `
+
+      <article class="dashboard-card">
+
+        <span class="eyebrow">
+          ANNOUNCEMENT
+        </span>
+
+        <h3>
+          ${escapeHTML(item.title)}
+        </h3>
+
+        <p>
+          ${escapeHTML(item.content || "")}
+        </p>
+
+        ${
+          item.image_url
+            ? `
+              <img
+                src="${escapeAttribute(item.image_url)}"
+                alt="Announcement"
+                style="
+                  max-width:100%;
+                  border-radius:12px;
+                  margin-top:15px;
+                "
+              >
+            `
+            : ""
+        }
+
+        ${
+          item.link_url
+            ? `
+              <a
+                href="${escapeAttribute(item.link_url)}"
+                target="_blank"
+                rel="noopener"
+                class="primary-btn"
+              >
+                Open
+              </a>
+            `
+            : ""
+        }
+
+      </article>
+
+    `).join("");
 }
-);
 
-if (error) {
-
-```
-console.error(
-  "Announcements:",
-  error.message
-);
-
-container.innerHTML = `
-  <div class="dashboard-card">
-    <h3>Announcements unavailable</h3>
-    <p>Unable to load announcements.</p>
-  </div>
-`;
-
-return;
-```
-
-}
-
-if (!data || data.length === 0) {
-
-```
-container.innerHTML = `
-  <div class="dashboard-card">
-    <h3>No announcements</h3>
-    <p>There are no active announcements right now.</p>
-  </div>
-`;
-
-return;
-```
-
-}
-
-container.innerHTML =
-data.map(item => `
-
-```
-  <article class="dashboard-card">
-
-    <span class="eyebrow">
-      ANNOUNCEMENT
-    </span>
-
-    <h3>
-      ${escapeHTML(item.title)}
-    </h3>
-
-    <p>
-      ${escapeHTML(item.content || "")}
-    </p>
-
-    ${
-      item.image_url
-        ? `
-          <img
-            src="${escapeAttribute(item.image_url)}"
-            alt="Announcement"
-            style="max-width:100%;border-radius:12px;margin-top:15px;"
-          >
-        `
-        : ""
-    }
-
-    ${
-      item.link_url
-        ? `
-          <a
-            href="${escapeAttribute(item.link_url)}"
-            target="_blank"
-            rel="noopener"
-            class="primary-btn">
-            Open
-          </a>
-        `
-        : ""
-    }
-
-  </article>
-
-`).join("");
-```
-
-}
 
 // ======================================
 // COURSES
@@ -517,105 +540,120 @@ data.map(item => `
 
 async function loadCourses() {
 
-const container =
-document.getElementById(
-"courseContainer"
-);
+  const container =
+    document.getElementById(
+      "courseContainer"
+    );
 
-if (!container) return;
 
-const {
-data,
-error
-} =
-await supabaseClient
-.from("courses")
-.select("*")
-.eq("is_published", true)
-.order(
-"created_at",
-{
-ascending: false
+  if (!container) return;
+
+
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("courses")
+    .select("*")
+    .eq("is_published", true)
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "Courses:",
+      error.message
+    );
+
+    container.innerHTML = `
+      <div class="course-card">
+        <h3>Courses unavailable</h3>
+        <p>Unable to load courses.</p>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    container.innerHTML = `
+      <div class="course-card">
+
+        <span class="course-number">
+          —
+        </span>
+
+        <h3>
+          No published courses
+        </h3>
+
+        <p>
+          Courses added by the administrator
+          will appear here.
+        </p>
+
+      </div>
+    `;
+
+    return;
+  }
+
+
+  container.innerHTML =
+    data.map((course, index) => `
+
+      <article class="course-card">
+
+        <span class="course-number">
+          ${String(index + 1).padStart(2, "0")}
+        </span>
+
+        ${
+          course.thumbnail_url
+            ? `
+              <img
+                src="${escapeAttribute(course.thumbnail_url)}"
+                alt="${escapeAttribute(course.title)}"
+                style="
+                  width:100%;
+                  border-radius:12px;
+                  margin:12px 0;
+                "
+              >
+            `
+            : ""
+        }
+
+        <h3>
+          ${escapeHTML(course.title)}
+        </h3>
+
+        <p>
+          ${escapeHTML(
+            course.description || ""
+          )}
+        </p>
+
+        <button
+          onclick="openCourse('${escapeAttribute(course.id)}')"
+        >
+          View Course →
+        </button>
+
+      </article>
+
+    `).join("");
 }
-);
 
-if (error) {
-
-```
-console.error(
-  "Courses:",
-  error.message
-);
-
-container.innerHTML = `
-  <div class="course-card">
-    <h3>Courses unavailable</h3>
-    <p>Unable to load courses.</p>
-  </div>
-`;
-
-return;
-```
-
-}
-
-if (!data || data.length === 0) {
-
-```
-container.innerHTML = `
-  <div class="course-card">
-    <span class="course-number">—</span>
-    <h3>No published courses</h3>
-    <p>Courses added by the administrator will appear here.</p>
-  </div>
-`;
-
-return;
-```
-
-}
-
-container.innerHTML =
-data.map((course, index) => `
-
-```
-  <article class="course-card">
-
-    <span class="course-number">
-      ${String(index + 1).padStart(2, "0")}
-    </span>
-
-    ${
-      course.thumbnail_url
-        ? `
-          <img
-            src="${escapeAttribute(course.thumbnail_url)}"
-            alt="${escapeAttribute(course.title)}"
-            style="width:100%;border-radius:12px;margin:12px 0;"
-          >
-        `
-        : ""
-    }
-
-    <h3>
-      ${escapeHTML(course.title)}
-    </h3>
-
-    <p>
-      ${escapeHTML(course.description || "")}
-    </p>
-
-    <button
-      onclick="openCourse('${course.id}')">
-      View Course →
-    </button>
-
-  </article>
-
-`).join("");
-```
-
-}
 
 // ======================================
 // COURSE VIEW
@@ -623,56 +661,63 @@ data.map((course, index) => `
 
 async function openCourse(courseId) {
 
-const {
-data,
-error
-} =
-await supabaseClient
-.from("course_lessons")
-.select("*")
-.eq("course_id", courseId)
-.order(
-"lesson_order",
-{
-ascending: true
+  if (!courseId) return;
+
+
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("course_lessons")
+    .select("*")
+    .eq("course_id", courseId)
+    .order(
+      "lesson_order",
+      {
+        ascending: true
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "Course lessons:",
+      error.message
+    );
+
+    alert(
+      "Unable to load course lessons."
+    );
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    alert(
+      "This course does not have lessons yet."
+    );
+
+    return;
+  }
+
+
+  const lessons =
+    data.map(
+      lesson =>
+        `${lesson.lesson_order}. ${lesson.title}`
+    ).join("\n");
+
+
+  alert(
+    "Course lessons:\n\n" +
+    lessons
+  );
 }
-);
 
-if (error) {
-
-```
-alert(
-  "Unable to load course lessons."
-);
-
-return;
-```
-
-}
-
-if (!data || data.length === 0) {
-
-```
-alert(
-  "This course does not have lessons yet."
-);
-
-return;
-```
-
-}
-
-const lessons =
-data.map(lesson =>
-`${lesson.lesson_order}. ${lesson.title}`
-).join("\n");
-
-alert(
-"Course lessons:\n\n" +
-lessons
-);
-
-}
 
 // ======================================
 // LIVE
@@ -680,109 +725,118 @@ lessons
 
 async function loadLive() {
 
-const {
-data,
-error
-} =
-await supabaseClient
-.from("live_sessions")
-.select("*")
-.eq("is_live", true)
-.order(
-"started_at",
-{
-ascending: false
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("live_sessions")
+    .select("*")
+    .eq("is_live", true)
+    .order(
+      "started_at",
+      {
+        ascending: false
+      }
+    )
+    .limit(1)
+    .maybeSingle();
+
+
+  const indicator =
+    document.getElementById(
+      "liveIndicator"
+    );
+
+  const title =
+    document.getElementById(
+      "liveTitleDisplay"
+    );
+
+  const description =
+    document.getElementById(
+      "liveDescriptionDisplay"
+    );
+
+  const screen =
+    document.getElementById(
+      "liveScreen"
+    );
+
+
+  if (error) {
+
+    console.error(
+      "Live:",
+      error.message
+    );
+
+    return;
+  }
+
+
+  if (!data) {
+
+    if (indicator) {
+      indicator.textContent =
+        "● OFFLINE";
+    }
+
+    if (title) {
+      title.textContent =
+        "No live broadcast";
+    }
+
+    if (description) {
+      description.textContent =
+        "The administrator can start a live session from the Admin Panel.";
+    }
+
+    return;
+  }
+
+
+  if (indicator) {
+    indicator.textContent =
+      "● LIVE";
+  }
+
+
+  if (title) {
+    title.textContent =
+      data.title || "Habboub Live";
+  }
+
+
+  if (description) {
+    description.textContent =
+      data.description || "";
+  }
+
+
+  if (
+    screen &&
+    data.stream_url
+  ) {
+
+    screen.innerHTML = `
+
+      <iframe
+        src="${escapeAttribute(data.stream_url)}"
+        style="
+          width:100%;
+          height:100%;
+          border:0;
+          border-radius:15px;
+        "
+        allow="autoplay; fullscreen"
+        allowfullscreen>
+      </iframe>
+
+    `;
+  }
 }
-)
-.limit(1)
-.maybeSingle();
 
-const indicator =
-document.getElementById(
-"liveIndicator"
-);
-
-const title =
-document.getElementById(
-"liveTitleDisplay"
-);
-
-const description =
-document.getElementById(
-"liveDescriptionDisplay"
-);
-
-const screen =
-document.getElementById(
-"liveScreen"
-);
-
-if (error) {
-
-```
-console.error(
-  "Live:",
-  error.message
-);
-
-return;
-```
-
-}
-
-if (!data) {
-
-```
-if (indicator)
-  indicator.textContent =
-    "● OFFLINE";
-
-if (title)
-  title.textContent =
-    "No live broadcast";
-
-if (description)
-  description.textContent =
-    "The administrator can start a live session from the Admin Panel.";
-
-return;
-```
-
-}
-
-if (indicator)
-indicator.textContent =
-"● LIVE";
-
-if (title)
-title.textContent =
-data.title;
-
-if (description)
-description.textContent =
-data.description || "";
-
-if (
-screen &&
-data.stream_url
-) {
-
-```
-screen.innerHTML = `
-
-  <iframe
-    src="${escapeAttribute(data.stream_url)}"
-    style="width:100%;height:100%;border:0;border-radius:15px;"
-    allow="autoplay; fullscreen"
-    allowfullscreen>
-  </iframe>
-
-`;
-```
-
-}
-
-}
 
 // ======================================
 // LIVE REALTIME
@@ -790,26 +844,22 @@ screen.innerHTML = `
 
 function subscribeToLive() {
 
-supabaseClient
-.channel("live-sessions")
-.on(
-"postgres_changes",
-{
-event: "*",
-schema: "public",
-table: "live_sessions"
-},
-() => {
-
-```
-    loadLive();
-
-  }
-)
-.subscribe();
-```
-
+  supabaseClient
+    .channel("live-sessions")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "live_sessions"
+      },
+      () => {
+        loadLive();
+      }
+    )
+    .subscribe();
 }
+
 
 // ======================================
 // ANNOUNCEMENTS REALTIME
@@ -817,26 +867,22 @@ table: "live_sessions"
 
 function subscribeToAnnouncements() {
 
-supabaseClient
-.channel("announcements")
-.on(
-"postgres_changes",
-{
-event: "*",
-schema: "public",
-table: "announcements"
-},
-() => {
-
-```
-    loadAnnouncements();
-
-  }
-)
-.subscribe();
-```
-
+  supabaseClient
+    .channel("announcements")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "announcements"
+      },
+      () => {
+        loadAnnouncements();
+      }
+    )
+    .subscribe();
 }
+
 
 // ======================================
 // COURSES REALTIME
@@ -844,26 +890,22 @@ table: "announcements"
 
 function subscribeToCourses() {
 
-supabaseClient
-.channel("courses")
-.on(
-"postgres_changes",
-{
-event: "*",
-schema: "public",
-table: "courses"
-},
-() => {
-
-```
-    loadCourses();
-
-  }
-)
-.subscribe();
-```
-
+  supabaseClient
+    .channel("courses")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "courses"
+      },
+      () => {
+        loadCourses();
+      }
+    )
+    .subscribe();
 }
+
 
 // ======================================
 // MARKET ANALYSIS
@@ -871,123 +913,134 @@ table: "courses"
 
 async function loadMarketAnalysis() {
 
-const {
-data,
-error
-} =
-await supabaseClient
-.from("market_analysis")
-.select("*")
-.eq("symbol", "XAUUSD")
-.order(
-"created_at",
-{
-ascending: false
-}
-)
-.limit(1)
-.maybeSingle();
-
-if (error) {
-
-```
-console.error(
-  "Market analysis:",
-  error.message
-);
-
-return;
-```
-
-}
-
-if (!data) return;
-
-setText(
-"marketTradeStatus",
-data.trade_status || "WAIT"
-);
-
-setText(
-"marketCondition",
-data.market_condition || "Unknown"
-);
-
-setText(
-"marketRisk",
-data.risk_level || "--"
-);
-
-setText(
-"marketConfidence",
-data.confidence ?? "--"
-);
-
-setText(
-"marketAnalysisText",
-data.analysis || ""
-);
-
-setText(
-"analysisSymbol",
-data.symbol || "XAUUSD"
-);
-
-setText(
-"analysisStatus",
-data.trade_status || "WAIT"
-);
-
-setText(
-"analysisDescription",
-data.analysis || ""
-);
-
-setText(
-"htfBias",
-data.bias || "--"
-);
-
-setText(
-"tradeDecision",
-data.trade_status || "WAIT"
-);
-
-setText(
-"tradeDecisionText",
-data.analysis || ""
-);
-
-const confidence =
-Number(data.confidence) || 0;
-
-const meter =
-document.getElementById(
-"riskMeter"
-);
-
-if (meter) {
-
-```
-meter.style.width =
-  Math.min(
-    100,
-    Math.max(
-      0,
-      confidence
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("market_analysis")
+    .select("*")
+    .eq("symbol", "XAUUSD")
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
     )
-  ) + "%";
-```
+    .limit(1)
+    .maybeSingle();
 
+
+  if (error) {
+
+    console.error(
+      "Market analysis:",
+      error.message
+    );
+
+    return;
+  }
+
+
+  if (!data) return;
+
+
+  setText(
+    "marketTradeStatus",
+    data.trade_status || "WAIT"
+  );
+
+
+  setText(
+    "marketCondition",
+    data.market_condition || "Unknown"
+  );
+
+
+  setText(
+    "marketRisk",
+    data.risk_level || "--"
+  );
+
+
+  setText(
+    "marketConfidence",
+    data.confidence ?? "--"
+  );
+
+
+  setText(
+    "marketAnalysisText",
+    data.analysis || ""
+  );
+
+
+  setText(
+    "analysisSymbol",
+    data.symbol || "XAUUSD"
+  );
+
+
+  setText(
+    "analysisStatus",
+    data.trade_status || "WAIT"
+  );
+
+
+  setText(
+    "analysisDescription",
+    data.analysis || ""
+  );
+
+
+  setText(
+    "htfBias",
+    data.bias || "--"
+  );
+
+
+  setText(
+    "tradeDecision",
+    data.trade_status || "WAIT"
+  );
+
+
+  setText(
+    "tradeDecisionText",
+    data.analysis || ""
+  );
+
+
+  const confidence =
+    Number(data.confidence) || 0;
+
+
+  const meter =
+    document.getElementById(
+      "riskMeter"
+    );
+
+
+  if (meter) {
+
+    meter.style.width =
+      Math.min(
+        100,
+        Math.max(
+          0,
+          confidence
+        )
+      ) + "%";
+  }
+
+
+  setText(
+    "riskLevelText",
+    "Risk: " +
+    (data.risk_level || "--")
+  );
 }
 
-setText(
-"riskLevelText",
-"Risk: " +
-(data.risk_level || "--")
-);
-
-}
 
 // ======================================
 // JOURNAL
@@ -995,593 +1048,752 @@ setText(
 
 async function loadJournal() {
 
-const user =
-await getCurrentUser();
+  const user =
+    await getCurrentUser();
 
-if (!user) {
 
-```
-setText(
-  "journalWinRate",
-  "--"
-);
+  if (!user) {
 
-setText(
-  "journalProfitFactor",
-  "--"
-);
+    setText(
+      "journalWinRate",
+      "--"
+    );
 
-setText(
-  "journalAverageR",
-  "--"
-);
+    setText(
+      "journalProfitFactor",
+      "--"
+    );
 
-setText(
-  "journalDrawdown",
-  "--"
-);
+    setText(
+      "journalAverageR",
+      "--"
+    );
 
-return;
-```
+    setText(
+      "journalDrawdown",
+      "--"
+    );
 
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("trading_journal")
+    .select("*")
+    .eq("user_id", user.id)
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "Journal:",
+      error.message
+    );
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    renderJournalStats([]);
+
+    renderJournalTrades([]);
+
+    return;
+  }
+
+
+  renderJournalStats(data);
+
+  renderJournalTrades(data);
 }
 
-const {
-data,
-error
-} =
-await supabaseClient
-.from("trading_journal")
-.select("*")
-.eq("user_id", user.id)
-.order(
-"created_at",
-{
-ascending: false
-}
-);
 
-if (error) {
-
-```
-console.error(
-  "Journal:",
-  error.message
-);
-
-return;
-```
-
-}
-
-if (!data || data.length === 0) {
-
-```
-renderJournalStats([]);
-
-return;
-```
-
-}
-
-renderJournalStats(data);
-
-renderJournalTrades(data);
-
-}
+// ======================================
+// JOURNAL STATS
+// ======================================
 
 function renderJournalStats(trades) {
 
-if (!trades.length) {
+  if (!trades.length) {
 
-```
-setText(
-  "journalWinRate",
-  "0%"
-);
+    setText(
+      "journalWinRate",
+      "0%"
+    );
 
-setText(
-  "journalProfitFactor",
-  "0"
-);
+    setText(
+      "journalProfitFactor",
+      "0"
+    );
 
-setText(
-  "journalAverageR",
-  "0"
-);
+    setText(
+      "journalAverageR",
+      "0"
+    );
 
-setText(
-  "journalDrawdown",
-  "0"
-);
+    setText(
+      "journalDrawdown",
+      "0"
+    );
 
-return;
-```
+    return;
+  }
 
+
+  const results =
+    trades.map(
+      trade =>
+        Number(trade.result) || 0
+    );
+
+
+  const wins =
+    results.filter(
+      result => result > 0
+    ).length;
+
+
+  const winRate =
+    (wins / results.length) * 100;
+
+
+  const grossProfit =
+    results
+      .filter(
+        result => result > 0
+      )
+      .reduce(
+        (sum, result) =>
+          sum + result,
+        0
+      );
+
+
+  const grossLoss =
+    Math.abs(
+      results
+        .filter(
+          result => result < 0
+        )
+        .reduce(
+          (sum, result) =>
+            sum + result,
+          0
+        )
+    );
+
+
+  const profitFactor =
+    grossLoss === 0
+      ? grossProfit
+      : grossProfit / grossLoss;
+
+
+  const average =
+    results.reduce(
+      (sum, result) =>
+        sum + result,
+      0
+    ) / results.length;
+
+
+  setText(
+    "journalWinRate",
+    winRate.toFixed(1) + "%"
+  );
+
+
+  setText(
+    "journalProfitFactor",
+    profitFactor.toFixed(2)
+  );
+
+
+  setText(
+    "journalAverageR",
+    average.toFixed(2)
+  );
+
+
+  setText(
+    "journalDrawdown",
+    "--"
+  );
 }
 
-const results =
-trades.map(
-t => Number(t.result) || 0
-);
 
-const wins =
-results.filter(
-r => r > 0
-).length;
-
-const winRate =
-(wins / results.length) * 100;
-
-const grossProfit =
-results
-.filter(r => r > 0)
-.reduce(
-(sum, r) => sum + r,
-0
-);
-
-const grossLoss =
-Math.abs(
-results
-.filter(r => r < 0)
-.reduce(
-(sum, r) => sum + r,
-0
-)
-);
-
-const profitFactor =
-grossLoss === 0
-? grossProfit
-: grossProfit / grossLoss;
-
-const average =
-results.reduce(
-(sum, r) => sum + r,
-0
-) / results.length;
-
-setText(
-"journalWinRate",
-winRate.toFixed(1) + "%"
-);
-
-setText(
-"journalProfitFactor",
-profitFactor.toFixed(2)
-);
-
-setText(
-"journalAverageR",
-average.toFixed(2)
-);
-
-setText(
-"journalDrawdown",
-"--"
-);
-
-}
+// ======================================
+// JOURNAL TRADES
+// ======================================
 
 function renderJournalTrades(trades) {
 
-const container =
-document.getElementById(
-"journalTrades"
-);
+  const container =
+    document.getElementById(
+      "journalTrades"
+    );
 
-if (!container) return;
 
-container.innerHTML =
-trades.slice(0, 10)
-.map(trade => `
+  if (!container) return;
 
-```
-    <div class="dashboard-card">
 
-      <span class="eyebrow">
-        ${escapeHTML(trade.journal_type || "TRADE")}
-      </span>
+  if (!trades.length) {
 
-      <h3>
-        ${escapeHTML(trade.symbol || "--")}
-      </h3>
+    container.innerHTML = `
+      <div class="dashboard-card">
+        <h3>No trades yet</h3>
+        <p>
+          Your journal trades will appear here.
+        </p>
+      </div>
+    `;
 
-      <p>
-        ${escapeHTML(trade.direction || "--")}
-      </p>
+    return;
+  }
 
-      <strong>
-        Result:
-        ${trade.result ?? "--"}
-      </strong>
 
-    </div>
+  container.innerHTML =
+    trades
+      .slice(0, 10)
+      .map(trade => `
 
-  `)
-  .join("");
-```
+        <div class="dashboard-card">
 
+          <span class="eyebrow">
+            ${escapeHTML(
+              trade.journal_type || "TRADE"
+            )}
+          </span>
+
+          <h3>
+            ${escapeHTML(
+              trade.symbol || "--"
+            )}
+          </h3>
+
+          <p>
+            ${escapeHTML(
+              trade.direction || "--"
+            )}
+          </p>
+
+          <strong>
+            Result:
+            ${escapeHTML(
+              trade.result ?? "--"
+            )}
+          </strong>
+
+        </div>
+
+      `)
+      .join("");
 }
 
+
 // ======================================
-// SAVE JOURNAL
+// SAVE JOURNAL TRADE
 // ======================================
 
 async function saveJournalTrade() {
 
-const user =
-await getCurrentUser();
+  const user =
+    await getCurrentUser();
 
-const message =
-document.getElementById(
-"journalMessage"
-);
 
-if (!user) {
+  const message =
+    document.getElementById(
+      "journalMessage"
+    );
 
-```
-message.textContent =
-  "Please login before adding a trade.";
 
-return;
-```
+  if (!user) {
 
+    if (message) {
+      message.textContent =
+        "Please login before adding a trade.";
+    }
+
+    return;
+  }
+
+
+  const symbolElement =
+    document.getElementById(
+      "journalSymbol"
+    );
+
+  const directionElement =
+    document.getElementById(
+      "journalDirection"
+    );
+
+  const entryElement =
+    document.getElementById(
+      "journalEntry"
+    );
+
+  const stopElement =
+    document.getElementById(
+      "journalStop"
+    );
+
+  const takeElement =
+    document.getElementById(
+      "journalTake"
+    );
+
+  const resultElement =
+    document.getElementById(
+      "journalResult"
+    );
+
+  const notesElement =
+    document.getElementById(
+      "journalNotes"
+    );
+
+
+  if (
+    !symbolElement ||
+    !directionElement
+  ) {
+
+    if (message) {
+      message.textContent =
+        "Journal form is not available.";
+    }
+
+    return;
+  }
+
+
+  const symbol =
+    symbolElement.value.trim();
+
+  const direction =
+    directionElement.value.trim();
+
+
+  const entry =
+    Number(
+      entryElement?.value
+    );
+
+
+  const stop =
+    Number(
+      stopElement?.value
+    );
+
+
+  const take =
+    Number(
+      takeElement?.value
+    );
+
+
+  const result =
+    Number(
+      resultElement?.value
+    );
+
+
+  const notes =
+    notesElement
+      ? notesElement.value.trim()
+      : "";
+
+
+  const {
+    error
+  } =
+  await supabaseClient
+    .from("trading_journal")
+    .insert({
+
+      user_id:
+        user.id,
+
+      journal_type:
+        "manual",
+
+      symbol,
+
+      direction,
+
+      entry_price:
+        Number.isFinite(entry)
+          ? entry
+          : null,
+
+      stop_loss:
+        Number.isFinite(stop)
+          ? stop
+          : null,
+
+      take_profit:
+        Number.isFinite(take)
+          ? take
+          : null,
+
+      result:
+        Number.isFinite(result)
+          ? result
+          : null,
+
+      notes
+
+    });
+
+
+  if (error) {
+
+    if (message) {
+      message.textContent =
+        error.message;
+    }
+
+    return;
+  }
+
+
+  if (message) {
+    message.textContent =
+      "Trade saved successfully.";
+  }
+
+
+  await loadJournal();
 }
 
-const symbol =
-document
-.getElementById("journalSymbol")
-.value
-.trim();
-
-const direction =
-document
-.getElementById("journalDirection")
-.value
-.trim();
-
-const entry =
-Number(
-document
-.getElementById("journalEntry")
-.value
-);
-
-const stop =
-Number(
-document
-.getElementById("journalStop")
-.value
-);
-
-const take =
-Number(
-document
-.getElementById("journalTake")
-.value
-);
-
-const result =
-Number(
-document
-.getElementById("journalResult")
-.value
-);
-
-const notes =
-document
-.getElementById("journalNotes")
-.value
-.trim();
-
-const {
-error
-} =
-await supabaseClient
-.from("trading_journal")
-.insert({
-
-```
-    user_id: user.id,
-
-    journal_type:
-      "manual",
-
-    symbol,
-
-    direction,
-
-    entry_price:
-      Number.isFinite(entry)
-        ? entry
-        : null,
-
-    stop_loss:
-      Number.isFinite(stop)
-        ? stop
-        : null,
-
-    take_profit:
-      Number.isFinite(take)
-        ? take
-        : null,
-
-    result:
-      Number.isFinite(result)
-        ? result
-        : null,
-
-    notes
-
-  });
-```
-
-if (error) {
-
-```
-message.textContent =
-  error.message;
-
-return;
-```
-
-}
-
-message.textContent =
-"Trade saved successfully.";
-
-await loadJournal();
-
-}
 
 // ======================================
-// AI
+// AI WINDOW
 // ======================================
 
 function openAI() {
 
-const windowElement =
-document.getElementById(
-"aiWindow"
-);
+  const windowElement =
+    document.getElementById(
+      "aiWindow"
+    );
 
-if (windowElement) {
 
-```
-windowElement.classList.add(
-  "active"
-);
-```
+  if (windowElement) {
 
+    windowElement.classList.add(
+      "active"
+    );
+
+  }
 }
 
-}
 
 function closeAI() {
 
-const windowElement =
-document.getElementById(
-"aiWindow"
-);
+  const windowElement =
+    document.getElementById(
+      "aiWindow"
+    );
 
-if (windowElement) {
 
-```
-windowElement.classList.remove(
-  "active"
-);
-```
+  if (windowElement) {
 
+    windowElement.classList.remove(
+      "active"
+    );
+
+  }
 }
 
-}
 
 function handleAI(event) {
 
-if (event.key === "Enter") {
+  if (
+    event.key === "Enter"
+  ) {
 
-```
-sendAI();
-```
+    sendAI();
 
+  }
 }
 
-}
+
+// ======================================
+// AI PLACEHOLDER
+// ======================================
 
 async function sendAI() {
 
-const input =
-document.getElementById(
-"aiInput"
-);
+  const input =
+    document.getElementById(
+      "aiInput"
+    );
 
-const messages =
-document.getElementById(
-"aiMessages"
-);
 
-const text =
-input.value.trim();
+  const messages =
+    document.getElementById(
+      "aiMessages"
+    );
 
-if (!text) return;
 
-const userMessage =
-document.createElement("div");
+  if (!input || !messages) return;
 
-userMessage.className =
-"ai-message";
 
-userMessage.textContent =
-text;
+  const text =
+    input.value.trim();
 
-messages.appendChild(
-userMessage
-);
 
-input.value = "";
+  if (!text) return;
 
-const response =
-document.createElement("div");
 
-response.className =
-"ai-message";
+  const userMessage =
+    document.createElement(
+      "div"
+    );
 
-response.textContent =
-"Habboub AI backend is not connected yet. The interface is ready, but a real AI API must be connected through a secure backend.";
 
-messages.appendChild(
-response
-);
+  userMessage.className =
+    "ai-message";
 
-messages.scrollTop =
-messages.scrollHeight;
 
+  userMessage.textContent =
+    text;
+
+
+  messages.appendChild(
+    userMessage
+  );
+
+
+  input.value = "";
+
+
+  const response =
+    document.createElement(
+      "div"
+    );
+
+
+  response.className =
+    "ai-message";
+
+
+  response.textContent =
+    "Habboub AI is being connected to the secure backend. The AI interface is ready.";
+
+
+  messages.appendChild(
+    response
+  );
+
+
+  messages.scrollTop =
+    messages.scrollHeight;
 }
 
+
 // ======================================
-// UTILITIES
+// UTILITY: SET TEXT
 // ======================================
 
 function setText(id, value) {
 
-const element =
-document.getElementById(id);
+  const element =
+    document.getElementById(id);
 
-if (element) {
 
-```
-element.textContent =
-  value;
-```
-
+  if (element) {
+    element.textContent =
+      value;
+  }
 }
 
-}
+
+// ======================================
+// SECURITY: ESCAPE HTML
+// ======================================
 
 function escapeHTML(value) {
 
-return String(value ?? "")
-.replaceAll("&", "&")
-.replaceAll("<", "<")
-.replaceAll(">", ">")
-.replaceAll('"', """)
-.replaceAll("'", "'");
-
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
+
 
 function escapeAttribute(value) {
 
-return escapeHTML(value);
-
+  return escapeHTML(value);
 }
+
 
 // ======================================
 // MODAL OUTSIDE CLICK
 // ======================================
 
 document
-.querySelectorAll(".modal")
-.forEach(modal => {
+  .querySelectorAll(".modal")
+  .forEach(modal => {
 
-```
-modal.addEventListener(
-  "click",
-  event => {
+    modal.addEventListener(
+      "click",
+      event => {
 
-    if (
-      event.target === modal
-    ) {
+        if (
+          event.target === modal
+        ) {
 
-      closeModals();
+          closeModals();
 
-    }
+        }
 
-  }
-);
-```
+      }
+    );
 
-});
+  });
+
 
 // ======================================
 // SCROLL ANIMATION
 // ======================================
 
-const observer =
-new IntersectionObserver(
-entries => {
+if (
+  "IntersectionObserver" in window
+) {
 
-```
-  entries.forEach(entry => {
+  const observer =
+    new IntersectionObserver(
+      entries => {
+
+        entries.forEach(
+          entry => {
+
+            if (
+              entry.isIntersecting
+            ) {
+
+              entry.target.style.opacity =
+                "1";
+
+              entry.target.style.transform =
+                "translateY(0)";
+
+            }
+
+          }
+        );
+
+      },
+      {
+        threshold: 0.1
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      ".dashboard-card, .asset-card, .course-card, .journal-stat"
+    )
+    .forEach(element => {
+
+      element.style.opacity =
+        "0";
+
+      element.style.transform =
+        "translateY(25px)";
+
+      element.style.transition =
+        "opacity .6s ease, transform .6s ease";
+
+      observer.observe(
+        element
+      );
+
+    });
+}
+
+
+// ======================================
+// AUTH STATE
+// ======================================
+
+supabaseClient.auth.onAuthStateChange(
+  async (event, session) => {
 
     if (
-      entry.isIntersecting
+      session &&
+      session.user
     ) {
 
-      entry.target.style.opacity =
-        "1";
+      await loadUserProfile(
+        session.user
+      );
 
-      entry.target.style.transform =
-        "translateY(0)";
+      await loadJournal();
 
     }
 
-  });
-
-},
-{
-  threshold: 0.1
-}
-```
-
+  }
 );
 
-document
-.querySelectorAll(
-".dashboard-card, .asset-card, .course-card, .journal-stat"
-)
-.forEach(element => {
-
-```
-element.style.opacity =
-  "0";
-
-element.style.transform =
-  "translateY(25px)";
-
-element.style.transition =
-  "opacity .6s ease, transform .6s ease";
-
-observer.observe(
-  element
-);
-```
-
-});
 
 // ======================================
-// INITIALIZE
+// INITIALIZE HABBOUB
 // ======================================
 
 async function initializeHabboub() {
 
-await loadAnnouncements();
+  try {
 
-await loadCourses();
+    await loadAnnouncements();
 
-await loadLive();
+    await loadCourses();
 
-await loadMarketAnalysis();
+    await loadLive();
 
-await loadJournal();
+    await loadMarketAnalysis();
 
-subscribeToLive();
+    await loadJournal();
 
-subscribeToAnnouncements();
+    subscribeToLive();
 
-subscribeToCourses();
+    subscribeToAnnouncements();
+
+    subscribeToCourses();
+
+  } catch (error) {
+
+    console.error(
+      "Habboub initialization error:",
+      error
+    );
+
+  }
 
 }
 
+
+// ======================================
+// START
+// ======================================
+
 initializeHabboub();
+```
