@@ -1,7 +1,7 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -10,15 +10,110 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
       background: #07090d;
       color: white;
+      min-height: 100vh;
+    }
+
+    /* ================= LOGIN ================= */
+
+    #loginPage {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      padding: 35px;
+      border: 1px solid #20242c;
+      border-radius: 18px;
+      background: #0d1015;
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-logo span {
+      display: inline-grid;
+      place-items: center;
+      width: 55px;
+      height: 55px;
+      border-radius: 15px;
+      background: white;
+      color: black;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .login-logo h1 {
+      font-size: 25px;
+    }
+
+    .login-logo p {
+      color: #777f8a;
+      margin-top: 7px;
+      font-size: 13px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid #252a33;
+      border-radius: 10px;
+      background: #090c10;
+      color: white;
+      outline: none;
+    }
+
+    .login-box input:focus {
+      border-color: #555d68;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: white;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .login-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    #loginMessage {
+      margin-top: 15px;
+      color: #ff8585;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* ================= ADMIN ================= */
+
+    #adminPage {
+      display: none;
     }
 
     .sidebar {
@@ -28,21 +123,21 @@
       width: 240px;
       height: 100vh;
       padding: 30px 20px;
-      background: #0b0e13;
       border-right: 1px solid #1c2028;
+      background: #0b0e13;
     }
 
     .logo {
       font-size: 24px;
       font-weight: bold;
-      margin-bottom: 45px;
+      margin-bottom: 50px;
     }
 
     .logo span {
       display: inline-grid;
       place-items: center;
-      width: 36px;
-      height: 36px;
+      width: 35px;
+      height: 35px;
       margin-right: 8px;
       border-radius: 10px;
       background: white;
@@ -59,13 +154,17 @@
       color: #aeb5c0;
       background: transparent;
       cursor: pointer;
-      font-size: 14px;
     }
 
     .menu button:hover,
     .menu button.active {
       color: white;
       background: #181c23;
+    }
+
+    .logout {
+      margin-top: 30px;
+      color: #ff7777 !important;
     }
 
     .main {
@@ -77,22 +176,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
-    }
-
-    .eyebrow {
-      color: #777f8a;
-      font-size: 11px;
-      letter-spacing: 1.5px;
+      margin-bottom: 35px;
     }
 
     h1 {
-      margin: 7px 0 0;
       font-size: 32px;
-    }
-
-    h2 {
-      margin-top: 0;
     }
 
     .admin {
@@ -114,27 +202,8 @@
       display: block;
     }
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
-    }
-
-    .card {
-      padding: 25px;
-      border: 1px solid #1c2028;
-      border-radius: 15px;
-      background: #10141a;
-    }
-
-    .card span {
-      color: #777f8a;
-      font-size: 11px;
-    }
-
-    .card h2 {
-      margin: 10px 0 0;
-      font-size: 30px;
+    .panel h2 {
+      margin-bottom: 25px;
     }
 
     input,
@@ -147,7 +216,6 @@
       outline: none;
       background: #090c10;
       color: white;
-      font-family: inherit;
     }
 
     textarea {
@@ -174,6 +242,29 @@
       color: #ff7c85;
     }
 
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .card {
+      padding: 25px;
+      border: 1px solid #1c2028;
+      border-radius: 15px;
+      background: #0d1015;
+    }
+
+    .card span {
+      color: #777f8a;
+      font-size: 12px;
+    }
+
+    .card h2 {
+      margin-top: 10px;
+      font-size: 30px;
+    }
+
     .live-status {
       display: flex;
       align-items: center;
@@ -193,32 +284,99 @@
       box-shadow: 0 0 15px white;
     }
 
-    .message {
+    .item {
+      padding: 18px;
       margin-top: 15px;
-      color: #aaa;
-      min-height: 20px;
+      border: 1px solid #1c2028;
+      border-radius: 12px;
+      background: #090c10;
     }
 
-    @media (max-width: 900px) {
+    .item h3 {
+      margin-bottom: 8px;
+    }
+
+    .item p {
+      color: #aaa;
+      line-height: 1.6;
+    }
+
+    @media(max-width:900px) {
+
       .sidebar {
         position: relative;
-        width: auto;
+        width: 100%;
         height: auto;
       }
 
       .main {
         margin-left: 0;
-        padding: 25px;
+        padding: 20px;
       }
 
       .cards {
         grid-template-columns: repeat(2, 1fr);
       }
+
     }
+
   </style>
+
 </head>
 
 <body>
+
+<!-- ================================================= -->
+<!-- LOGIN PAGE -->
+<!-- ================================================= -->
+
+<div id="loginPage">
+
+  <div class="login-box">
+
+    <div class="login-logo">
+
+      <span>H</span>
+
+      <h1>Habboub Admin</h1>
+
+      <p>Administrator Login</p>
+
+    </div>
+
+    <input
+      id="loginEmail"
+      type="email"
+      value="yazanhabboub888@gmail.com"
+      placeholder="Admin Email"
+    >
+
+    <input
+      id="loginPassword"
+      type="password"
+      placeholder="Password"
+    >
+
+    <button
+      id="loginButton"
+      class="login-btn"
+      onclick="adminLogin()"
+    >
+      Login
+    </button>
+
+    <div id="loginMessage"></div>
+
+  </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- ADMIN PAGE -->
+<!-- ================================================= -->
+
+<div id="adminPage">
 
   <aside class="sidebar">
 
@@ -228,24 +386,42 @@
 
     <div class="menu">
 
-      <button class="active" onclick="showPanel('overview', this)">
+      <button
+        class="active"
+        onclick="showPanel('overview', this)"
+      >
         📊 Overview
       </button>
 
-      <button onclick="showPanel('live', this)">
+      <button
+        onclick="showPanel('live', this)"
+      >
         🎥 Live
       </button>
 
-      <button onclick="showPanel('announcements', this)">
+      <button
+        onclick="showPanel('announcements', this)"
+      >
         📢 Announcements
       </button>
 
-      <button onclick="showPanel('courses', this)">
+      <button
+        onclick="showPanel('courses', this)"
+      >
         🎓 Courses
       </button>
 
-      <button onclick="showPanel('users', this)">
+      <button
+        onclick="showPanel('users', this)"
+      >
         👥 Users
+      </button>
+
+      <button
+        class="logout"
+        onclick="logoutAdmin()"
+      >
+        🚪 Logout
       </button>
 
     </div>
@@ -258,11 +434,13 @@
     <div class="top">
 
       <div>
-        <span class="eyebrow">
+
+        <span style="color:#777f8a">
           HABBOUB ADMINISTRATION
         </span>
 
         <h1>Dashboard</h1>
+
       </div>
 
       <div class="admin">
@@ -272,9 +450,12 @@
     </div>
 
 
-    <!-- OVERVIEW -->
+    <!-- ================= OVERVIEW ================= -->
 
-    <section id="overview" class="panel active">
+    <section
+      id="overview"
+      class="panel active"
+    >
 
       <h2>Overview</h2>
 
@@ -305,15 +486,21 @@
     </section>
 
 
-    <!-- LIVE -->
+    <!-- ================= LIVE ================= -->
 
-    <section id="live" class="panel">
+    <section
+      id="live"
+      class="panel"
+    >
 
       <h2>Live Control</h2>
 
       <div class="live-status">
 
-        <div class="dot" id="liveDot"></div>
+        <div
+          class="dot"
+          id="liveDot"
+        ></div>
 
         <strong id="liveStatus">
           Offline
@@ -323,7 +510,6 @@
 
       <input
         id="liveTitle"
-        type="text"
         placeholder="Live title"
       >
 
@@ -334,7 +520,6 @@
 
       <input
         id="liveStreamUrl"
-        type="url"
         placeholder="Stream URL / Embed URL (optional)"
       >
 
@@ -352,17 +537,15 @@
         ■ Stop Live
       </button>
 
-      <div
-        id="liveMessage"
-        class="message"
-      ></div>
-
     </section>
 
 
-    <!-- ANNOUNCEMENTS -->
+    <!-- ================= ANNOUNCEMENTS ================= -->
 
-    <section id="announcements" class="panel">
+    <section
+      id="announcements"
+      class="panel"
+    >
 
       <h2>Create Announcement</h2>
 
@@ -378,13 +561,11 @@
 
       <input
         id="announcementImage"
-        type="url"
         placeholder="Image URL (optional)"
       >
 
       <input
         id="announcementLink"
-        type="url"
         placeholder="Link URL (optional)"
       >
 
@@ -395,17 +576,17 @@
         Publish Announcement
       </button>
 
-      <div
-        id="announcementMessage"
-        class="message"
-      ></div>
+      <div id="announcementList"></div>
 
     </section>
 
 
-    <!-- COURSES -->
+    <!-- ================= COURSES ================= -->
 
-    <section id="courses" class="panel">
+    <section
+      id="courses"
+      class="panel"
+    >
 
       <h2>Add Course</h2>
 
@@ -421,7 +602,6 @@
 
       <input
         id="courseThumbnail"
-        type="url"
         placeholder="Thumbnail URL (optional)"
       >
 
@@ -432,226 +612,423 @@
         Add Course
       </button>
 
-      <div
-        id="courseMessage"
-        class="message"
-      ></div>
+      <div id="courseList"></div>
 
     </section>
 
 
-    <!-- USERS -->
+    <!-- ================= USERS ================= -->
 
-    <section id="users" class="panel">
+    <section
+      id="users"
+      class="panel"
+    >
 
       <h2>Users</h2>
 
-      <p style="color:#777f8a">
-        User management will be connected to Supabase.
-      </p>
+      <div id="usersList">
+        Loading users...
+      </div>
 
     </section>
 
   </main>
 
+</div>
 
-  <script>
 
-    // ==========================================
-    // SUPABASE
-    // ==========================================
+<script>
 
-    const SUPABASE_URL =
-      "https://feoyjasuvrqxzhskqzye.supabase.co";
+  /* =================================================
+     SUPABASE
+  ================================================= */
 
-    const SUPABASE_ANON_KEY =
-      "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+  const SUPABASE_URL =
+    "https://feoyjasuvrqxzhskqzye.supabase.co";
 
-    const supabaseClient =
-      supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+
+  /* =================================================
+     LOGIN
+  ================================================= */
+
+  async function adminLogin() {
+
+    const email =
+      document
+        .getElementById("loginEmail")
+        .value
+        .trim();
+
+    const password =
+      document
+        .getElementById("loginPassword")
+        .value;
+
+    const message =
+      document.getElementById(
+        "loginMessage"
       );
 
+    const button =
+      document.getElementById(
+        "loginButton"
+      );
 
-    // ==========================================
-    // PANEL NAVIGATION
-    // ==========================================
+    if (!email || !password) {
 
-    function showPanel(id, button) {
+      message.textContent =
+        "Enter your email and password.";
 
-      document
-        .querySelectorAll(".panel")
-        .forEach(panel => {
-          panel.classList.remove("active");
-        });
+      return;
 
-      document
-        .getElementById(id)
-        .classList.add("active");
-
-      document
-        .querySelectorAll(".menu button")
-        .forEach(btn => {
-          btn.classList.remove("active");
-        });
-
-      button.classList.add("active");
     }
 
+    button.disabled = true;
+    button.textContent = "Logging in...";
+    message.textContent = "";
 
-    // ==========================================
-    // ADMIN CHECK
-    // ==========================================
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth
+        .signInWithPassword({
+          email,
+          password
+        });
 
-    async function checkAdmin() {
+    if (error) {
 
-      const {
-        data: { user },
-        error: authError
-      } = await supabaseClient.auth.getUser();
+      message.textContent =
+        error.message;
 
-      if (authError || !user) {
+      button.disabled = false;
+      button.textContent = "Login";
 
-        alert("Please login first.");
+      return;
 
-        window.location.href =
-          "login.html";
+    }
 
-        return false;
-      }
+    const user =
+      data.user;
 
+    /* CHECK ADMIN ROLE */
 
-      const {
-        data: role,
-        error
-      } = await supabaseClient
+    const {
+      data: adminRole,
+      error: adminError
+    } =
+      await supabaseClient
         .from("admin_roles")
         .select("role")
         .eq("user_id", user.id)
         .maybeSingle();
 
+    if (adminError) {
 
-      if (error) {
+      console.error(adminError);
 
-        console.error(error);
+      await supabaseClient.auth.signOut();
 
-        alert(
-          "Could not verify administrator permissions."
-        );
+      message.textContent =
+        "Could not verify administrator permissions.";
 
-        return false;
-      }
+      button.disabled = false;
+      button.textContent = "Login";
 
+      return;
 
-      if (!role || role.role !== "admin") {
-
-        alert(
-          "This account is not an administrator."
-        );
-
-        return false;
-      }
-
-
-      return true;
     }
 
+    if (
+      !adminRole ||
+      adminRole.role !== "admin"
+    ) {
 
-    // ==========================================
-    // START LIVE
-    // ==========================================
+      await supabaseClient.auth.signOut();
 
-    async function startLive() {
+      message.textContent =
+        "This account is not an administrator.";
 
-      const allowed =
-        await checkAdmin();
+      button.disabled = false;
+      button.textContent = "Login";
 
-      if (!allowed) return;
+      return;
 
+    }
 
-      const title =
-        document
-          .getElementById("liveTitle")
-          .value
-          .trim();
+    /* SUCCESS */
 
+    document
+      .getElementById("loginPage")
+      .style.display = "none";
 
-      const description =
-        document
-          .getElementById("liveDescription")
-          .value
-          .trim();
+    document
+      .getElementById("adminPage")
+      .style.display = "block";
 
+    button.disabled = false;
+    button.textContent = "Login";
 
-      const streamUrl =
-        document
-          .getElementById("liveStreamUrl")
-          .value
-          .trim();
+    await loadDashboard();
+
+  }
 
 
-      const message =
-        document.getElementById(
-          "liveMessage"
+  /* =================================================
+     CHECK EXISTING SESSION
+  ================================================= */
+
+  async function checkExistingSession() {
+
+    const {
+      data: {
+        user
+      }
+    } =
+      await supabaseClient.auth
+        .getUser();
+
+    if (!user) return;
+
+    const {
+      data: adminRole
+    } =
+      await supabaseClient
+        .from("admin_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (
+      adminRole &&
+      adminRole.role === "admin"
+    ) {
+
+      document
+        .getElementById("loginPage")
+        .style.display = "none";
+
+      document
+        .getElementById("adminPage")
+        .style.display = "block";
+
+      await loadDashboard();
+
+    }
+
+  }
+
+
+  /* =================================================
+     LOGOUT
+  ================================================= */
+
+  async function logoutAdmin() {
+
+    await supabaseClient.auth.signOut();
+
+    location.reload();
+
+  }
+
+
+  /* =================================================
+     PANELS
+  ================================================= */
+
+  function showPanel(
+    id,
+    button
+  ) {
+
+    document
+      .querySelectorAll(".panel")
+      .forEach(panel => {
+
+        panel.classList.remove(
+          "active"
         );
 
+      });
 
-      if (!title) {
+    const panel =
+      document.getElementById(id);
 
-        message.textContent =
-          "Enter a live title first.";
+    if (panel) {
 
-        return;
+      panel.classList.add(
+        "active"
+      );
+
+    }
+
+    document
+      .querySelectorAll(
+        ".menu button"
+      )
+      .forEach(btn => {
+
+        btn.classList.remove(
+          "active"
+        );
+
+      });
+
+    if (button) {
+
+      button.classList.add(
+        "active"
+      );
+
+    }
+
+  }
+
+
+  /* =================================================
+     START LIVE
+  ================================================= */
+
+  async function startLive() {
+
+    const title =
+      document
+        .getElementById("liveTitle")
+        .value
+        .trim();
+
+    const description =
+      document
+        .getElementById("liveDescription")
+        .value
+        .trim();
+
+    const streamUrl =
+      document
+        .getElementById("liveStreamUrl")
+        .value
+        .trim();
+
+    if (!title) {
+
+      alert(
+        "Enter a live title first."
+      );
+
+      return;
+
+    }
+
+    const {
+      data: {
+        user
       }
+    } =
+      await supabaseClient.auth
+        .getUser();
 
+    if (!user) {
 
-      // Stop previous live sessions
+      alert(
+        "You must be logged in."
+      );
 
-      const {
-        error: stopError
-      } = await supabaseClient
+      return;
+
+    }
+
+    /* VERIFY ADMIN */
+
+    const {
+      data: adminRole,
+      error: adminError
+    } =
+      await supabaseClient
+        .from("admin_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (
+      adminError ||
+      !adminRole ||
+      adminRole.role !== "admin"
+    ) {
+
+      alert(
+        "This account is not an administrator."
+      );
+
+      return;
+
+    }
+
+    /* STOP OLD LIVE */
+
+    const {
+      error: stopError
+    } =
+      await supabaseClient
         .from("live_sessions")
         .update({
           is_live: false,
           ended_at:
             new Date().toISOString()
         })
-        .eq("is_live", true);
+        .eq(
+          "is_live",
+          true
+        );
 
+    if (stopError) {
 
-      if (stopError) {
+      console.error(
+        stopError
+      );
 
-        console.error(stopError);
+      alert(
+        "Could not stop previous live:\n" +
+        stopError.message
+      );
 
-        message.textContent =
-          "Could not stop previous live.";
+      return;
 
-        return;
-      }
+    }
 
+    /* CREATE NEW LIVE */
 
-      // Create new live session
-
-      const {
-        data,
-        error
-      } = await supabaseClient
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
         .from("live_sessions")
         .insert({
 
-          title: title,
+          title:
+            title,
 
           description:
-            description || null,
+            description,
 
           stream_url:
-            streamUrl || null,
+            streamUrl,
 
           thumbnail_url:
-            null,
+            "",
 
-          is_live: true,
+          is_live:
+            true,
 
           started_at:
             new Date().toISOString()
@@ -660,59 +1037,49 @@
         .select()
         .single();
 
+    if (error) {
 
-      if (error) {
-
-        console.error(error);
-
-        message.textContent =
-          "Could not start live: " +
-          error.message;
-
-        return;
-      }
-
-
-      // Update interface
-
-      document
-        .getElementById("liveDot")
-        .classList.add("live");
-
-
-      document
-        .getElementById("liveStatus")
-        .textContent =
-          "🔴 LIVE — " + data.title;
-
-
-      message.textContent =
-        "Live started successfully.";
-
-
-      console.log(
-        "Live session:",
-        data
+      console.error(
+        "Start Live Error:",
+        error
       );
+
+      alert(
+        "Could not start live:\n" +
+        error.message
+      );
+
+      return;
 
     }
 
+    document
+      .getElementById("liveDot")
+      .classList.add("live");
 
-    // ==========================================
-    // STOP LIVE
-    // ==========================================
+    document
+      .getElementById("liveStatus")
+      .textContent =
+        "🔴 LIVE — " +
+        data.title;
 
-    async function stopLive() {
+    alert(
+      "🔴 Habboub Live started successfully!"
+    );
 
-      const allowed =
-        await checkAdmin();
-
-      if (!allowed) return;
+  }
 
 
-      const {
-        error
-      } = await supabaseClient
+  /* =================================================
+     STOP LIVE
+  ================================================= */
+
+  async function stopLive() {
+
+    const {
+      error
+    } =
+      await supabaseClient
         .from("live_sessions")
         .update({
 
@@ -722,364 +1089,556 @@
             new Date().toISOString()
 
         })
-        .eq("is_live", true);
+        .eq(
+          "is_live",
+          true
+        );
 
+    if (error) {
 
-      if (error) {
+      alert(
+        "Could not stop live:\n" +
+        error.message
+      );
 
-        console.error(error);
-
-        document
-          .getElementById("liveMessage")
-          .textContent =
-            "Could not stop live: " +
-            error.message;
-
-        return;
-      }
-
-
-      document
-        .getElementById("liveDot")
-        .classList.remove("live");
-
-
-      document
-        .getElementById("liveStatus")
-        .textContent =
-          "Offline";
-
-
-      document
-        .getElementById("liveMessage")
-        .textContent =
-          "Live stopped.";
+      return;
 
     }
 
+    document
+      .getElementById("liveDot")
+      .classList.remove("live");
 
-    // ==========================================
-    // ANNOUNCEMENT
-    // ==========================================
+    document
+      .getElementById("liveStatus")
+      .textContent =
+        "Offline";
 
-    async function publishAnnouncement() {
+    alert(
+      "Live stopped."
+    );
 
-      const allowed =
-        await checkAdmin();
-
-      if (!allowed) return;
-
-
-      const title =
-        document
-          .getElementById(
-            "announcementTitle"
-          )
-          .value
-          .trim();
+  }
 
 
-      const content =
-        document
-          .getElementById(
-            "announcementText"
-          )
-          .value
-          .trim();
+  /* =================================================
+     ANNOUNCEMENT
+  ================================================= */
 
+  async function publishAnnouncement() {
 
-      const imageUrl =
-        document
-          .getElementById(
-            "announcementImage"
-          )
-          .value
-          .trim();
-
-
-      const linkUrl =
-        document
-          .getElementById(
-            "announcementLink"
-          )
-          .value
-          .trim();
-
-
-      const message =
-        document.getElementById(
-          "announcementMessage"
-        );
-
-
-      if (!title || !content) {
-
-        message.textContent =
-          "Title and text are required.";
-
-        return;
-      }
-
-
-      const {
-        error
-      } = await supabaseClient
-        .from("announcements")
-        .insert({
-
-          title: title,
-
-          content: content,
-
-          image_url:
-            imageUrl || null,
-
-          link_url:
-            linkUrl || null,
-
-          is_active: true
-
-        });
-
-
-      if (error) {
-
-        console.error(error);
-
-        message.textContent =
-          "Could not publish: " +
-          error.message;
-
-        return;
-      }
-
-
-      message.textContent =
-        "Announcement published successfully.";
-
-
+    const title =
       document
         .getElementById(
           "announcementTitle"
         )
-        .value = "";
+        .value
+        .trim();
 
-
+    const content =
       document
         .getElementById(
           "announcementText"
         )
-        .value = "";
+        .value
+        .trim();
 
-
+    const image =
       document
         .getElementById(
           "announcementImage"
         )
-        .value = "";
+        .value
+        .trim();
 
-
+    const link =
       document
         .getElementById(
           "announcementLink"
         )
-        .value = "";
+        .value
+        .trim();
+
+    if (!title) {
+
+      alert(
+        "Enter announcement title."
+      );
+
+      return;
 
     }
 
-
-    // ==========================================
-    // COURSE
-    // ==========================================
-
-    async function addCourse() {
-
-      const allowed =
-        await checkAdmin();
-
-      if (!allowed) return;
-
-
-      const title =
-        document
-          .getElementById("courseTitle")
-          .value
-          .trim();
-
-
-      const description =
-        document
-          .getElementById(
-            "courseDescription"
-          )
-          .value
-          .trim();
-
-
-      const thumbnail =
-        document
-          .getElementById(
-            "courseThumbnail"
-          )
-          .value
-          .trim();
-
-
-      const message =
-        document.getElementById(
-          "courseMessage"
-        );
-
-
-      if (!title) {
-
-        message.textContent =
-          "Enter a course title.";
-
-        return;
-      }
-
-
-      const {
-        error
-      } = await supabaseClient
-        .from("courses")
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("announcements")
         .insert({
 
-          title: title,
+          title:
+            title,
 
-          description:
-            description || null,
+          content:
+            content,
 
-          thumbnail_url:
-            thumbnail || null,
+          image_url:
+            image,
 
-          is_published: true
+          link_url:
+            link,
+
+          is_active:
+            true
 
         });
 
+    if (error) {
 
-      if (error) {
+      alert(
+        "Could not publish announcement:\n" +
+        error.message
+      );
 
-        console.error(error);
+      return;
 
-        message.textContent =
-          "Could not add course: " +
-          error.message;
+    }
 
-        return;
-      }
+    document
+      .getElementById(
+        "announcementTitle"
+      )
+      .value = "";
+
+    document
+      .getElementById(
+        "announcementText"
+      )
+      .value = "";
+
+    document
+      .getElementById(
+        "announcementImage"
+      )
+      .value = "";
+
+    document
+      .getElementById(
+        "announcementLink"
+      )
+      .value = "";
+
+    alert(
+      "📢 Announcement published!"
+    );
+
+    loadAnnouncements();
+
+  }
 
 
-      message.textContent =
-        "Course added successfully.";
+  /* =================================================
+     COURSE
+  ================================================= */
 
+  async function addCourse() {
 
+    const title =
       document
-        .getElementById("courseTitle")
-        .value = "";
+        .getElementById(
+          "courseTitle"
+        )
+        .value
+        .trim();
 
-
+    const description =
       document
         .getElementById(
           "courseDescription"
         )
-        .value = "";
+        .value
+        .trim();
 
-
+    const thumbnail =
       document
         .getElementById(
           "courseThumbnail"
         )
-        .value = "";
+        .value
+        .trim();
+
+    if (!title) {
+
+      alert(
+        "Enter course title."
+      );
+
+      return;
 
     }
 
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("courses")
+        .insert({
 
-    // ==========================================
-    // LOAD CURRENT LIVE STATUS
-    // ==========================================
+          title:
+            title,
 
-    async function loadLiveStatus() {
+          description:
+            description,
 
-      const {
-        data,
-        error
-      } = await supabaseClient
-        .from("live_sessions")
+          thumbnail_url:
+            thumbnail,
+
+          is_published:
+            true
+
+        });
+
+    if (error) {
+
+      alert(
+        "Could not add course:\n" +
+        error.message
+      );
+
+      return;
+
+    }
+
+    document
+      .getElementById(
+        "courseTitle"
+      )
+      .value = "";
+
+    document
+      .getElementById(
+        "courseDescription"
+      )
+      .value = "";
+
+    document
+      .getElementById(
+        "courseThumbnail"
+      )
+      .value = "";
+
+    alert(
+      "🎓 Course added!"
+    );
+
+    loadCourses();
+
+  }
+
+
+  /* =================================================
+     LOAD ANNOUNCEMENTS
+  ================================================= */
+
+  async function loadAnnouncements() {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("announcements")
         .select("*")
-        .eq("is_live", true)
         .order(
-          "started_at",
+          "created_at",
           {
             ascending: false
           }
-        )
-        .limit(1)
-        .maybeSingle();
+        );
+
+    if (error) {
+
+      console.error(error);
+      return;
+
+    }
+
+    document
+      .getElementById(
+        "announcementsCount"
+      )
+      .textContent =
+        data.length;
+
+    const list =
+      document.getElementById(
+        "announcementList"
+      );
+
+    list.innerHTML = "";
+
+    data.slice(0, 10)
+      .forEach(item => {
+
+        const div =
+          document.createElement(
+            "div"
+          );
+
+        div.className =
+          "item";
+
+        div.innerHTML = `
+          <h3>${escapeHTML(item.title)}</h3>
+          <p>${escapeHTML(item.content || "")}</p>
+        `;
+
+        list.appendChild(div);
+
+      });
+
+  }
 
 
-      if (error) {
+  /* =================================================
+     LOAD COURSES
+  ================================================= */
 
-        console.error(error);
+  async function loadCourses() {
 
-        return;
-      }
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("courses")
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+    if (error) {
+
+      console.error(error);
+      return;
+
+    }
+
+    document
+      .getElementById(
+        "coursesCount"
+      )
+      .textContent =
+        data.length;
+
+    const list =
+      document.getElementById(
+        "courseList"
+      );
+
+    list.innerHTML = "";
+
+    data.slice(0, 10)
+      .forEach(course => {
+
+        const div =
+          document.createElement(
+            "div"
+          );
+
+        div.className =
+          "item";
+
+        div.innerHTML = `
+          <h3>${escapeHTML(course.title)}</h3>
+          <p>${escapeHTML(course.description || "")}</p>
+        `;
+
+        list.appendChild(div);
+
+      });
+
+  }
 
 
-      if (!data) {
+  /* =================================================
+     LOAD USERS
+  ================================================= */
 
-        document
-          .getElementById("liveDot")
-          .classList.remove("live");
+  async function loadUsers() {
 
-        document
-          .getElementById(
-            "liveStatus"
-          )
-          .textContent =
-            "Offline";
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
 
-        return;
-      }
+    if (error) {
 
+      console.error(
+        "Users error:",
+        error
+      );
 
       document
-        .getElementById("liveDot")
-        .classList.add("live");
+        .getElementById(
+          "usersList"
+        )
+        .textContent =
+          "Unable to load users.";
 
+      return;
+
+    }
+
+    document
+      .getElementById(
+        "usersCount"
+      )
+      .textContent =
+        data.length;
+
+    const list =
+      document.getElementById(
+        "usersList"
+      );
+
+    list.innerHTML = "";
+
+    if (!data.length) {
+
+      list.textContent =
+        "No users yet.";
+
+      return;
+
+    }
+
+    data.forEach(user => {
+
+      const div =
+        document.createElement(
+          "div"
+        );
+
+      div.className =
+        "item";
+
+      div.innerHTML = `
+        <h3>${escapeHTML(user.full_name || "No name")}</h3>
+        <p>${escapeHTML(user.email || "")}</p>
+      `;
+
+      list.appendChild(div);
+
+    });
+
+  }
+
+
+  /* =================================================
+     LOAD DASHBOARD
+  ================================================= */
+
+  async function loadDashboard() {
+
+    await loadAnnouncements();
+
+    await loadCourses();
+
+    await loadUsers();
+
+    const {
+      data: live
+    } =
+      await supabaseClient
+        .from("live_sessions")
+        .select("id")
+        .eq(
+          "is_live",
+          true
+        );
+
+    document
+      .getElementById(
+        "liveCount"
+      )
+      .textContent =
+        live
+          ? live.length
+          : 0;
+
+    if (live && live.length) {
+
+      document
+        .getElementById(
+          "liveDot"
+        )
+        ?.classList.add("live");
 
       document
         .getElementById(
           "liveStatus"
         )
         .textContent =
-          "🔴 LIVE — " +
-          data.title;
+          "🔴 LIVE";
 
     }
 
-
-    // ==========================================
-    // INITIALIZE
-    // ==========================================
-
-    async function initializeAdmin() {
-
-      const allowed =
-        await checkAdmin();
-
-      if (!allowed) return;
-
-      await loadLiveStatus();
-
-    }
+  }
 
 
-    initializeAdmin();
+  /* =================================================
+     ESCAPE
+  ================================================= */
 
-  </script>
+  function escapeHTML(value) {
+
+    return String(
+      value ?? ""
+    )
+      .replaceAll(
+        "&",
+        "&amp;"
+      )
+      .replaceAll(
+        "<",
+        "&lt;"
+      )
+      .replaceAll(
+        ">",
+        "&gt;"
+      )
+      .replaceAll(
+        '"',
+        "&quot;"
+      )
+      .replaceAll(
+        "'",
+        "&#039;"
+      );
+
+  }
+
+
+  /* =================================================
+     START
+  ================================================= */
+
+  checkExistingSession();
+
+</script>
 
 </body>
 </html>
-```
