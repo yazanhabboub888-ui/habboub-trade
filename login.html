@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Habboub Login</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, #18202d, #07090d 55%);
+      color: white;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      margin: 20px;
+      padding: 40px;
+      border: 1px solid #242a34;
+      border-radius: 20px;
+      background: rgba(13, 16, 21, 0.95);
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo-icon {
+      width: 55px;
+      height: 55px;
+      margin: auto auto 15px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background: white;
+      color: black;
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .logo h1 {
+      font-size: 28px;
+    }
+
+    .logo p {
+      margin-top: 8px;
+      color: #777f8a;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 18px;
+      border: 1px solid #292f39;
+      border-radius: 10px;
+      outline: none;
+      background: #090c10;
+      color: white;
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: #666;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: white;
+      color: black;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: .9;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    #message {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .error {
+      color: #ff7c85;
+    }
+
+    .success {
+      color: #7dffae;
+    }
+
+    .back {
+      display: block;
+      margin-top: 25px;
+      text-align: center;
+      color: #777f8a;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back:hover {
+      color: white;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="login-box">
+
+    <div class="logo">
+
+      <div class="logo-icon">
+        H
+      </div>
+
+      <h1>Habboub</h1>
+
+      <p>Administrator Login</p>
+
+    </div>
+
+
+    <form id="loginForm">
+
+      <label for="email">
+        Email
+      </label>
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Enter your email"
+        required
+      >
+
+
+      <label for="password">
+        Password
+      </label>
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Enter your password"
+        required
+      >
+
+
+      <button
+        id="loginButton"
+        type="submit"
+      >
+        Login
+      </button>
+
+    </form>
+
+
+    <div id="message"></div>
+
+
+    <a
+      class="back"
+      href="index.html"
+    >
+      ← Back to Habboub
+    </a>
+
+  </div>
+
+
+<script>
+
+  /* =========================================
+     SUPABASE
+  ========================================= */
+
+  const SUPABASE_URL =
+    "https://feoyjasuvrqxzhskqzye.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+
+  /* =========================================
+     LOGIN
+  ========================================= */
+
+  document
+    .getElementById("loginForm")
+    .addEventListener("submit", async function(event) {
+
+      event.preventDefault();
+
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
+
+      const button =
+        document
+          .getElementById("loginButton");
+
+
+      const message =
+        document
+          .getElementById("message");
+
+
+      button.disabled = true;
+
+      button.textContent = "Logging in...";
+
+      message.textContent = "";
+
+      message.className = "";
+
+
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+
+          email: email,
+
+          password: password
+
+        });
+
+
+      if (error) {
+
+        message.textContent =
+          "Login failed: " + error.message;
+
+        message.className = "error";
+
+        button.disabled = false;
+
+        button.textContent = "Login";
+
+        return;
+
+      }
+
+
+      /* =========================================
+         CHECK ADMIN
+      ========================================= */
+
+      const {
+        data: isAdmin,
+        error: adminError
+      } =
+        await supabaseClient.rpc("is_admin");
+
+
+      if (adminError || !isAdmin) {
+
+        await supabaseClient.auth.signOut();
+
+        message.textContent =
+          "This account is not an administrator.";
+
+        message.className = "error";
+
+        button.disabled = false;
+
+        button.textContent = "Login";
+
+        return;
+
+      }
+
+
+      message.textContent =
+        "Login successful. Opening dashboard...";
+
+      message.className = "success";
+
+
+      setTimeout(function() {
+
+        window.location.href =
+          "admin.html";
+
+      }, 700);
+
+    });
+
+</script>
+
+</body>
+</html>
