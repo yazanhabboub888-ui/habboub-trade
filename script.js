@@ -1,210 +1,231 @@
-function startTrading() {
+// ======================================
+// HABBOUB FRONTEND
+// ======================================
 
-    document
-        .getElementById("analysis")
-        .scrollIntoView({
-            behavior: "smooth"
-        });
+window.addEventListener("load", () => {
+
+  setTimeout(() => {
+    document.getElementById("loader")
+      .classList.add("hidden");
+  }, 900);
+
+});
+
+
+// ======================================
+// LOGIN
+// ======================================
+
+function openLogin() {
+
+  closeModals();
+
+  document
+    .getElementById("loginModal")
+    .classList.add("active");
 
 }
 
 
-function scrollToAnalysis() {
+function openRegister() {
 
-    document
-        .getElementById("analysis")
-        .scrollIntoView({
-            behavior: "smooth"
-        });
+  closeModals();
+
+  document
+    .getElementById("registerModal")
+    .classList.add("active");
 
 }
 
 
-/* TIMEFRAME */
+function closeModals() {
 
-function selectTimeframe(button) {
+  document
+    .querySelectorAll(".modal")
+    .forEach(modal => {
+      modal.classList.remove("active");
+    });
 
-    const buttons =
-        document.querySelectorAll(
-            ".timeframes button"
-        );
+}
 
-    buttons.forEach(btn => {
 
-        btn.classList.remove("active");
+// ======================================
+// GUEST
+// ======================================
+
+function enterGuest() {
+
+  document
+    .getElementById("dashboard")
+    .scrollIntoView({
+      behavior: "smooth"
+    });
+
+}
+
+
+// ======================================
+// AI WINDOW
+// ======================================
+
+function openAI() {
+
+  document
+    .getElementById("aiWindow")
+    .classList.add("active");
+
+}
+
+
+function closeAI() {
+
+  document
+    .getElementById("aiWindow")
+    .classList.remove("active");
+
+}
+
+
+function handleAI(event) {
+
+  if (event.key === "Enter") {
+    sendAI();
+  }
+
+}
+
+
+function sendAI() {
+
+  const input =
+    document.getElementById("aiInput");
+
+  const messages =
+    document.getElementById("aiMessages");
+
+  const text =
+    input.value.trim();
+
+  if (!text) return;
+
+
+  const userMessage =
+    document.createElement("div");
+
+  userMessage.className =
+    "ai-message";
+
+  userMessage.textContent =
+    text;
+
+  messages.appendChild(userMessage);
+
+  input.value = "";
+
+
+  setTimeout(() => {
+
+    const response =
+      document.createElement("div");
+
+    response.className =
+      "ai-message";
+
+    response.textContent =
+      "I'm ready to analyze this once the Habboub AI backend is connected to a real AI model and live market data.";
+
+    messages.appendChild(response);
+
+    messages.scrollTop =
+      messages.scrollHeight;
+
+  }, 700);
+
+}
+
+
+// ======================================
+// DEMO PRICE DISPLAY
+// ======================================
+
+function updateConnectionStatus() {
+
+  const price =
+    document.getElementById("goldPrice");
+
+  const change =
+    document.getElementById("goldChange");
+
+  if (!price || !change) return;
+
+  price.textContent =
+    "Connecting...";
+
+  change.textContent =
+    "Waiting for live market provider";
+
+}
+
+updateConnectionStatus();
+
+
+// ======================================
+// CLOSE MODAL WHEN CLICKING OUTSIDE
+// ======================================
+
+document.querySelectorAll(".modal")
+  .forEach(modal => {
+
+    modal.addEventListener("click", event => {
+
+      if (event.target === modal) {
+        closeModals();
+      }
 
     });
 
-    button.classList.add("active");
+  });
 
-}
 
+// ======================================
+// SCROLL ANIMATION
+// ======================================
 
-/* MARKET ANALYSIS */
+const observer =
+  new IntersectionObserver(
+    entries => {
 
-function analyzeMarket() {
+      entries.forEach(entry => {
 
-    const signal =
-        document.getElementById("signal");
+        if (entry.isIntersecting) {
 
-    const description =
-        document.getElementById(
-            "signal-description"
-        );
-
-    const asset =
-        document.getElementById("asset").value;
-
-
-    const signals = [
-        "BUY",
-        "SELL",
-        "WAIT"
-    ];
-
-    const randomSignal =
-        signals[
-            Math.floor(
-                Math.random() * signals.length
-            )
-        ];
-
-
-    signal.className = "";
-
-    if (randomSignal === "BUY") {
-
-        signal.classList.add("signal-buy");
-
-        signal.innerText = "BUY";
-
-        description.innerText =
-            asset +
-            " is showing bullish conditions. Look for confirmation before entering.";
-
-    }
-
-    else if (randomSignal === "SELL") {
-
-        signal.classList.add("signal-sell");
-
-        signal.innerText = "SELL";
-
-        description.innerText =
-            asset +
-            " is showing bearish conditions. Wait for confirmation before entering.";
-
-    }
-
-    else {
-
-        signal.classList.add("signal-neutral");
-
-        signal.innerText = "WAIT";
-
-        description.innerText =
-            "Market conditions are unclear. Wait for a stronger setup.";
-
-    }
-
-}
-
-
-/* RISK CALCULATOR */
-
-function calculateRisk() {
-
-    const balance =
-        parseFloat(
-            document.getElementById("balance").value
-        );
-
-    const risk =
-        parseFloat(
-            document.getElementById("risk").value
-        );
-
-
-    if (
-        isNaN(balance) ||
-        isNaN(risk)
-    ) {
-
-        alert(
-            "Please enter your balance and risk percentage."
-        );
-
-        return;
-
-    }
-
-
-    const result =
-        balance * (risk / 100);
-
-
-    document.getElementById(
-        "risk-result"
-    ).innerText =
-        "$" + result.toFixed(2);
-
-}
-
-
-/* JOURNAL */
-
-function saveJournal() {
-
-    const text =
-        document.getElementById(
-            "journalText"
-        ).value;
-
-
-    if (text.trim() === "") {
-
-        alert(
-            "Write something before saving."
-        );
-
-        return;
-
-    }
-
-
-    localStorage.setItem(
-        "habboubJournal",
-        text
-    );
-
-
-    document.getElementById(
-        "saveMessage"
-    ).innerText =
-        "✓ Journal saved successfully.";
-
-}
-
-
-/* LOAD JOURNAL */
-
-window.addEventListener(
-    "load",
-    function () {
-
-        const saved =
-            localStorage.getItem(
-                "habboubJournal"
-            );
-
-
-        if (saved) {
-
-            document.getElementById(
-                "journalText"
-            ).value = saved;
+          entry.target.style.opacity = "1";
+          entry.target.style.transform =
+            "translateY(0)";
 
         }
 
+      });
+
+    },
+    {
+      threshold: .1
     }
-);
+  );
+
+
+document
+  .querySelectorAll(
+    ".dashboard-card, .asset-card, .course-card, .journal-stat"
+  )
+  .forEach(element => {
+
+    element.style.opacity = "0";
+    element.style.transform =
+      "translateY(25px)";
+    element.style.transition =
+      "opacity .6s ease, transform .6s ease";
+
+    observer.observe(element);
+
+  });
