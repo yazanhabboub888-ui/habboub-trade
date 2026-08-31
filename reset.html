@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habboub Password Reset</title>
+</head>
+
+<body style="font-family:Arial;background:#07090d;color:white;display:flex;justify-content:center;align-items:center;min-height:100vh">
+
+  <div style="width:90%;max-width:400px;background:#0d1015;padding:30px;border-radius:18px">
+
+```
+<h2>Habboub Admin Password Reset</h2>
+
+<input
+  id="password"
+  type="password"
+  placeholder="New password"
+  style="width:100%;padding:14px;margin:20px 0 10px;box-sizing:border-box"
+>
+
+<button
+  onclick="changePassword()"
+  style="width:100%;padding:14px;cursor:pointer"
+>
+  Change Password
+</button>
+
+<p id="message"></p>
+```
+
+  </div>
+
+<script>
+
+async function changePassword() {
+
+  const password =
+    document.getElementById("password").value;
+
+  const message =
+    document.getElementById("message");
+
+  if (password.length < 8) {
+    message.textContent =
+      "Password must be at least 8 characters.";
+    return;
+  }
+
+  message.textContent = "Changing password...";
+
+  try {
+
+    const response = await fetch(
+      "https://feoyjasuvrqxzhskqzye.supabase.co/functions/v1/change-admin-password",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          resetCode:
+            "Habboub-Reset-2026-91X7-KP4",
+
+          newPassword:
+            password
+        })
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (data.success) {
+
+      message.textContent =
+        "Password changed successfully!";
+
+      document.getElementById("password").value = "";
+
+    } else {
+
+      message.textContent =
+        data.error || "Something went wrong.";
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    message.textContent =
+      "Connection error.";
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
