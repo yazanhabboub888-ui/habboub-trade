@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -11,25 +10,23 @@
 
   <div style="width:90%;max-width:400px;background:#0d1015;padding:30px;border-radius:18px">
 
-```
-<h2>Habboub Admin Password Reset</h2>
+    <h2>Habboub Admin Password Reset</h2>
 
-<input
-  id="password"
-  type="password"
-  placeholder="New password"
-  style="width:100%;padding:14px;margin:20px 0 10px;box-sizing:border-box"
->
+    <input
+      id="password"
+      type="password"
+      placeholder="New password"
+      style="width:100%;padding:14px;margin:20px 0 10px;box-sizing:border-box"
+    >
 
-<button
-  onclick="changePassword()"
-  style="width:100%;padding:14px;cursor:pointer"
->
-  Change Password
-</button>
+    <button
+      onclick="changePassword()"
+      style="width:100%;padding:14px;cursor:pointer"
+    >
+      Change Password
+    </button>
 
-<p id="message"></p>
-```
+    <p id="message"></p>
 
   </div>
 
@@ -49,7 +46,8 @@ async function changePassword() {
     return;
   }
 
-  message.textContent = "Changing password...";
+  message.textContent =
+    "Changing password...";
 
   try {
 
@@ -63,17 +61,15 @@ async function changePassword() {
         },
 
         body: JSON.stringify({
-          resetCode:
-            "Habboub-Reset-2026-91X7-KP4",
-
-          newPassword:
-            password
+          newPassword: password
         })
       }
     );
 
     const data =
       await response.json();
+
+    console.log(data);
 
     if (data.success) {
 
