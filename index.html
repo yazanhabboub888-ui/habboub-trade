@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b12">
+  <meta name="description" content="Habboub Trading Intelligence">
+  <title>Habboub — Trading Intelligence</title>
 
-  <title>Habboub — Smart Trading Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
 
@@ -14,1501 +18,862 @@
 
 <body>
 
-<div id="loader">
-  <div class="loader-logo">H</div>
-  <p>Loading Habboub...</p>
-</div>
-
-<header class="navbar">
-
-  <div class="logo">
-    <span>H</span>
-    Habboub
+  <div id="loader" class="loader">
+    <div class="loader-logo">H</div>
+    <div class="loader-text">HABBOUB</div>
   </div>
 
-  <nav>
-    <a href="#dashboard">Dashboard</a>
-    <a href="#markets">Markets</a>
-    <a href="#analysis">Intelligence</a>
-    <a href="#newsSection">News</a>
-    <a href="#journal">Journal</a>
-    <a href="#live">Live</a>
-    <a href="#academy">Academy</a>
-  </nav>
+  <header class="topbar">
+    <a href="#home" class="brand" data-nav="home">
+      <span class="brand-mark">H</span>
+      <span>
+        <strong>HABBOUB</strong>
+        <small>TRADING INTELLIGENCE</small>
+      </span>
+    </a>
 
-  <div class="nav-actions">
-
-    <div class="language-switch">
-      <button id="langEN" class="active" onclick="setHabboubLanguage('en')">
-        EN
+    <nav class="desktop-nav">
+      <button data-nav="home" class="nav-link active">
+        <span>⌂</span><span data-i18n="nav_home">Home</span>
       </button>
-
-      <button id="langAR" onclick="setHabboubLanguage('ar')">
-        AR
+      <button data-nav="dashboard" class="nav-link">
+        <span>◈</span><span data-i18n="nav_session">Trading Session</span>
       </button>
-    </div>
-
-    <button class="ghost-btn" onclick="openLogin()">
-      Login
-    </button>
-
-    <button class="primary-btn" onclick="openRegister()">
-      Get Started
-    </button>
-
-  </div>
-
-</header>
-
-
-<main>
-
-<section class="hero">
-
-  <div class="hero-content">
-
-    <div class="badge">
-      ● SMART TRADING INTELLIGENCE
-    </div>
-
-    <h1>
-      Trade smarter.<br>
-      <span>Think like the market.</span>
-    </h1>
-
-    <p>
-      Habboub combines market intelligence, ICT analysis,
-      economic news, COT data, trading journals and AI
-      into one decision-support platform.
-    </p>
-
-    <div class="hero-buttons">
-
-      <button
-        class="primary-btn big"
-        onclick="enterGuest()">
-        Explore Habboub →
+      <button data-nav="markets" class="nav-link">
+        <span>◉</span><span data-i18n="nav_markets">Markets</span>
       </button>
-
-      <button
-        class="ghost-btn big"
-        onclick="openRegister()">
-        Create Account
+      <button data-nav="intelligence" class="nav-link">
+        <span>✦</span><span data-i18n="nav_intelligence">Intelligence</span>
       </button>
+      <button data-nav="news" class="nav-link">
+        <span>⚡</span><span data-i18n="nav_news">News</span>
+      </button>
+      <button data-nav="journal" class="nav-link">
+        <span>▤</span><span data-i18n="nav_journal">Journal</span>
+      </button>
+      <button data-nav="live" class="nav-link">
+        <span>●</span><span data-i18n="nav_live">Live</span>
+      </button>
+      <button data-nav="academy" class="nav-link">
+        <span>◇</span><span data-i18n="nav_academy">Academy</span>
+      </button>
+    </nav>
 
+    <div class="top-actions">
+      <div class="language-switch">
+        <button id="langEN" class="lang-btn active">EN</button>
+        <button id="langAR" class="lang-btn">عربي</button>
+      </div>
+
+      <button class="login-btn" id="loginButton" data-i18n="login">Login</button>
+      <button class="menu-btn" id="mobileMenuButton">☰</button>
     </div>
+  </header>
 
-    <div class="hero-stats">
-
-      <div>
-        <strong>24/7</strong>
-        <small>Market Intelligence</small>
-      </div>
-
-      <div>
-        <strong>AI</strong>
-        <small>Market Assistant</small>
-      </div>
-
-      <div>
-        <strong>ICT</strong>
-        <small>Market Structure</small>
-      </div>
-
-      <div>
-        <strong>0–100</strong>
-        <small>Habboub Score</small>
-      </div>
-
-    </div>
-
+  <div id="mobileNav" class="mobile-nav">
+    <button data-nav="home">⌂ <span data-i18n="nav_home">Home</span></button>
+    <button data-nav="dashboard">◈ <span data-i18n="nav_session">Trading Session</span></button>
+    <button data-nav="markets">◉ <span data-i18n="nav_markets">Markets</span></button>
+    <button data-nav="intelligence">✦ <span data-i18n="nav_intelligence">Intelligence</span></button>
+    <button data-nav="news">⚡ <span data-i18n="nav_news">News</span></button>
+    <button data-nav="journal">▤ <span data-i18n="nav_journal">Journal</span></button>
+    <button data-nav="live">● <span data-i18n="nav_live">Live</span></button>
+    <button data-nav="academy">◇ <span data-i18n="nav_academy">Academy</span></button>
   </div>
 
-
-  <div class="hero-panel">
-
-    <div class="panel-top">
-      <span>MARKET OVERVIEW</span>
-      <span class="live-dot">● LIVE</span>
-    </div>
-
-    <div class="market-preview">
-
-      <div class="preview-row">
-
-        <div>
-          <small>GOLD</small>
-          <h3>XAUUSD</h3>
-        </div>
-
-        <div class="price">
-          <strong id="heroGold">--</strong>
-          <small id="heroGoldChange">Waiting</small>
-        </div>
-
-      </div>
-
-
-      <div class="preview-row">
-
-        <div>
-          <small>NASDAQ</small>
-          <h3>NAS100</h3>
-        </div>
-
-        <div class="price">
-          <strong id="heroNasdaq">--</strong>
-          <small id="heroNasdaqChange">Waiting</small>
-        </div>
-
-      </div>
-
-
-      <div class="preview-row">
-
-        <div>
-          <small>S&P 500</small>
-          <h3>SPX</h3>
-        </div>
-
-        <div class="price">
-          <strong id="heroSPX">--</strong>
-          <small id="heroSPXChange">Waiting</small>
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<section id="dashboard" class="section">
-
-  <div class="section-heading">
-
-    <div>
-      <span class="eyebrow">COMMAND CENTER</span>
-      <h2>Trading Session</h2>
-    </div>
-
-    <span class="status">
-      ● SYSTEM ONLINE
-    </span>
-
-  </div>
-
-
-  <div class="session-hub">
-
-    <div class="session-header">
-
-      <div class="session-title">
-
-        <h2>
-          🎯 Habboub Session
-        </h2>
-
-        <div class="session-live">
-          <span class="session-live-dot"></span>
-          LIVE
-        </div>
-
-      </div>
-
-      <div id="sessionClock" class="session-card-value">
-        --:--:--
-      </div>
-
-    </div>
-
-
-    <div class="session-grid">
-
-      <div class="session-card">
-
-        <div class="session-card-label">
-          Market
-        </div>
-
-        <div class="session-asset">
-          XAUUSD
-        </div>
-
-        <div id="sessionPrice" class="session-price">
-          Waiting for price
-        </div>
-
-      </div>
-
-
-      <div class="session-card">
-
-        <div class="session-card-label">
-          Habboub Score
-        </div>
-
-        <div id="sessionScore" class="session-card-value">
-          --
-        </div>
-
-        <div id="sessionScoreText" class="session-card-small">
-          Waiting for analysis
-        </div>
-
-      </div>
-
-
-      <div class="session-card">
-
-        <div class="session-card-label">
-          HTF Bias
-        </div>
-
-        <div id="sessionHTFBias" class="session-card-value">
-          --
-        </div>
-
-        <div class="session-card-small">
-          Higher Timeframe
-        </div>
-
-      </div>
-
-
-      <div class="session-card">
-
-        <div class="session-card-label">
-          Liquidity
-        </div>
-
-        <div id="sessionLiquidity" class="session-card-value">
-          --
-        </div>
-
-        <div class="session-card-small">
-          Market Liquidity
-        </div>
-
-      </div>
-
-
-      <div class="session-card">
-
-        <div class="session-card-label">
-          Market Regime
-        </div>
-
-        <div id="sessionRegime" class="session-card-value">
-          --
-        </div>
-
-        <div class="session-card-small">
-          Current Environment
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="session-timeline">
-
-      <div class="timeline-row">
-
-        <div id="asiaSession" class="timeline-item">
-          🌏 Asia
-        </div>
-
-        <div id="londonSession" class="timeline-item">
-          🇬🇧 London
-        </div>
-
-        <div id="newYorkSession" class="timeline-item">
-          🇺🇸 New York
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div class="dashboard-grid">
-
-    <div class="dashboard-card large-card">
-
-      <div class="card-header">
-
-        <div>
-          <span class="eyebrow">MARKET STATUS</span>
-          <h3>How is the market?</h3>
-        </div>
-
-        <span
-          class="neutral"
-          id="marketTradeStatus">
-          WAIT
-        </span>
-
-      </div>
-
-
-      <div class="market-score">
-
-        <div class="score-circle">
-
-          <strong id="marketConfidence">
-            --
-          </strong>
-
-          <span>/100</span>
-
-        </div>
-
-
-        <div class="score-info">
-
-          <h3 id="marketCondition">
-            Waiting for analysis
-          </h3>
-
-          <p id="marketAnalysisText">
-            Habboub is waiting for the latest
-            market intelligence.
+  <main>
+
+    <!-- HOME -->
+    <section id="home" class="page-section active-section">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="eyebrow">
+            <span class="status-dot"></span>
+            <span data-i18n="system_online">HABBOUB INTELLIGENCE ONLINE</span>
+          </div>
+
+          <h1>
+            <span data-i18n="hero_title_1">Understand the market.</span>
+            <br>
+            <span class="gradient-text" data-i18n="hero_title_2">Trade with context.</span>
+          </h1>
+
+          <p data-i18n="hero_description">
+            Habboub combines market structure, ICT context, COT positioning,
+            economic events and AI intelligence into one clear trading environment.
           </p>
 
+          <div class="hero-actions">
+            <button class="primary-btn" data-nav="dashboard">
+              <span>◈</span>
+              <span data-i18n="open_session">Open Trading Session</span>
+            </button>
 
-          <div class="risk">
-
-            <span>Risk</span>
-
-            <strong id="marketRisk">
-              --
-            </strong>
-
+            <button class="secondary-btn" data-nav="markets">
+              <span data-i18n="view_markets">View Markets</span>
+            </button>
           </div>
-
         </div>
 
+        <div class="hero-score-card">
+          <div class="score-label" data-i18n="current_score">CURRENT HABBOUB SCORE</div>
+
+          <div class="score-ring" id="heroScoreRing">
+            <div class="score-ring-inner">
+              <strong id="heroScore">--</strong>
+              <span>/100</span>
+            </div>
+          </div>
+
+          <div class="score-state" id="heroScoreState">WAITING FOR DATA</div>
+
+          <div class="score-meta">
+            <div>
+              <small data-i18n="market_condition">Market Condition</small>
+              <strong id="heroCondition">--</strong>
+            </div>
+            <div>
+              <small data-i18n="risk">Risk</small>
+              <strong id="heroRisk">--</strong>
+            </div>
+          </div>
+        </div>
       </div>
 
-    </div>
+      <div id="homeNewsAlert" class="major-alert hidden"></div>
 
-
-    <div class="dashboard-card">
-
-      <div class="card-header">
-
-        <span class="eyebrow">AI</span>
-
-        <span>🤖</span>
-
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="overview">OVERVIEW</span>
+          <h2 data-i18n="market_overview">Market Overview</h2>
+        </div>
+        <span id="lastUpdated" class="updated-text">--</span>
       </div>
 
-      <h3>Habboub AI</h3>
+      <div class="market-grid compact">
+        <article class="market-card">
+          <div class="market-card-top">
+            <span class="market-symbol">XAUUSD</span>
+            <span class="market-icon gold">Au</span>
+          </div>
+          <strong id="heroGold">--</strong>
+          <span id="heroGoldChange" class="market-change">--</span>
+        </article>
 
-      <p>
-        Analyze market structure, ICT concepts,
-        risk management and trading context.
-      </p>
+        <article class="market-card">
+          <div class="market-card-top">
+            <span class="market-symbol">NAS100</span>
+            <span class="market-icon">NQ</span>
+          </div>
+          <strong id="heroNasdaq">--</strong>
+          <span id="heroNasdaqChange" class="market-change">--</span>
+        </article>
 
-      <button
-        class="primary-btn full"
-        onclick="openAI()">
-        Open AI Assistant
+        <article class="market-card">
+          <div class="market-card-top">
+            <span class="market-symbol">S&P 500</span>
+            <span class="market-icon">SP</span>
+          </div>
+          <strong id="heroSPX">--</strong>
+          <span id="heroSPXChange" class="market-change">--</span>
+        </article>
+
+        <article class="market-card intelligence-card" data-nav="intelligence">
+          <div class="market-card-top">
+            <span data-i18n="ai_context">AI Context</span>
+            <span class="market-icon ai">✦</span>
+          </div>
+          <strong id="homeAIStatus">Ready</strong>
+          <span data-i18n="click_intelligence">Open Intelligence →</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- TRADING SESSION -->
+    <section id="dashboard" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="session">SESSION</span>
+          <h2 data-i18n="trading_session">Trading Session</h2>
+          <p data-i18n="session_subtitle">Everything you need for one trading session, in one place.</p>
+        </div>
+
+        <div class="session-clock">
+          <span id="sessionClock">--:--:--</span>
+          <small id="sessionName">--</small>
+        </div>
+      </div>
+
+      <div id="sessionNewsAlert" class="major-alert hidden"></div>
+
+      <div class="session-layout">
+
+        <div class="score-panel panel">
+          <div class="panel-header">
+            <span data-i18n="habboub_score">Habboub Score</span>
+            <span class="live-pill">LIVE</span>
+          </div>
+
+          <div class="big-score" id="sessionScore">--</div>
+          <div class="score-bar">
+            <span id="sessionScoreBar"></span>
+          </div>
+
+          <div class="score-state large" id="sessionScoreState">WAITING</div>
+
+          <div class="score-explanation">
+            <span data-i18n="score_explanation">Score reflects the overall market environment, not a BUY/SELL command.</span>
+          </div>
+        </div>
+
+        <div class="panel session-context">
+          <div class="panel-header">
+            <span data-i18n="market_context">Market Context</span>
+            <span id="analysisStatus" class="context-status">--</span>
+          </div>
+
+          <div class="context-grid">
+            <div class="context-item">
+              <small data-i18n="symbol">Symbol</small>
+              <strong id="analysisSymbol">XAUUSD</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="htf_bias">HTF Bias</small>
+              <strong id="htfBias">--</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="liquidity">Liquidity</small>
+              <strong id="liquidity">--</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="mss">MSS</small>
+              <strong id="mss">--</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="fvg">FVG</small>
+              <strong id="fvg">--</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="risk">Risk</small>
+              <strong id="marketRisk">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel decision-panel">
+          <div class="panel-header">
+            <span data-i18n="environment">Environment</span>
+          </div>
+
+          <div class="environment-badge" id="marketCondition">--</div>
+
+          <div class="confidence">
+            <div>
+              <span data-i18n="confidence">Confidence</span>
+              <strong id="marketConfidence">--%</strong>
+            </div>
+            <div class="confidence-bar">
+              <span id="confidenceBar"></span>
+            </div>
+          </div>
+
+          <p id="marketAnalysisText" class="muted-text">
+            Waiting for market analysis...
+          </p>
+        </div>
+      </div>
+
+      <div class="session-bottom-grid">
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="ict_context">ICT Context</span>
+          </div>
+
+          <div class="check-list">
+            <div>
+              <span>HTF Bias</span>
+              <strong id="sessionBias">--</strong>
+            </div>
+            <div>
+              <span>Liquidity</span>
+              <strong id="sessionLiquidity">--</strong>
+            </div>
+            <div>
+              <span>MSS</span>
+              <strong id="sessionMSS">--</strong>
+            </div>
+            <div>
+              <span>FVG</span>
+              <strong id="sessionFVG">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="cot_positioning">COT Positioning</span>
+          </div>
+
+          <div class="cot-row">
+            <span>Commercial</span>
+            <strong id="cotCommercial">--</strong>
+          </div>
+
+          <div class="cot-row">
+            <span>Managed Money</span>
+            <strong id="cotManaged">--</strong>
+          </div>
+
+          <div class="cot-row">
+            <span>Net Position</span>
+            <strong id="cotNet">--</strong>
+          </div>
+
+          <div class="cot-bias" id="cotBias">--</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="session_timeline">Session Timeline</span>
+          </div>
+
+          <div class="timeline">
+            <div class="timeline-item" id="asiaSession">
+              <span class="timeline-dot"></span>
+              <div>
+                <strong>Asia</strong>
+                <small>00:00 — 08:00 UTC</small>
+              </div>
+            </div>
+
+            <div class="timeline-item" id="londonSession">
+              <span class="timeline-dot"></span>
+              <div>
+                <strong>London</strong>
+                <small>08:00 — 13:00 UTC</small>
+              </div>
+            </div>
+
+            <div class="timeline-item" id="newYorkSession">
+              <span class="timeline-dot"></span>
+              <div>
+                <strong>New York</strong>
+                <small>13:00 — 21:00 UTC</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel why-panel">
+        <div class="panel-header">
+          <span data-i18n="why_score">Why is the score here?</span>
+          <button class="text-btn" data-nav="intelligence" data-i18n="full_analysis">Full Analysis →</button>
+        </div>
+
+        <div id="scoreReasons" class="reason-grid">
+          <div class="reason neutral">
+            <span>◌</span>
+            <div>
+              <strong data-i18n="waiting">Waiting for data</strong>
+              <p data-i18n="waiting_analysis">Habboub will display the main factors here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARKETS -->
+    <section id="markets" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="markets">MARKETS</span>
+          <h2 data-i18n="markets_title">Market Watch</h2>
+          <p data-i18n="markets_subtitle">Monitor the assets that matter.</p>
+        </div>
+      </div>
+
+      <div class="market-grid">
+
+        <article class="large-market-card active-market" data-symbol="XAUUSD">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">XAUUSD</span>
+              <h3>Gold</h3>
+            </div>
+            <span class="market-icon gold">Au</span>
+          </div>
+          <div class="price-row">
+            <strong id="goldPrice">--</strong>
+            <span id="goldChange">--</span>
+          </div>
+          <button class="market-open-btn" data-nav="dashboard" data-i18n="open_session">Open Session</button>
+        </article>
+
+        <article class="large-market-card" data-symbol="NAS100">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">NAS100</span>
+              <h3>Nasdaq 100</h3>
+            </div>
+            <span class="market-icon">NQ</span>
+          </div>
+          <div class="price-row">
+            <strong id="nasdaqPrice">--</strong>
+            <span id="nasdaqChange">--</span>
+          </div>
+          <button class="market-open-btn" data-nav="dashboard" data-i18n="open_session">Open Session</button>
+        </article>
+
+        <article class="large-market-card" data-symbol="SPX">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">SPX</span>
+              <h3>S&P 500</h3>
+            </div>
+            <span class="market-icon">SP</span>
+          </div>
+          <div class="price-row">
+            <strong id="spxPrice">--</strong>
+            <span id="spxChange">--</span>
+          </div>
+          <button class="market-open-btn" data-nav="dashboard" data-i18n="open_session">Open Session</button>
+        </article>
+
+        <article class="large-market-card">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">EURUSD</span>
+              <h3>Euro / Dollar</h3>
+            </div>
+            <span class="market-icon">€</span>
+          </div>
+          <div class="price-row">
+            <strong>--</strong>
+            <span>External feed</span>
+          </div>
+        </article>
+
+        <article class="large-market-card">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">BTCUSD</span>
+              <h3>Bitcoin</h3>
+            </div>
+            <span class="market-icon">₿</span>
+          </div>
+          <div class="price-row">
+            <strong>--</strong>
+            <span>External feed</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- INTELLIGENCE -->
+    <section id="intelligence" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">HABBOUB AI</span>
+          <h2 data-i18n="intelligence_title">Market Intelligence</h2>
+          <p data-i18n="intelligence_subtitle">Understand what is influencing the environment.</p>
+        </div>
+
+        <button class="primary-btn small" id="openAIButton">✦ <span data-i18n="ask_ai">Ask Habboub AI</span></button>
+      </div>
+
+      <div class="intelligence-layout">
+
+        <div class="panel intelligence-main">
+          <div class="panel-header">
+            <span data-i18n="current_analysis">Current Analysis</span>
+            <span class="live-pill">LIVE</span>
+          </div>
+
+          <div class="analysis-title-row">
+            <div>
+              <span class="market-symbol" id="analysisSymbolLarge">XAUUSD</span>
+              <h3 id="analysisDescription">Market analysis</h3>
+            </div>
+
+            <div class="analysis-confidence">
+              <strong id="analysisConfidenceLarge">--%</strong>
+              <span data-i18n="confidence">confidence</span>
+            </div>
+          </div>
+
+          <p id="analysisLongText" class="analysis-text">
+            Waiting for the latest market analysis.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="market_regime">Market Regime</span>
+          </div>
+
+          <div id="regimeBadge" class="regime-badge">WAITING</div>
+
+          <div class="regime-list">
+            <div>
+              <span>Trend</span>
+              <strong id="regimeTrend">--</strong>
+            </div>
+            <div>
+              <span>Volatility</span>
+              <strong id="regimeVolatility">--</strong>
+            </div>
+            <div>
+              <span>Liquidity</span>
+              <strong id="regimeLiquidity">--</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="three-panels">
+
+        <div class="panel">
+          <div class="panel-header">
+            <span>ICT</span>
+          </div>
+          <div class="metric-list">
+            <div><span>HTF Bias</span><strong id="intelBias">--</strong></div>
+            <div><span>Liquidity</span><strong id="intelLiquidity">--</strong></div>
+            <div><span>MSS</span><strong id="intelMSS">--</strong></div>
+            <div><span>FVG</span><strong id="intelFVG">--</strong></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span>COT</span>
+          </div>
+          <div class="metric-list">
+            <div><span>Commercial</span><strong id="intelCommercial">--</strong></div>
+            <div><span>Managed Money</span><strong id="intelManaged">--</strong></div>
+            <div><span>Net</span><strong id="intelNet">--</strong></div>
+            <div><span>Bias</span><strong id="intelCotBias">--</strong></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="risk_environment">Risk Environment</span>
+          </div>
+          <div class="risk-display">
+            <div id="riskMeter" class="risk-meter">
+              <span></span>
+            </div>
+            <strong id="riskLevelText">--</strong>
+            <p data-i18n="risk_note">Risk describes the environment. It is not a trade instruction.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWS -->
+    <section id="news" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="news">NEWS</span>
+          <h2 data-i18n="news_title">Economic Calendar & Impact</h2>
+          <p data-i18n="news_subtitle">Major events can change the market environment quickly.</p>
+        </div>
+      </div>
+
+      <div id="newsContainer" class="news-list">
+        <div class="empty-state" id="newsStatus">
+          <span>◌</span>
+          <strong data-i18n="loading_news">Loading news...</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- JOURNAL -->
+    <section id="journal" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="journal">JOURNAL</span>
+          <h2 data-i18n="journal_title">Trading Journal</h2>
+          <p data-i18n="journal_subtitle">Track execution, results and mistakes.</p>
+        </div>
+
+        <button class="primary-btn small" id="openJournalButton">+ <span data-i18n="add_trade">Add Trade</span></button>
+      </div>
+
+      <div class="journal-stats">
+        <div class="stat-card">
+          <span data-i18n="win_rate">Win Rate</span>
+          <strong id="journalWinRate">--</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Profit Factor</span>
+          <strong id="journalProfitFactor">--</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-i18n="average_r">Average R</span>
+          <strong id="journalAverageR">--</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-i18n="drawdown">Drawdown</span>
+          <strong id="journalDrawdown">--</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-i18n="trades">Trades</span>
+          <strong id="journalTrades">0</strong>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span data-i18n="recent_trades">Recent Trades</span>
+        </div>
+
+        <div id="journalTable" class="journal-table">
+          <div class="empty-state">
+            <span>▤</span>
+            <strong data-i18n="no_trades">No trades yet</strong>
+            <p data-i18n="add_first_trade">Add your first trade to start building your journal.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE -->
+    <section id="live" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="live">LIVE</span>
+          <h2 data-i18n="live_title">Live Room</h2>
+          <p data-i18n="live_subtitle">Live market sessions and broadcasts.</p>
+        </div>
+      </div>
+
+      <div class="live-layout">
+        <div class="live-screen panel">
+          <div id="liveScreen" class="live-placeholder">
+            <span class="live-camera">●</span>
+            <strong id="liveTitleDisplay" data-i18n="no_live">No live session right now</strong>
+            <p id="liveDescriptionDisplay" data-i18n="live_waiting">The live room will appear here when the admin starts a session.</p>
+          </div>
+        </div>
+
+        <div class="panel live-info">
+          <div class="panel-header">
+            <span data-i18n="live_status">Live Status</span>
+            <span id="liveIndicator" class="status-pill offline">OFFLINE</span>
+          </div>
+
+          <div class="live-info-item">
+            <span>Room</span>
+            <strong>Habboub Live</strong>
+          </div>
+
+          <div class="live-info-item">
+            <span>Market</span>
+            <strong>XAUUSD</strong>
+          </div>
+
+          <div class="live-info-item">
+            <span>Analysis</span>
+            <strong>Habboub Intelligence</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACADEMY -->
+    <section id="academy" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="academy">ACADEMY</span>
+          <h2 data-i18n="academy_title">Habboub Academy</h2>
+          <p data-i18n="academy_subtitle">Learn the concepts behind the analysis.</p>
+        </div>
+      </div>
+
+      <div id="courseContainer" class="course-grid">
+        <div class="empty-state">
+          <span>◇</span>
+          <strong data-i18n="loading_courses">Loading courses...</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- ANNOUNCEMENTS -->
+    <section id="announcementsSection" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="announcements">ANNOUNCEMENTS</span>
+          <h2 data-i18n="announcements_title">Latest Updates</h2>
+        </div>
+      </div>
+
+      <div id="announcementsContainer" class="announcement-list">
+        <div class="empty-state">
+          <span>◆</span>
+          <strong data-i18n="loading">Loading...</strong>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LOGIN -->
+  <div id="loginModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-box">
+      <button class="modal-close" data-close-modal>×</button>
+
+      <div class="modal-icon">H</div>
+      <h2 data-i18n="welcome_back">Welcome back</h2>
+      <p data-i18n="login_subtitle">Enter your account to continue.</p>
+
+      <form id="loginForm">
+        <label>
+          <span>Email</span>
+          <input id="loginEmail" type="email" required autocomplete="email">
+        </label>
+
+        <label>
+          <span>Password</span>
+          <input id="loginPassword" type="password" required autocomplete="current-password">
+        </label>
+
+        <button class="primary-btn full" type="submit" data-i18n="login">Login</button>
+      </form>
+
+      <div class="form-message" id="loginMessage"></div>
+
+      <button class="text-btn center" id="showRegisterButton" data-i18n="create_account">
+        Create an account
       </button>
-
     </div>
+  </div>
 
+  <!-- REGISTER -->
+  <div id="registerModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-box">
+      <button class="modal-close" data-close-modal>×</button>
 
-    <div class="dashboard-card">
+      <div class="modal-icon">H</div>
+      <h2 data-i18n="create_account">Create an account</h2>
+      <p data-i18n="register_subtitle">Join Habboub Intelligence.</p>
 
-      <div class="card-header">
+      <form id="registerForm">
+        <label>
+          <span>Email</span>
+          <input id="registerEmail" type="email" required autocomplete="email">
+        </label>
 
-        <span class="eyebrow">NEWS</span>
+        <label>
+          <span>Password</span>
+          <input id="registerPassword" type="password" minlength="6" required autocomplete="new-password">
+        </label>
 
-        <span>🚨</span>
+        <button class="primary-btn full" type="submit" data-i18n="register">Register</button>
+      </form>
 
-      </div>
+      <div class="form-message" id="registerMessage"></div>
 
-      <h3>Economic Intelligence</h3>
-
-      <div class="news-mini">
-
-        <div>
-          <strong>USD</strong>
-          <span>Economic Calendar</span>
-        </div>
-
-        <b id="newsStatus">
-          Waiting
-        </b>
-
-      </div>
-
-      <button
-        class="ghost-btn full"
-        onclick="document.getElementById('newsSection').scrollIntoView({behavior:'smooth'})">
-        View News
+      <button class="text-btn center" id="showLoginButton" data-i18n="already_account">
+        Already have an account?
       </button>
-
     </div>
-
   </div>
 
-</section>
-
-
-<div
-  id="habboubNewsAlert"
-  class="habboub-news-alert">
-
-  <div class="news-alert-top">
-
-    <div class="news-alert-badge">
-
-      <span class="news-alert-icon">
-        🚨
-      </span>
-
-      <span>
-        HIGH IMPACT NEWS
-      </span>
-
-    </div>
-
-    <div
-      id="newsAlertCountdown"
-      class="news-alert-countdown">
-      —
-    </div>
-
-  </div>
-
-
-  <div
-    id="newsAlertTitle"
-    class="news-alert-title">
-    —
-  </div>
-
-
-  <div class="news-alert-info">
-
-    <div class="news-alert-tag">
-      💵 USD
-    </div>
-
-    <div class="news-alert-tag">
-      ⚡ High Volatility
-    </div>
-
-    <div class="news-alert-tag">
-      🥇 XAUUSD
-    </div>
-
-  </div>
-
-
-  <div
-    id="newsAlertExplanation"
-    class="news-alert-explanation">
-    —
-  </div>
-
-
-  <button
-    class="ghost-btn news-alert-button"
-    onclick="toggleNewsList()">
-    View all important events
-  </button>
-
-
-  <div
-    id="newsListPanel"
-    class="news-list-panel">
-
-  </div>
-
-</div>
-
-
-<section id="markets" class="section">
-
-  <div class="section-heading">
-
-    <div>
-
-      <span class="eyebrow">
-        LIVE MARKETS
-      </span>
-
-      <h2>Markets</h2>
-
-    </div>
-
-  </div>
-
-
-  <div class="market-grid">
-
-    <div class="asset-card">
-
-      <div class="asset-top">
-
-        <span>🥇</span>
-
-        <small>
-          XAUUSD
-        </small>
-
-      </div>
-
-      <h3>Gold</h3>
-
-      <div
-        class="asset-price"
-        id="goldPrice">
-        --
-      </div>
-
-      <div
-        class="asset-change"
-        id="goldChange">
-        Waiting for live provider
-      </div>
-
-      <div class="mini-chart"></div>
-
-    </div>
-
-
-    <div class="asset-card">
-
-      <div class="asset-top">
-
-        <span>📊</span>
-
-        <small>
-          NAS100
-        </small>
-
-      </div>
-
-      <h3>NASDAQ</h3>
-
-      <div
-        class="asset-price"
-        id="nasdaqPrice">
-        --
-      </div>
-
-      <div
-        class="asset-change"
-        id="nasdaqChange">
-        Waiting for live provider
-      </div>
-
-      <div class="mini-chart"></div>
-
-    </div>
-
-
-    <div class="asset-card">
-
-      <div class="asset-top">
-
-        <span>📈</span>
-
-        <small>
-          SPX
-        </small>
-
-      </div>
-
-      <h3>S&P 500</h3>
-
-      <div
-        class="asset-price"
-        id="spxPrice">
-        --
-      </div>
-
-      <div
-        class="asset-change"
-        id="spxChange">
-        Waiting for live provider
-      </div>
-
-      <div class="mini-chart"></div>
-
-    </div>
-
-
-    <div class="asset-card">
-
-      <div class="asset-top">
-
-        <span>₿</span>
-
-        <small>
-          BTCUSD
-        </small>
-
-      </div>
-
-      <h3>Bitcoin</h3>
-
-      <div class="asset-price">
-        --
-      </div>
-
-      <div class="asset-change">
-        Waiting for provider
-      </div>
-
-      <div class="mini-chart"></div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<section id="analysis" class="section dark-section">
-
-  <div class="section-heading">
-
-    <div>
-
-      <span class="eyebrow">
-        HABBOUB INTELLIGENCE
-      </span>
-
-      <h2>
-        Market Intelligence
-      </h2>
-
-    </div>
-
-  </div>
-
-
-  <div class="analysis-grid">
-
-    <div class="analysis-main">
-
-      <div class="analysis-title">
-
-        <span id="analysisSymbol">
-          XAUUSD
-        </span>
-
-        <span
-          class="neutral"
-          id="analysisStatus">
-          WAIT
-        </span>
-
-      </div>
-
-
-      <h3>
-        ICT Market Analysis
-      </h3>
-
-
-      <p id="analysisDescription">
-        Waiting for the latest Habboub market analysis.
-      </p>
-
-
-      <div class="signals">
-
-        <div>
-          <span>HTF Bias</span>
-          <strong id="htfBias">--</strong>
+  <!-- JOURNAL MODAL -->
+  <div id="journalModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-box journal-modal">
+      <button class="modal-close" data-close-modal>×</button>
+
+      <h2 data-i18n="add_trade">Add Trade</h2>
+      <p data-i18n="journal_form_subtitle">Save the important details of your trade.</p>
+
+      <form id="journalForm">
+
+        <div class="form-grid">
+          <label>
+            <span>Symbol</span>
+            <input id="tradeSymbol" value="XAUUSD" required>
+          </label>
+
+          <label>
+            <span>Setup</span>
+            <input id="tradeSetup" placeholder="ICT / AMT / Other">
+          </label>
         </div>
 
-        <div>
-          <span>Liquidity</span>
-          <strong id="liquidity">--</strong>
+        <div class="form-grid">
+          <label>
+            <span>Result</span>
+            <select id="tradeResult">
+              <option value="win">Win</option>
+              <option value="loss">Loss</option>
+              <option value="breakeven">Breakeven</option>
+            </select>
+          </label>
+
+          <label>
+            <span>R Result</span>
+            <input id="tradeR" type="number" step="0.01" value="1">
+          </label>
         </div>
 
-        <div>
-          <span>MSS</span>
-          <strong id="mss">--</strong>
-        </div>
+        <label>
+          <span>Notes</span>
+          <textarea id="tradeNotes" rows="4"></textarea>
+        </label>
 
-        <div>
-          <span>FVG</span>
-          <strong id="fvg">--</strong>
-        </div>
+        <button class="primary-btn full" type="submit" data-i18n="save_trade">Save Trade</button>
+      </form>
 
-      </div>
-
-
-      <div class="intelligence-reasons">
-
-        <div class="reason-card">
-
-          <span>
-            🧠
-          </span>
-
-          <div>
-
-            <strong>
-              Why is the score changing?
-            </strong>
-
-            <p id="scoreReason">
-              Waiting for market data.
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <div class="reason-card">
-
-          <span>
-            🌎
-          </span>
-
-          <div>
-
-            <strong>
-              Macro Environment
-            </strong>
-
-            <p id="macroReason">
-              Waiting for economic context.
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <div class="reason-card">
-
-          <span>
-            📰
-          </span>
-
-          <div>
-
-            <strong>
-              News Impact
-            </strong>
-
-            <p id="newsReason">
-              Waiting for economic events.
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
+      <div class="form-message" id="journalMessage"></div>
     </div>
-
-
-    <div class="risk-card">
-
-      <span class="eyebrow">
-        MARKET ENVIRONMENT
-      </span>
-
-      <div
-        class="decision"
-        id="tradeDecision">
-        WAIT
-      </div>
-
-      <p id="tradeDecisionText">
-        No decision context is available yet.
-      </p>
-
-
-      <div class="risk-meter">
-
-        <div
-          id="riskMeter"
-          style="width:0%">
-        </div>
-
-      </div>
-
-
-      <small id="riskLevelText">
-        Risk level unavailable
-      </small>
-
-    </div>
-
   </div>
 
-</section>
-
-
-<section class="section">
-
-  <div class="section-heading">
-
-    <div>
-
-      <span class="eyebrow">
-        COT INTELLIGENCE
-      </span>
-
-      <h2>
-        Commitment of Traders
-      </h2>
-
-    </div>
-
-  </div>
-
-
-  <div class="cot-card">
-
-    <div class="cot-item">
-
-      <span>
-        Commercial
-      </span>
-
-      <strong id="cotCommercial">
-        --
-      </strong>
-
-    </div>
-
-
-    <div class="cot-item">
-
-      <span>
-        Managed Money
-      </span>
-
-      <strong id="cotManaged">
-        --
-      </strong>
-
-    </div>
-
-
-    <div class="cot-item">
-
-      <span>
-        Net Position
-      </span>
-
-      <strong id="cotNet">
-        --
-      </strong>
-
-    </div>
-
-
-    <div class="cot-item">
-
-      <span>
-        Habboub Bias
-      </span>
-
-      <strong id="cotBias">
-        WAITING
-      </strong>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<section
-  id="newsSection"
-  class="section">
-
-  <div class="section-heading">
-
-    <div>
-
-      <span class="eyebrow">
-        USD NEWS
-      </span>
-
-      <h2>
-        Economic Intelligence
-      </h2>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="newsContainer"
-    class="dashboard-grid">
-
-    <div class="dashboard-card">
-
-      <div class="card-header">
-
-        <span class="eyebrow">
-          CALENDAR
-        </span>
-
-        <span>
-          📰
-        </span>
-
-      </div>
-
-      <h3>
-        USD Calendar
-      </h3>
-
-      <p>
-        Waiting for the live economic-data provider.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<section
-  id="journal"
-  class="section">
-
-  <div class="section-heading">
-
-    <div>
-
-      <span class="eyebrow">
-        TRADING JOURNAL
-      </span>
-
-      <h2>
-        Track every trade
-      </h2>
-
-    </div>
-
-    <button
-      class="primary-btn"
-      onclick="openJournal()">
-      + Add Trade
-    </button>
-
-  </div>
-
-
-  <div class="journal-grid">
-
-    <div class="journal-stat">
-
-      <span>
-        Win Rate
-      </span>
-
-      <strong id="journalWinRate">
-        --
-      </strong>
-
-    </div>
-
-
-    <div class="journal-stat">
-
-      <span>
-        Profit Factor
-      </span>
-
-      <strong id="journalProfitFactor">
-        --
-      </strong>
-
-    </div>
-
-
-    <div class="journal-stat">
-
-      <span>
-        Average R
-      </span>
-
-      <strong id="journalAverageR">
-        --
-      </strong>
-
-    </div>
-
-
-    <div class="journal-stat">
-
-      <span>
-        Drawdown
-      </span>
-
-      <strong id="journalDrawdown">
-        --
-      </strong>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="journalTrades"
-    class="dashboard-grid">
-  </div>
-
-</section>
-
-
-<section
-  id="live"
-  class="section dark-section">
-
-  <div class="section-heading">
-
-    <div>
-
-      <span class="eyebrow">
-        HABBOUB LIVE
-      </span>
-
-      <h2>
-        Live Trading Room
-      </h2>
-
-    </div>
-
-    <span
-      class="live-dot"
-      id="liveIndicator">
-      ● OFFLINE
-    </span>
-
-  </div>
-
-
-  <div class="live-container">
-
-    <div
-      class="live-screen"
-      id="liveScreen">
-
+  <!-- AI -->
+  <div id="aiWindow" class="ai-window hidden">
+    <div class="ai-header">
       <div>
-
-        <span class="play-icon">
-          ▶
-        </span>
-
-        <h3 id="liveTitleDisplay">
-          No live broadcast
-        </h3>
-
-        <p id="liveDescriptionDisplay">
-          The administrator can start a live session
-          from the Admin Panel.
-        </p>
-
+        <strong>Habboub AI</strong>
+        <small>Market Intelligence</small>
       </div>
-
+      <button id="closeAIButton">×</button>
     </div>
 
-
-    <div class="live-info">
-
-      <span class="eyebrow">
-        HABBOUB LIVE
-      </span>
-
-      <h3>
-        Live Trading Sessions
-      </h3>
-
-      <p>
-        Watch market analysis, educational sessions
-        and trading discussions.
-      </p>
-
-      <button
-        class="ghost-btn full"
-        onclick="openLogin()">
-        Login to participate
-      </button>
-
+    <div id="aiMessages" class="ai-messages">
+      <div class="ai-message bot">
+        <strong>Habboub</strong>
+        <p data-i18n="ai_welcome">
+          Ask about the current market context, risk, news or ICT structure.
+        </p>
+      </div>
     </div>
 
+    <form id="aiForm" class="ai-input-area">
+      <input id="aiInput" autocomplete="off" placeholder="Ask Habboub AI...">
+      <button type="submit">➤</button>
+    </form>
   </div>
 
-</section>
+  <button id="floatingAI" class="floating-ai">✦</button>
 
+  <div id="toast" class="toast"></div>
 
-<section
-  id="academy"
-  class="section">
-
-  <div class="section-heading">
-
-    <div>
-
-      <span class="eyebrow">
-        HABBOUB ACADEMY
-      </span>
-
-      <h2>
-        Learn the market
-      </h2>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="courseContainer"
-    class="course-grid">
-
-    <div class="course-card">
-
-      <span class="course-number">
-        --
-      </span>
-
-      <h3>
-        Loading courses...
-      </h3>
-
-      <p>
-        Please wait.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<section
-  id="announcementsSection"
-  class="section">
-
-  <div class="section-heading">
-
-    <div>
-
-      <span class="eyebrow">
-        HABBOUB
-      </span>
-
-      <h2>
-        Latest Announcements
-      </h2>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="announcementsContainer"
-    class="dashboard-grid">
-
-    <div class="dashboard-card">
-
-      <h3>
-        Loading announcements...
-      </h3>
-
-    </div>
-
-  </div>
-
-</section>
-
-</main>
-
-
-<footer>
-
-  <div class="footer-logo">
-    Habboub
-  </div>
-
-  <p>
-    Smart tools for smarter traders.
-  </p>
-
-  <div>
-    © 2026 Habboub
-  </div>
-
-</footer>
-
-
-<div
-  class="modal"
-  id="loginModal">
-
-  <div class="modal-box">
-
-    <button
-      class="close"
-      onclick="closeModals()">
-      ×
-    </button>
-
-    <span class="eyebrow">
-      WELCOME BACK
-    </span>
-
-    <h2>
-      Login to Habboub
-    </h2>
-
-    <input
-      id="loginEmail"
-      type="email"
-      placeholder="Email">
-
-    <input
-      id="loginPassword"
-      type="password"
-      placeholder="Password">
-
-    <button
-      id="loginButton"
-      class="primary-btn full"
-      onclick="loginUser()">
-      Login
-    </button>
-
-    <p id="loginMessage"></p>
-
-    <p>
-      Don't have an account?
-
-      <button
-        class="text-btn"
-        onclick="openRegister()">
-        Create one
-      </button>
-    </p>
-
-  </div>
-
-</div>
-
-
-<div
-  class="modal"
-  id="registerModal">
-
-  <div class="modal-box">
-
-    <button
-      class="close"
-      onclick="closeModals()">
-      ×
-    </button>
-
-    <span class="eyebrow">
-      JOIN HABBOUB
-    </span>
-
-    <h2>
-      Create your account
-    </h2>
-
-    <input
-      id="registerName"
-      type="text"
-      placeholder="Full name">
-
-    <input
-      id="registerEmail"
-      type="email"
-      placeholder="Email">
-
-    <input
-      id="registerPassword"
-      type="password"
-      placeholder="Password">
-
-    <button
-      id="registerButton"
-      class="primary-btn full"
-      onclick="registerUser()">
-      Create Account
-    </button>
-
-    <p id="registerMessage"></p>
-
-    <p>
-      Already have an account?
-
-      <button
-        class="text-btn"
-        onclick="openLogin()">
-        Login
-      </button>
-    </p>
-
-  </div>
-
-</div>
-
-
-<div
-  class="modal"
-  id="journalModal">
-
-  <div class="modal-box">
-
-    <button
-      class="close"
-      onclick="closeModals()">
-      ×
-    </button>
-
-    <span class="eyebrow">
-      TRADING JOURNAL
-    </span>
-
-    <h2>
-      Add Trade
-    </h2>
-
-    <input
-      id="journalSymbol"
-      placeholder="Symbol e.g. XAUUSD">
-
-    <input
-      id="journalDirection"
-      placeholder="Direction: Long / Short">
-
-    <input
-      id="journalEntry"
-      type="number"
-      step="any"
-      placeholder="Entry price">
-
-    <input
-      id="journalStop"
-      type="number"
-      step="any"
-      placeholder="Stop Loss">
-
-    <input
-      id="journalTake"
-      type="number"
-      step="any"
-      placeholder="Take Profit">
-
-    <input
-      id="journalResult"
-      type="number"
-      step="any"
-      placeholder="Result">
-
-    <textarea
-      id="journalNotes"
-      placeholder="Notes"></textarea>
-
-    <button
-      class="primary-btn full"
-      onclick="saveJournalTrade()">
-      Save Trade
-    </button>
-
-    <p id="journalMessage"></p>
-
-  </div>
-
-</div>
-
-
-<div
-  class="ai-window"
-  id="aiWindow">
-
-  <div class="ai-header">
-
-    <div>
-
-      <strong>
-        Habboub AI
-      </strong>
-
-      <small>
-        Market Intelligence Assistant
-      </small>
-
-    </div>
-
-    <button
-      onclick="closeAI()">
-      ×
-    </button>
-
-  </div>
-
-
-  <div
-    class="ai-messages"
-    id="aiMessages">
-
-    <div class="ai-message">
-
-      👋 Welcome to Habboub AI.
-
-      <br><br>
-
-      Ask about ICT, market structure,
-      risk management or trading concepts.
-
-    </div>
-
-  </div>
-
-
-  <div class="ai-input">
-
-    <input
-      id="aiInput"
-      placeholder="Ask Habboub AI..."
-      onkeydown="handleAI(event)">
-
-    <button onclick="sendAI()">
-      ↑
-    </button>
-
-  </div>
-
-</div>
-
-
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
