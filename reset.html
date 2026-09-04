@@ -3,96 +3,232 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Habboub Password Reset</title>
+  <title>Habboub — Reset Password</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: #07090d;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 420px;
+      padding: 35px;
+      border: 1px solid #20242c;
+      border-radius: 18px;
+      background: #0d1015;
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .logo span {
+      display: inline-grid;
+      place-items: center;
+      width: 55px;
+      height: 55px;
+      border-radius: 15px;
+      background: white;
+      color: black;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 25px;
+      margin-bottom: 8px;
+    }
+
+    .sub {
+      color: #777f8a;
+      font-size: 13px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-top: 14px;
+      border: 1px solid #252a33;
+      border-radius: 10px;
+      background: #090c10;
+      color: white;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      border: 0;
+      border-radius: 10px;
+      background: white;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .5;
+    }
+
+    #message {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 13px;
+      color: #aaa;
+    }
+  </style>
 </head>
 
-<body style="font-family:Arial;background:#07090d;color:white;display:flex;justify-content:center;align-items:center;min-height:100vh">
+<body>
 
-  <div style="width:90%;max-width:400px;background:#0d1015;padding:30px;border-radius:18px">
+  <div class="box">
 
-    <h2>Habboub Admin Password Reset</h2>
+    <div class="logo">
+      <span>H</span>
+
+      <h1>Reset Password</h1>
+
+      <p class="sub">
+        Create a new password for your Habboub account.
+      </p>
+    </div>
 
     <input
       id="password"
       type="password"
       placeholder="New password"
-      style="width:100%;padding:14px;margin:20px 0 10px;box-sizing:border-box"
     >
 
-    <button
-      onclick="changePassword()"
-      style="width:100%;padding:14px;cursor:pointer"
+    <input
+      id="confirmPassword"
+      type="password"
+      placeholder="Confirm new password"
     >
+
+    <button id="resetButton" onclick="changePassword()">
       Change Password
     </button>
 
-    <p id="message"></p>
+    <div id="message"></div>
 
   </div>
 
 <script>
+
+const SUPABASE_URL =
+  "https://feoyjasuvrqxzhskqzye.supabase.co";
+
+const SUPABASE_ANON_KEY =
+  "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
 
 async function changePassword() {
 
   const password =
     document.getElementById("password").value;
 
+  const confirmPassword =
+    document.getElementById("confirmPassword").value;
+
   const message =
     document.getElementById("message");
 
-  if (password.length < 8) {
+  const button =
+    document.getElementById("resetButton");
+
+
+  if (!password || !confirmPassword) {
+
     message.textContent =
-      "Password must be at least 8 characters.";
+      "Please enter both passwords.";
+
     return;
   }
 
-  message.textContent =
-    "Changing password...";
 
-  try {
+  if (password.length < 6) {
 
-    const response = await fetch(
-      "https://feoyjasuvrqxzhskqzye.supabase.co/functions/v1/change-admin-password",
-      {
-        method: "POST",
+    message.textContent =
+      "Password must be at least 6 characters.";
 
-        headers: {
-          "Content-Type": "application/json"
-        },
+    return;
+  }
 
-        body: JSON.stringify({
-          newPassword: password
-        })
-      }
-    );
 
-    const data =
-      await response.json();
+  if (password !== confirmPassword) {
 
-    console.log(data);
+    message.textContent =
+      "Passwords do not match.";
 
-    if (data.success) {
+    return;
+  }
 
-      message.textContent =
-        "Password changed successfully!";
 
-      document.getElementById("password").value = "";
+  button.disabled = true;
+  button.textContent = "Changing...";
+  message.textContent = "";
 
-    } else {
 
-      message.textContent =
-        data.error || "Something went wrong.";
+  const { error } =
+    await supabaseClient.auth.updateUser({
+      password: password
+    });
 
-    }
 
-  } catch (error) {
+  if (error) {
 
     console.error(error);
 
     message.textContent =
-      "Connection error.";
+      error.message;
 
+    button.disabled = false;
+    button.textContent = "Change Password";
+
+    return;
   }
+
+
+  message.textContent =
+    "Password changed successfully!";
+
+
+  button.textContent =
+    "Success";
+
+
+  setTimeout(() => {
+
+    window.location.href =
+      "index.html";
+
+  }, 1500);
 
 }
 
