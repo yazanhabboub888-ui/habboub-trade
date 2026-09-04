@@ -1,1480 +1,879 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background:
-    radial-gradient(circle at 15% 0%, rgba(255,255,255,.035), transparent 30%),
-    #080a0d;
-  color: #f5f7fa;
-  font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.5;
-  overflow-x: hidden;
-  transition: opacity .2s ease, transform .2s ease;
-}
-
-body.page-changing {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button,
-input,
-textarea {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  width: 100%;
-  min-height: 72px;
-  padding: 0 5%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 25px;
-  background: rgba(8,10,13,.84);
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  backdrop-filter: blur(20px);
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 20px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.logo span {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  background: #fff;
-  color: #080a0d;
-  font-weight: 900;
-}
-
-.navbar nav {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
-
-.navbar nav a {
-  color: #858d99;
-  font-size: 13px;
-  transition: .2s ease;
-}
-
-.navbar nav a:hover {
-  color: #fff;
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.primary-btn,
-.ghost-btn,
-.text-btn {
-  border: 0;
-  transition: .2s ease;
-}
-
-.primary-btn {
-  padding: 10px 17px;
-  border-radius: 10px;
-  background: #fff;
-  color: #080a0d;
-  font-weight: 800;
-}
-
-.primary-btn:hover {
-  transform: translateY(-2px);
-  opacity: .9;
-}
-
-.primary-btn.big,
-.ghost-btn.big {
-  padding: 14px 21px;
-  border-radius: 12px;
-}
-
-.ghost-btn {
-  padding: 10px 17px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.1);
-  background: rgba(255,255,255,.035);
-  color: #e7eaf0;
-  font-weight: 700;
-}
-
-.ghost-btn:hover {
-  border-color: rgba(255,255,255,.2);
-  background: rgba(255,255,255,.07);
-}
-
-.text-btn {
-  background: transparent;
-  color: #fff;
-  font-weight: 700;
-}
-
-.full {
-  width: 100%;
-}
-
-.language-switch {
-  display: inline-flex;
-  gap: 3px;
-  padding: 4px;
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 999px;
-  background: rgba(255,255,255,.04);
-}
-
-.language-switch button {
-  border: 0;
-  background: transparent;
-  color: #7f8793;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.language-switch button.active {
-  background: #fff;
-  color: #080a0d;
-}
-
-#loader {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 12px;
-  background: #080a0d;
-  transition: .4s ease;
-}
-
-#loader.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.loader-logo {
-  width: 65px;
-  height: 65px;
-  display: grid;
-  place-items: center;
-  border-radius: 18px;
-  background: #fff;
-  color: #080a0d;
-  font-size: 28px;
-  font-weight: 900;
-  animation: loaderPulse 1.3s infinite;
-}
-
-@keyframes loaderPulse {
-  0%,100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(.9);
-    opacity: .7;
-  }
-}
-
-#loader p {
-  color: #7f8793;
-  font-size: 12px;
-}
-
-.hero {
-  width: min(1400px, 90%);
-  min-height: 690px;
-  margin: auto;
-  padding: 90px 0;
-  display: grid;
-  grid-template-columns: 1.15fr .85fr;
-  align-items: center;
-  gap: 70px;
-}
-
-.badge,
-.eyebrow {
-  color: #818a96;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
-.badge {
-  display: inline-flex;
-  padding: 8px 11px;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 999px;
-  background: rgba(255,255,255,.025);
-}
-
-.hero h1 {
-  margin-top: 22px;
-  font-size: clamp(46px, 6vw, 82px);
-  line-height: .98;
-  letter-spacing: -.055em;
-}
-
-.hero h1 span {
-  color: #777f8b;
-}
-
-.hero-content > p {
-  max-width: 650px;
-  margin-top: 25px;
-  color: #929aa6;
-  font-size: 16px;
-  line-height: 1.8;
-}
-
-.hero-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 32px;
-}
-
-.hero-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 35px;
-  margin-top: 55px;
-}
-
-.hero-stats div {
-  display: grid;
-  gap: 4px;
-}
-
-.hero-stats strong {
-  font-size: 20px;
-}
-
-.hero-stats small {
-  color: #707885;
-  font-size: 10px;
-}
-
-.hero-panel {
-  padding: 22px;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at top right, rgba(255,255,255,.07), transparent 45%),
-    rgba(255,255,255,.025);
-  box-shadow: 0 30px 100px rgba(0,0,0,.25);
-}
-
-.panel-top,
-.card-header,
-.section-heading,
-.preview-row,
-.news-mini {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-}
-
-.panel-top {
-  color: #717a87;
-  font-size: 10px;
-  font-weight: 900;
-}
-
-.live-dot {
-  color: #69d797;
-  font-size: 10px;
-}
-
-.market-preview {
-  margin-top: 20px;
-}
-
-.preview-row {
-  padding: 20px 0;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-}
-
-.preview-row:last-child {
-  border-bottom: 0;
-}
-
-.preview-row small {
-  color: #707885;
-  font-size: 9px;
-  font-weight: 800;
-}
-
-.preview-row h3 {
-  margin-top: 3px;
-  font-size: 17px;
-}
-
-.price {
-  text-align: right;
-}
-
-.price strong {
-  display: block;
-  font-size: 20px;
-}
-
-.price small {
-  color: #777f8b;
-}
-
-.section {
-  width: min(1400px, 90%);
-  margin: auto;
-  padding: 85px 0;
-}
-
-.dark-section {
-  width: 100%;
-  max-width: none;
-  padding-left: 5%;
-  padding-right: 5%;
-  background:
-    radial-gradient(circle at 80% 20%, rgba(255,255,255,.035), transparent 30%),
-    #0a0d11;
-  border-top: 1px solid rgba(255,255,255,.05);
-  border-bottom: 1px solid rgba(255,255,255,.05);
-}
-
-.section-heading {
-  margin-bottom: 28px;
-}
-
-.section-heading h2 {
-  margin-top: 7px;
-  font-size: clamp(28px, 4vw, 42px);
-  letter-spacing: -.035em;
-}
-
-.status,
-.neutral {
-  padding: 7px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.04);
-  color: #a1a9b4;
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
-.dashboard-card {
-  padding: 22px;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 18px;
-  background: rgba(255,255,255,.025);
-  transition: .25s ease;
-}
-
-.dashboard-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255,255,255,.14);
-}
-
-.large-card {
-  grid-column: span 1;
-}
-
-.dashboard-card h3 {
-  margin: 15px 0 9px;
-  font-size: 18px;
-}
-
-.dashboard-card p {
-  color: #828b97;
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.market-score {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  margin-top: 30px;
-}
-
-.score-circle {
-  min-width: 145px;
-  height: 145px;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  border: 8px solid rgba(255,255,255,.07);
-  border-top-color: #fff;
-  border-radius: 50%;
-}
-
-.score-circle strong {
-  font-size: 37px;
-}
-
-.score-circle span {
-  color: #727b87;
-  font-size: 10px;
-}
-
-.score-info h3 {
-  margin: 0 0 10px;
-}
-
-.score-info p {
-  max-width: 400px;
-}
-
-.risk {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid rgba(255,255,255,.06);
-}
-
-.risk span {
-  color: #707885;
-  font-size: 11px;
-}
-
-.session-hub {
-  position: relative;
-  margin: 25px 0;
-  padding: 22px;
-  border: 1px solid rgba(255,255,255,.09);
-  border-radius: 22px;
-  background:
-    radial-gradient(circle at top right, rgba(255,255,255,.055), transparent 35%),
-    rgba(12,15,20,.92);
-  box-shadow: 0 20px 60px rgba(0,0,0,.18);
-  overflow: hidden;
-}
-
-.session-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.session-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.session-title h2 {
-  font-size: 20px;
-}
-
-.session-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(45,200,120,.1);
-  color: #66d99b;
-  font-size: 10px;
-  font-weight: 900;
-}
-
-.session-live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #55d88a;
-  box-shadow: 0 0 12px rgba(85,216,138,.8);
-  animation: sessionPulse 1.6s infinite;
-}
-
-@keyframes sessionPulse {
-  0%,100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: .45;
-    transform: scale(.75);
-  }
-}
-
-.session-grid {
-  display: grid;
-  grid-template-columns: 1.4fr repeat(4,1fr);
-  gap: 10px;
-}
-
-.session-card {
-  min-height: 105px;
-  padding: 16px;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 16px;
-  background: rgba(255,255,255,.025);
-  transition: .2s ease;
-}
-
-.session-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(255,255,255,.15);
-}
-
-.session-card-label {
-  margin-bottom: 9px;
-  color: #727b88;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-}
-
-.session-card-value {
-  font-size: 17px;
-  font-weight: 800;
-}
-
-.session-card-small {
-  margin-top: 6px;
-  color: #929aa6;
-  font-size: 10px;
-}
-
-.session-asset {
-  font-size: 23px;
-  font-weight: 900;
-}
-
-.session-price {
-  margin-top: 5px;
-  color: #aab2be;
-  font-size: 11px;
-}
-
-.regime-trending {
-  color: #7ee2a8;
-}
-
-.regime-ranging {
-  color: #e8ca70;
-}
-
-.regime-risk {
-  color: #ff7777;
-}
-
-.session-timeline {
-  margin-top: 18px;
-  padding: 15px;
-  border: 1px solid rgba(255,255,255,.06);
-  border-radius: 15px;
-  background: rgba(255,255,255,.018);
-}
-
-.timeline-row {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 10px;
-}
-
-.timeline-item {
-  padding: 10px;
-  text-align: center;
-  color: #707885;
-  font-size: 11px;
-}
-
-.timeline-item.active {
-  color: #fff;
-}
-
-.timeline-item.active::after {
-  content: "";
-  display: block;
-  width: 7px;
-  height: 7px;
-  margin: 7px auto 0;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 15px rgba(255,255,255,.6);
-}
-
-.market-grid {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 14px;
-}
-
-.asset-card {
-  position: relative;
-  min-height: 230px;
-  padding: 22px;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 18px;
-  background: rgba(255,255,255,.025);
-  overflow: hidden;
-  transition: .25s ease;
-}
-
-.asset-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255,255,255,.15);
-}
-
-.asset-top {
-  display: flex;
-  justify-content: space-between;
-  color: #777f8b;
-}
-
-.asset-top span {
-  font-size: 22px;
-}
-
-.asset-card h3 {
-  margin-top: 25px;
-}
-
-.asset-price {
-  margin-top: 10px;
-  font-size: 27px;
-  font-weight: 900;
-}
-
-.asset-change {
-  margin-top: 5px;
-  color: #707885;
-  font-size: 10px;
-}
-
-.mini-chart {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 65px;
-  opacity: .3;
-  background:
-    linear-gradient(135deg, transparent 10%, rgba(255,255,255,.1) 11%, transparent 12%),
-    linear-gradient(155deg, transparent 30%, rgba(255,255,255,.12) 31%, transparent 32%),
-    linear-gradient(145deg, transparent 50%, rgba(255,255,255,.1) 51%, transparent 52%);
-}
-
-.analysis-grid {
-  display: grid;
-  grid-template-columns: 1.5fr .5fr;
-  gap: 18px;
-}
-
-.analysis-main,
-.risk-card {
-  padding: 28px;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 20px;
-  background: rgba(255,255,255,.025);
-}
-
-.analysis-title {
-  display: flex;
-  justify-content: space-between;
-  color: #b4bbc5;
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.analysis-main h3 {
-  margin-top: 20px;
-  font-size: 25px;
-}
-
-.analysis-main > p {
-  margin-top: 10px;
-  color: #828b97;
-}
-
-.signals {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 10px;
-  margin-top: 25px;
-}
-
-.signals div {
-  padding: 14px;
-  border-radius: 13px;
-  background: rgba(255,255,255,.035);
-}
-
-.signals span {
-  display: block;
-  color: #707885;
-  font-size: 10px;
-}
-
-.signals strong {
-  display: block;
-  margin-top: 6px;
-  font-size: 14px;
-}
-
-.intelligence-reasons {
-  display: grid;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.reason-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid rgba(255,255,255,.05);
-  border-radius: 14px;
-  background: rgba(255,255,255,.02);
-}
-
-.reason-card > span {
-  font-size: 20px;
-}
-
-.reason-card strong {
-  font-size: 12px;
-}
-
-.reason-card p {
-  margin-top: 3px;
-  color: #777f8b;
-  font-size: 11px;
-}
-
-.decision {
-  margin: 25px 0 10px;
-  font-size: 32px;
-  font-weight: 900;
-}
-
-.risk-card p {
-  color: #828b97;
-  font-size: 12px;
-}
-
-.risk-meter {
-  height: 8px;
-  margin-top: 25px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255,255,255,.07);
-}
-
-.risk-meter div {
-  height: 100%;
-  border-radius: inherit;
-  background: #fff;
-  transition: width .4s ease;
-}
-
-.risk-card small {
-  display: block;
-  margin-top: 9px;
-  color: #707885;
-}
-
-.cot-card {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 18px;
-  background: rgba(255,255,255,.025);
-  overflow: hidden;
-}
-
-.cot-item {
-  padding: 25px;
-  border-right: 1px solid rgba(255,255,255,.06);
-}
-
-.cot-item:last-child {
-  border-right: 0;
-}
-
-.cot-item span {
-  color: #707885;
-  font-size: 10px;
-}
-
-.cot-item strong {
-  display: block;
-  margin-top: 7px;
-  font-size: 18px;
-}
-
-.habboub-news-alert {
-  position: relative;
-  width: min(1400px,90%);
-  margin: 0 auto 30px;
-  padding: 22px;
-  border: 1px solid rgba(255,70,70,.3);
-  border-radius: 20px;
-  background:
-    linear-gradient(135deg, rgba(120,15,15,.3), rgba(35,8,8,.8));
-  box-shadow: 0 10px 45px rgba(255,40,40,.08);
-  overflow: hidden;
-  animation: newsAppear .35s ease;
-}
-
-.habboub-news-alert:not(.show) {
-  display: none;
-}
-
-.habboub-news-alert::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 5px;
-  background: #ff5151;
-  box-shadow: 0 0 20px rgba(255,81,81,.7);
-}
-
-@keyframes newsAppear {
-  from {
-    opacity: 0;
-    transform: translateY(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.news-alert-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 15px;
-}
-
-.news-alert-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #ff7777;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: .08em;
-}
-
-.news-alert-icon {
-  font-size: 22px;
-}
-
-.news-alert-countdown {
-  color: #ffb2b2;
-  font-family: monospace;
-  font-size: 15px;
-  font-weight: 900;
-}
-
-.news-alert-title {
-  margin-top: 12px;
-  font-size: 23px;
-  font-weight: 900;
-}
-
-.news-alert-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.news-alert-tag {
-  padding: 7px 10px;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 8px;
-  background: rgba(0,0,0,.2);
-  color: #c4cad2;
-  font-size: 10px;
-}
-
-.news-alert-explanation {
-  margin-top: 14px;
-  color: #aeb5bf;
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.news-alert-button {
-  margin-top: 15px;
-}
-
-.news-list-panel {
-  display: none;
-  margin-top: 15px;
-  padding: 10px 15px;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 14px;
-  background: rgba(0,0,0,.2);
-}
-
-.news-list-panel.open {
-  display: block;
-}
-
-.news-list-item {
-  display: grid;
-  grid-template-columns: 90px 1fr 80px;
-  gap: 12px;
-  align-items: center;
-  padding: 13px 4px;
-  border-bottom: 1px solid rgba(255,255,255,.05);
-}
-
-.news-list-item:last-child {
-  border-bottom: 0;
-}
-
-.news-list-time {
-  color: #858d99;
-  font-size: 10px;
-}
-
-.news-list-name {
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.news-high {
-  color: #ff6d6d;
-}
-
-.news-medium {
-  color: #e7c867;
-}
-
-.news-list-impact {
-  text-align: right;
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.news-mini {
-  margin: 18px 0;
-  padding: 12px;
-  border: 1px solid rgba(255,255,255,.05);
-  border-radius: 10px;
-}
-
-.news-mini div {
-  display: grid;
-  gap: 2px;
-}
-
-.news-mini strong {
-  font-size: 13px;
-}
-
-.news-mini span {
-  color: #707885;
-  font-size: 10px;
-}
-
-.news-mini b {
-  color: #858d99;
-  font-size: 10px;
-}
-
-.journal-grid {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.journal-stat {
-  padding: 22px;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 16px;
-  background: rgba(255,255,255,.025);
-}
-
-.journal-stat span {
-  color: #707885;
-  font-size: 10px;
-}
-
-.journal-stat strong {
-  display: block;
-  margin-top: 7px;
-  font-size: 23px;
-}
-
-.live-container {
-  display: grid;
-  grid-template-columns: 1.5fr .5fr;
-  gap: 15px;
-}
-
-.live-screen {
-  min-height: 400px;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 20px;
-  background:
-    radial-gradient(circle, rgba(255,255,255,.05), transparent 45%),
-    #07090c;
-}
-
-.play-icon {
-  width: 65px;
-  height: 65px;
-  display: grid;
-  place-items: center;
-  margin: auto;
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 50%;
-  background: rgba(255,255,255,.05);
-}
-
-.live-screen h3 {
-  margin-top: 20px;
-}
-
-.live-screen p {
-  max-width: 450px;
-  margin: 8px auto;
-  color: #707885;
-  font-size: 12px;
-}
-
-.live-info {
-  padding: 25px;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 20px;
-  background: rgba(255,255,255,.025);
-}
-
-.live-info h3 {
-  margin-top: 15px;
-}
-
-.live-info p {
-  margin: 12px 0 25px;
-  color: #7f8793;
-  font-size: 12px;
-}
-
-.course-grid {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 14px;
-}
-
-.course-card {
-  padding: 24px;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 18px;
-  background: rgba(255,255,255,.025);
-  transition: .2s ease;
-}
-
-.course-card:hover {
-  transform: translateY(-4px);
-}
-
-.course-number {
-  color: #707885;
-  font-size: 11px;
-}
-
-.course-card h3 {
-  margin-top: 20px;
-}
-
-.course-card p {
-  margin-top: 8px;
-  color: #7f8793;
-  font-size: 12px;
-}
-
-.course-card button {
-  margin-top: 20px;
-  border: 0;
-  background: transparent;
-  color: #fff;
-  font-weight: 800;
-}
-
-footer {
-  padding: 55px 5%;
-  border-top: 1px solid rgba(255,255,255,.06);
-  text-align: center;
-  color: #6f7783;
-}
-
-.footer-logo {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 900;
-}
-
-footer p {
-  margin: 8px 0;
-  font-size: 12px;
-}
-
-.modal {
-  position: fixed;
-  inset: 0;
-  z-index: 5000;
-  display: none;
-  place-items: center;
-  padding: 20px;
-  background: rgba(0,0,0,.72);
-  backdrop-filter: blur(12px);
-}
-
-.modal.active {
-  display: grid;
-}
-
-.modal-box {
-  position: relative;
-  width: min(440px,100%);
-  padding: 30px;
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 20px;
-  background: #0c0f14;
-  box-shadow: 0 30px 100px rgba(0,0,0,.5);
-}
-
-.modal-box h2 {
-  margin: 10px 0 20px;
-}
-
-.modal-box input,
-.modal-box textarea {
-  width: 100%;
-  margin-top: 10px;
-  padding: 13px;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 10px;
-  outline: 0;
-  background: rgba(255,255,255,.04);
-  color: #fff;
-}
-
-.modal-box textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.modal-box input:focus,
-.modal-box textarea:focus {
-  border-color: rgba(255,255,255,.25);
-}
-
-.modal-box > p {
-  margin-top: 14px;
-  color: #777f8b;
-  font-size: 12px;
-}
-
-.close {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255,255,255,.05);
-  color: #fff;
-  font-size: 20px;
-}
-
-.ai-window {
-  position: fixed;
-  right: 25px;
-  bottom: 25px;
-  z-index: 4500;
-  width: min(420px,calc(100% - 30px));
-  height: 570px;
-  display: none;
-  flex-direction: column;
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 20px;
-  background: #0b0e13;
-  box-shadow: 0 30px 100px rgba(0,0,0,.5);
-  overflow: hidden;
-}
-
-.ai-window.active {
-  display: flex;
-}
-
-.ai-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 17px;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-}
-
-.ai-header strong,
-.ai-header small {
-  display: block;
-}
-
-.ai-header small {
-  margin-top: 3px;
-  color: #707885;
-  font-size: 10px;
-}
-
-.ai-header button {
-  border: 0;
-  background: transparent;
-  color: #fff;
-  font-size: 20px;
-}
-
-.ai-messages {
-  flex: 1;
-  padding: 15px;
-  overflow-y: auto;
-}
-
-.ai-message {
-  width: fit-content;
-  max-width: 90%;
-  margin-bottom: 10px;
-  padding: 11px 13px;
-  border-radius: 12px;
-  background: rgba(255,255,255,.05);
-  color: #b7bec8;
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.ai-input {
-  display: flex;
-  gap: 8px;
-  padding: 12px;
-  border-top: 1px solid rgba(255,255,255,.06);
-}
-
-.ai-input input {
-  flex: 1;
-  padding: 12px;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 10px;
-  outline: 0;
-  background: rgba(255,255,255,.04);
-  color: #fff;
-}
-
-.ai-input button {
-  width: 44px;
-  border: 0;
-  border-radius: 10px;
-  background: #fff;
-  color: #080a0d;
-  font-weight: 900;
-}
-
-@media (max-width: 1150px) {
-
-  .navbar nav {
-    display: none;
-  }
-
-  .hero {
-    grid-template-columns: 1fr;
-    padding-top: 65px;
-  }
-
-  .market-grid {
-    grid-template-columns: repeat(2,1fr);
-  }
-
-  .session-grid {
-    grid-template-columns: repeat(3,1fr);
-  }
-
-  .dashboard-grid {
-    grid-template-columns: repeat(2,1fr);
-  }
-
-  .analysis-grid,
-  .live-container {
-    grid-template-columns: 1fr;
-  }
-
-}
-
-@media (max-width: 750px) {
-
-  .navbar {
-    padding: 0 15px;
-  }
-
-  .nav-actions .ghost-btn,
-  .nav-actions .primary-btn {
-    display: none;
-  }
-
-  .hero,
-  .section {
-    width: calc(100% - 30px);
-  }
-
-  .hero h1 {
-    font-size: 46px;
-  }
-
-  .hero-buttons {
-    flex-direction: column;
-  }
-
-  .hero-stats {
-    gap: 20px;
-  }
-
-  .dashboard-grid,
-  .market-grid,
-  .course-grid,
-  .journal-grid,
-  .cot-card {
-    grid-template-columns: 1fr;
-  }
-
-  .cot-item {
-    border-right: 0;
-    border-bottom: 1px solid rgba(255,255,255,.06);
-  }
-
-  .cot-item:last-child {
-    border-bottom: 0;
-  }
-
-  .session-grid {
-    grid-template-columns: repeat(2,1fr);
-  }
-
-  .signals {
-    grid-template-columns: repeat(2,1fr);
-  }
-
-  .market-score {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .news-list-item {
-    grid-template-columns: 65px 1fr;
-  }
-
-  .news-list-impact {
-    display: none;
-  }
-
-}
-
-@media (max-width: 480px) {
-
-  .session-grid,
-  .signals {
-    grid-template-columns: 1fr;
-  }
-
-  .session-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .timeline-row {
-    grid-template-columns: 1fr;
-  }
-
-  .hero h1 {
-    font-size: 40px;
-  }
-
-  .ai-window {
-    right: 15px;
-    bottom: 15px;
-    height: 520px;
-  }
-
-}
-
-html[dir="rtl"] {
-  direction: rtl;
-}
-
-html[dir="rtl"] body {
-  font-family: Arial, "Noto Sans Arabic", sans-serif;
-}
-
-html[dir="rtl"] .habboub-news-alert::before {
-  left: auto;
-  right: 0;
-}
-
-html[dir="rtl"] .price {
-  text-align: left;
-}
-
-html[dir="rtl"] .news-list-impact {
-  text-align: left;
-}
-
-html[dir="rtl"] .close {
-  right: auto;
-  left: 15px;
-}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b12">
+  <meta name="description" content="Habboub Trading Intelligence">
+  <title>Habboub — Trading Intelligence</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+  <div id="loader" class="loader">
+    <div class="loader-logo">H</div>
+    <div class="loader-text">HABBOUB</div>
+  </div>
+
+  <header class="topbar">
+    <a href="#home" class="brand" data-nav="home">
+      <span class="brand-mark">H</span>
+      <span>
+        <strong>HABBOUB</strong>
+        <small>TRADING INTELLIGENCE</small>
+      </span>
+    </a>
+
+    <nav class="desktop-nav">
+      <button data-nav="home" class="nav-link active">
+        <span>⌂</span><span data-i18n="nav_home">Home</span>
+      </button>
+      <button data-nav="dashboard" class="nav-link">
+        <span>◈</span><span data-i18n="nav_session">Trading Session</span>
+      </button>
+      <button data-nav="markets" class="nav-link">
+        <span>◉</span><span data-i18n="nav_markets">Markets</span>
+      </button>
+      <button data-nav="intelligence" class="nav-link">
+        <span>✦</span><span data-i18n="nav_intelligence">Intelligence</span>
+      </button>
+      <button data-nav="news" class="nav-link">
+        <span>⚡</span><span data-i18n="nav_news">News</span>
+      </button>
+      <button data-nav="journal" class="nav-link">
+        <span>▤</span><span data-i18n="nav_journal">Journal</span>
+      </button>
+      <button data-nav="live" class="nav-link">
+        <span>●</span><span data-i18n="nav_live">Live</span>
+      </button>
+      <button data-nav="academy" class="nav-link">
+        <span>◇</span><span data-i18n="nav_academy">Academy</span>
+      </button>
+    </nav>
+
+    <div class="top-actions">
+      <div class="language-switch">
+        <button id="langEN" class="lang-btn active">EN</button>
+        <button id="langAR" class="lang-btn">عربي</button>
+      </div>
+
+      <button class="login-btn" id="loginButton" data-i18n="login">Login</button>
+      <button class="menu-btn" id="mobileMenuButton">☰</button>
+    </div>
+  </header>
+
+  <div id="mobileNav" class="mobile-nav">
+    <button data-nav="home">⌂ <span data-i18n="nav_home">Home</span></button>
+    <button data-nav="dashboard">◈ <span data-i18n="nav_session">Trading Session</span></button>
+    <button data-nav="markets">◉ <span data-i18n="nav_markets">Markets</span></button>
+    <button data-nav="intelligence">✦ <span data-i18n="nav_intelligence">Intelligence</span></button>
+    <button data-nav="news">⚡ <span data-i18n="nav_news">News</span></button>
+    <button data-nav="journal">▤ <span data-i18n="nav_journal">Journal</span></button>
+    <button data-nav="live">● <span data-i18n="nav_live">Live</span></button>
+    <button data-nav="academy">◇ <span data-i18n="nav_academy">Academy</span></button>
+  </div>
+
+  <main>
+
+    <!-- HOME -->
+    <section id="home" class="page-section active-section">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="eyebrow">
+            <span class="status-dot"></span>
+            <span data-i18n="system_online">HABBOUB INTELLIGENCE ONLINE</span>
+          </div>
+
+          <h1>
+            <span data-i18n="hero_title_1">Understand the market.</span>
+            <br>
+            <span class="gradient-text" data-i18n="hero_title_2">Trade with context.</span>
+          </h1>
+
+          <p data-i18n="hero_description">
+            Habboub combines market structure, ICT context, COT positioning,
+            economic events and AI intelligence into one clear trading environment.
+          </p>
+
+          <div class="hero-actions">
+            <button class="primary-btn" data-nav="dashboard">
+              <span>◈</span>
+              <span data-i18n="open_session">Open Trading Session</span>
+            </button>
+
+            <button class="secondary-btn" data-nav="markets">
+              <span data-i18n="view_markets">View Markets</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-score-card">
+          <div class="score-label" data-i18n="current_score">CURRENT HABBOUB SCORE</div>
+
+          <div class="score-ring" id="heroScoreRing">
+            <div class="score-ring-inner">
+              <strong id="heroScore">--</strong>
+              <span>/100</span>
+            </div>
+          </div>
+
+          <div class="score-state" id="heroScoreState">WAITING FOR DATA</div>
+
+          <div class="score-meta">
+            <div>
+              <small data-i18n="market_condition">Market Condition</small>
+              <strong id="heroCondition">--</strong>
+            </div>
+            <div>
+              <small data-i18n="risk">Risk</small>
+              <strong id="heroRisk">--</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="homeNewsAlert" class="major-alert hidden"></div>
+
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="overview">OVERVIEW</span>
+          <h2 data-i18n="market_overview">Market Overview</h2>
+        </div>
+        <span id="lastUpdated" class="updated-text">--</span>
+      </div>
+
+      <div class="market-grid compact">
+        <article class="market-card">
+          <div class="market-card-top">
+            <span class="market-symbol">XAUUSD</span>
+            <span class="market-icon gold">Au</span>
+          </div>
+          <strong id="heroGold">--</strong>
+          <span id="heroGoldChange" class="market-change">--</span>
+        </article>
+
+        <article class="market-card">
+          <div class="market-card-top">
+            <span class="market-symbol">NAS100</span>
+            <span class="market-icon">NQ</span>
+          </div>
+          <strong id="heroNasdaq">--</strong>
+          <span id="heroNasdaqChange" class="market-change">--</span>
+        </article>
+
+        <article class="market-card">
+          <div class="market-card-top">
+            <span class="market-symbol">S&P 500</span>
+            <span class="market-icon">SP</span>
+          </div>
+          <strong id="heroSPX">--</strong>
+          <span id="heroSPXChange" class="market-change">--</span>
+        </article>
+
+        <article class="market-card intelligence-card" data-nav="intelligence">
+          <div class="market-card-top">
+            <span data-i18n="ai_context">AI Context</span>
+            <span class="market-icon ai">✦</span>
+          </div>
+          <strong id="homeAIStatus">Ready</strong>
+          <span data-i18n="click_intelligence">Open Intelligence →</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- TRADING SESSION -->
+    <section id="dashboard" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="session">SESSION</span>
+          <h2 data-i18n="trading_session">Trading Session</h2>
+          <p data-i18n="session_subtitle">Everything you need for one trading session, in one place.</p>
+        </div>
+
+        <div class="session-clock">
+          <span id="sessionClock">--:--:--</span>
+          <small id="sessionName">--</small>
+        </div>
+      </div>
+
+      <div id="sessionNewsAlert" class="major-alert hidden"></div>
+
+      <div class="session-layout">
+
+        <div class="score-panel panel">
+          <div class="panel-header">
+            <span data-i18n="habboub_score">Habboub Score</span>
+            <span class="live-pill">LIVE</span>
+          </div>
+
+          <div class="big-score" id="sessionScore">--</div>
+          <div class="score-bar">
+            <span id="sessionScoreBar"></span>
+          </div>
+
+          <div class="score-state large" id="sessionScoreState">WAITING</div>
+
+          <div class="score-explanation">
+            <span data-i18n="score_explanation">Score reflects the overall market environment, not a BUY/SELL command.</span>
+          </div>
+        </div>
+
+        <div class="panel session-context">
+          <div class="panel-header">
+            <span data-i18n="market_context">Market Context</span>
+            <span id="analysisStatus" class="context-status">--</span>
+          </div>
+
+          <div class="context-grid">
+            <div class="context-item">
+              <small data-i18n="symbol">Symbol</small>
+              <strong id="analysisSymbol">XAUUSD</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="htf_bias">HTF Bias</small>
+              <strong id="htfBias">--</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="liquidity">Liquidity</small>
+              <strong id="liquidity">--</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="mss">MSS</small>
+              <strong id="mss">--</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="fvg">FVG</small>
+              <strong id="fvg">--</strong>
+            </div>
+
+            <div class="context-item">
+              <small data-i18n="risk">Risk</small>
+              <strong id="marketRisk">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel decision-panel">
+          <div class="panel-header">
+            <span data-i18n="environment">Environment</span>
+          </div>
+
+          <div class="environment-badge" id="marketCondition">--</div>
+
+          <div class="confidence">
+            <div>
+              <span data-i18n="confidence">Confidence</span>
+              <strong id="marketConfidence">--%</strong>
+            </div>
+            <div class="confidence-bar">
+              <span id="confidenceBar"></span>
+            </div>
+          </div>
+
+          <p id="marketAnalysisText" class="muted-text">
+            Waiting for market analysis...
+          </p>
+        </div>
+      </div>
+
+      <div class="session-bottom-grid">
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="ict_context">ICT Context</span>
+          </div>
+
+          <div class="check-list">
+            <div>
+              <span>HTF Bias</span>
+              <strong id="sessionBias">--</strong>
+            </div>
+            <div>
+              <span>Liquidity</span>
+              <strong id="sessionLiquidity">--</strong>
+            </div>
+            <div>
+              <span>MSS</span>
+              <strong id="sessionMSS">--</strong>
+            </div>
+            <div>
+              <span>FVG</span>
+              <strong id="sessionFVG">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="cot_positioning">COT Positioning</span>
+          </div>
+
+          <div class="cot-row">
+            <span>Commercial</span>
+            <strong id="cotCommercial">--</strong>
+          </div>
+
+          <div class="cot-row">
+            <span>Managed Money</span>
+            <strong id="cotManaged">--</strong>
+          </div>
+
+          <div class="cot-row">
+            <span>Net Position</span>
+            <strong id="cotNet">--</strong>
+          </div>
+
+          <div class="cot-bias" id="cotBias">--</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="session_timeline">Session Timeline</span>
+          </div>
+
+          <div class="timeline">
+            <div class="timeline-item" id="asiaSession">
+              <span class="timeline-dot"></span>
+              <div>
+                <strong>Asia</strong>
+                <small>00:00 — 08:00 UTC</small>
+              </div>
+            </div>
+
+            <div class="timeline-item" id="londonSession">
+              <span class="timeline-dot"></span>
+              <div>
+                <strong>London</strong>
+                <small>08:00 — 13:00 UTC</small>
+              </div>
+            </div>
+
+            <div class="timeline-item" id="newYorkSession">
+              <span class="timeline-dot"></span>
+              <div>
+                <strong>New York</strong>
+                <small>13:00 — 21:00 UTC</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel why-panel">
+        <div class="panel-header">
+          <span data-i18n="why_score">Why is the score here?</span>
+          <button class="text-btn" data-nav="intelligence" data-i18n="full_analysis">Full Analysis →</button>
+        </div>
+
+        <div id="scoreReasons" class="reason-grid">
+          <div class="reason neutral">
+            <span>◌</span>
+            <div>
+              <strong data-i18n="waiting">Waiting for data</strong>
+              <p data-i18n="waiting_analysis">Habboub will display the main factors here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARKETS -->
+    <section id="markets" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="markets">MARKETS</span>
+          <h2 data-i18n="markets_title">Market Watch</h2>
+          <p data-i18n="markets_subtitle">Monitor the assets that matter.</p>
+        </div>
+      </div>
+
+      <div class="market-grid">
+
+        <article class="large-market-card active-market" data-symbol="XAUUSD">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">XAUUSD</span>
+              <h3>Gold</h3>
+            </div>
+            <span class="market-icon gold">Au</span>
+          </div>
+          <div class="price-row">
+            <strong id="goldPrice">--</strong>
+            <span id="goldChange">--</span>
+          </div>
+          <button class="market-open-btn" data-nav="dashboard" data-i18n="open_session">Open Session</button>
+        </article>
+
+        <article class="large-market-card" data-symbol="NAS100">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">NAS100</span>
+              <h3>Nasdaq 100</h3>
+            </div>
+            <span class="market-icon">NQ</span>
+          </div>
+          <div class="price-row">
+            <strong id="nasdaqPrice">--</strong>
+            <span id="nasdaqChange">--</span>
+          </div>
+          <button class="market-open-btn" data-nav="dashboard" data-i18n="open_session">Open Session</button>
+        </article>
+
+        <article class="large-market-card" data-symbol="SPX">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">SPX</span>
+              <h3>S&P 500</h3>
+            </div>
+            <span class="market-icon">SP</span>
+          </div>
+          <div class="price-row">
+            <strong id="spxPrice">--</strong>
+            <span id="spxChange">--</span>
+          </div>
+          <button class="market-open-btn" data-nav="dashboard" data-i18n="open_session">Open Session</button>
+        </article>
+
+        <article class="large-market-card">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">EURUSD</span>
+              <h3>Euro / Dollar</h3>
+            </div>
+            <span class="market-icon">€</span>
+          </div>
+          <div class="price-row">
+            <strong>--</strong>
+            <span>External feed</span>
+          </div>
+        </article>
+
+        <article class="large-market-card">
+          <div class="large-market-top">
+            <div>
+              <span class="market-symbol">BTCUSD</span>
+              <h3>Bitcoin</h3>
+            </div>
+            <span class="market-icon">₿</span>
+          </div>
+          <div class="price-row">
+            <strong>--</strong>
+            <span>External feed</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- INTELLIGENCE -->
+    <section id="intelligence" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">HABBOUB AI</span>
+          <h2 data-i18n="intelligence_title">Market Intelligence</h2>
+          <p data-i18n="intelligence_subtitle">Understand what is influencing the environment.</p>
+        </div>
+
+        <button class="primary-btn small" id="openAIButton">✦ <span data-i18n="ask_ai">Ask Habboub AI</span></button>
+      </div>
+
+      <div class="intelligence-layout">
+
+        <div class="panel intelligence-main">
+          <div class="panel-header">
+            <span data-i18n="current_analysis">Current Analysis</span>
+            <span class="live-pill">LIVE</span>
+          </div>
+
+          <div class="analysis-title-row">
+            <div>
+              <span class="market-symbol" id="analysisSymbolLarge">XAUUSD</span>
+              <h3 id="analysisDescription">Market analysis</h3>
+            </div>
+
+            <div class="analysis-confidence">
+              <strong id="analysisConfidenceLarge">--%</strong>
+              <span data-i18n="confidence">confidence</span>
+            </div>
+          </div>
+
+          <p id="analysisLongText" class="analysis-text">
+            Waiting for the latest market analysis.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="market_regime">Market Regime</span>
+          </div>
+
+          <div id="regimeBadge" class="regime-badge">WAITING</div>
+
+          <div class="regime-list">
+            <div>
+              <span>Trend</span>
+              <strong id="regimeTrend">--</strong>
+            </div>
+            <div>
+              <span>Volatility</span>
+              <strong id="regimeVolatility">--</strong>
+            </div>
+            <div>
+              <span>Liquidity</span>
+              <strong id="regimeLiquidity">--</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="three-panels">
+
+        <div class="panel">
+          <div class="panel-header">
+            <span>ICT</span>
+          </div>
+          <div class="metric-list">
+            <div><span>HTF Bias</span><strong id="intelBias">--</strong></div>
+            <div><span>Liquidity</span><strong id="intelLiquidity">--</strong></div>
+            <div><span>MSS</span><strong id="intelMSS">--</strong></div>
+            <div><span>FVG</span><strong id="intelFVG">--</strong></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span>COT</span>
+          </div>
+          <div class="metric-list">
+            <div><span>Commercial</span><strong id="intelCommercial">--</strong></div>
+            <div><span>Managed Money</span><strong id="intelManaged">--</strong></div>
+            <div><span>Net</span><strong id="intelNet">--</strong></div>
+            <div><span>Bias</span><strong id="intelCotBias">--</strong></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="risk_environment">Risk Environment</span>
+          </div>
+          <div class="risk-display">
+            <div id="riskMeter" class="risk-meter">
+              <span></span>
+            </div>
+            <strong id="riskLevelText">--</strong>
+            <p data-i18n="risk_note">Risk describes the environment. It is not a trade instruction.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWS -->
+    <section id="news" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="news">NEWS</span>
+          <h2 data-i18n="news_title">Economic Calendar & Impact</h2>
+          <p data-i18n="news_subtitle">Major events can change the market environment quickly.</p>
+        </div>
+      </div>
+
+      <div id="newsContainer" class="news-list">
+        <div class="empty-state" id="newsStatus">
+          <span>◌</span>
+          <strong data-i18n="loading_news">Loading news...</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- JOURNAL -->
+    <section id="journal" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="journal">JOURNAL</span>
+          <h2 data-i18n="journal_title">Trading Journal</h2>
+          <p data-i18n="journal_subtitle">Track execution, results and mistakes.</p>
+        </div>
+
+        <button class="primary-btn small" id="openJournalButton">+ <span data-i18n="add_trade">Add Trade</span></button>
+      </div>
+
+      <div class="journal-stats">
+        <div class="stat-card">
+          <span data-i18n="win_rate">Win Rate</span>
+          <strong id="journalWinRate">--</strong>
+        </div>
+
+        <div class="stat-card">
+          <span>Profit Factor</span>
+          <strong id="journalProfitFactor">--</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-i18n="average_r">Average R</span>
+          <strong id="journalAverageR">--</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-i18n="drawdown">Drawdown</span>
+          <strong id="journalDrawdown">--</strong>
+        </div>
+
+        <div class="stat-card">
+          <span data-i18n="trades">Trades</span>
+          <strong id="journalTrades">0</strong>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span data-i18n="recent_trades">Recent Trades</span>
+        </div>
+
+        <div id="journalTable" class="journal-table">
+          <div class="empty-state">
+            <span>▤</span>
+            <strong data-i18n="no_trades">No trades yet</strong>
+            <p data-i18n="add_first_trade">Add your first trade to start building your journal.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE -->
+    <section id="live" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="live">LIVE</span>
+          <h2 data-i18n="live_title">Live Room</h2>
+          <p data-i18n="live_subtitle">Live market sessions and broadcasts.</p>
+        </div>
+      </div>
+
+      <div class="live-layout">
+        <div class="live-screen panel">
+          <div id="liveScreen" class="live-placeholder">
+            <span class="live-camera">●</span>
+            <strong id="liveTitleDisplay" data-i18n="no_live">No live session right now</strong>
+            <p id="liveDescriptionDisplay" data-i18n="live_waiting">The live room will appear here when the admin starts a session.</p>
+          </div>
+        </div>
+
+        <div class="panel live-info">
+          <div class="panel-header">
+            <span data-i18n="live_status">Live Status</span>
+            <span id="liveIndicator" class="status-pill offline">OFFLINE</span>
+          </div>
+
+          <div class="live-info-item">
+            <span>Room</span>
+            <strong>Habboub Live</strong>
+          </div>
+
+          <div class="live-info-item">
+            <span>Market</span>
+            <strong>XAUUSD</strong>
+          </div>
+
+          <div class="live-info-item">
+            <span>Analysis</span>
+            <strong>Habboub Intelligence</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACADEMY -->
+    <section id="academy" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="academy">ACADEMY</span>
+          <h2 data-i18n="academy_title">Habboub Academy</h2>
+          <p data-i18n="academy_subtitle">Learn the concepts behind the analysis.</p>
+        </div>
+      </div>
+
+      <div id="courseContainer" class="course-grid">
+        <div class="empty-state">
+          <span>◇</span>
+          <strong data-i18n="loading_courses">Loading courses...</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- ANNOUNCEMENTS -->
+    <section id="announcementsSection" class="page-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" data-i18n="announcements">ANNOUNCEMENTS</span>
+          <h2 data-i18n="announcements_title">Latest Updates</h2>
+        </div>
+      </div>
+
+      <div id="announcementsContainer" class="announcement-list">
+        <div class="empty-state">
+          <span>◆</span>
+          <strong data-i18n="loading">Loading...</strong>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LOGIN -->
+  <div id="loginModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-box">
+      <button class="modal-close" data-close-modal>×</button>
+
+      <div class="modal-icon">H</div>
+      <h2 data-i18n="welcome_back">Welcome back</h2>
+      <p data-i18n="login_subtitle">Enter your account to continue.</p>
+
+      <form id="loginForm">
+        <label>
+          <span>Email</span>
+          <input id="loginEmail" type="email" required autocomplete="email">
+        </label>
+
+        <label>
+          <span>Password</span>
+          <input id="loginPassword" type="password" required autocomplete="current-password">
+        </label>
+
+        <button class="primary-btn full" type="submit" data-i18n="login">Login</button>
+      </form>
+
+      <div class="form-message" id="loginMessage"></div>
+
+      <button class="text-btn center" id="showRegisterButton" data-i18n="create_account">
+        Create an account
+      </button>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="registerModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-box">
+      <button class="modal-close" data-close-modal>×</button>
+
+      <div class="modal-icon">H</div>
+      <h2 data-i18n="create_account">Create an account</h2>
+      <p data-i18n="register_subtitle">Join Habboub Intelligence.</p>
+
+      <form id="registerForm">
+        <label>
+          <span>Email</span>
+          <input id="registerEmail" type="email" required autocomplete="email">
+        </label>
+
+        <label>
+          <span>Password</span>
+          <input id="registerPassword" type="password" minlength="6" required autocomplete="new-password">
+        </label>
+
+        <button class="primary-btn full" type="submit" data-i18n="register">Register</button>
+      </form>
+
+      <div class="form-message" id="registerMessage"></div>
+
+      <button class="text-btn center" id="showLoginButton" data-i18n="already_account">
+        Already have an account?
+      </button>
+    </div>
+  </div>
+
+  <!-- JOURNAL MODAL -->
+  <div id="journalModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-box journal-modal">
+      <button class="modal-close" data-close-modal>×</button>
+
+      <h2 data-i18n="add_trade">Add Trade</h2>
+      <p data-i18n="journal_form_subtitle">Save the important details of your trade.</p>
+
+      <form id="journalForm">
+
+        <div class="form-grid">
+          <label>
+            <span>Symbol</span>
+            <input id="tradeSymbol" value="XAUUSD" required>
+          </label>
+
+          <label>
+            <span>Setup</span>
+            <input id="tradeSetup" placeholder="ICT / AMT / Other">
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            <span>Result</span>
+            <select id="tradeResult">
+              <option value="win">Win</option>
+              <option value="loss">Loss</option>
+              <option value="breakeven">Breakeven</option>
+            </select>
+          </label>
+
+          <label>
+            <span>R Result</span>
+            <input id="tradeR" type="number" step="0.01" value="1">
+          </label>
+        </div>
+
+        <label>
+          <span>Notes</span>
+          <textarea id="tradeNotes" rows="4"></textarea>
+        </label>
+
+        <button class="primary-btn full" type="submit" data-i18n="save_trade">Save Trade</button>
+      </form>
+
+      <div class="form-message" id="journalMessage"></div>
+    </div>
+  </div>
+
+  <!-- AI -->
+  <div id="aiWindow" class="ai-window hidden">
+    <div class="ai-header">
+      <div>
+        <strong>Habboub AI</strong>
+        <small>Market Intelligence</small>
+      </div>
+      <button id="closeAIButton">×</button>
+    </div>
+
+    <div id="aiMessages" class="ai-messages">
+      <div class="ai-message bot">
+        <strong>Habboub</strong>
+        <p data-i18n="ai_welcome">
+          Ask about the current market context, risk, news or ICT structure.
+        </p>
+      </div>
+    </div>
+
+    <form id="aiForm" class="ai-input-area">
+      <input id="aiInput" autocomplete="off" placeholder="Ask Habboub AI...">
+      <button type="submit">➤</button>
+    </form>
+  </div>
+
+  <button id="floatingAI" class="floating-ai">✦</button>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
