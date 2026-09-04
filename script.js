@@ -1,1956 +1,1503 @@
-const SUPABASE_URL =
-  "https://feoyjasuvrqxzhskqzye.supabase.co";
+const SUPABASE_URL = "https://feoyjasuvrqxzhskqzye.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
 
-const SUPABASE_ANON_KEY =
-  "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
-const supabaseClient =
-  supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+const state = {
+  language: localStorage.getItem("habboub_language") || "en",
+  analysis: null,
+  journal: [],
+  news: [],
+  announcements: [],
+  courses: [],
+  live: null,
+  lastUpdated: null
+};
 
+const translations = {
+  en: {
+    nav_home: "Home",
+    nav_session: "Trading Session",
+    nav_markets: "Markets",
+    nav_intelligence: "Intelligence",
+    nav_news: "News",
+    nav_journal: "Journal",
+    nav_live: "Live",
+    nav_academy: "Academy",
+    login: "Login",
+    system_online: "HABBOUB INTELLIGENCE ONLINE",
+    hero_title_1: "Understand the market.",
+    hero_title_2: "Trade with context.",
+    hero_description: "Habboub combines market structure, ICT context, COT positioning, economic events and AI intelligence into one clear trading environment.",
+    open_session: "Open Trading Session",
+    view_markets: "View Markets",
+    current_score: "CURRENT HABBOUB SCORE",
+    market_condition: "Market Condition",
+    risk: "Risk",
+    overview: "OVERVIEW",
+    market_overview: "Market Overview",
+    ai_context: "AI Context",
+    click_intelligence: "Open Intelligence →",
+    session: "SESSION",
+    trading_session: "Trading Session",
+    session_subtitle: "Everything you need for one trading session, in one place.",
+    habboub_score: "Habboub Score",
+    score_explanation: "Score reflects the overall market environment, not a BUY/SELL command.",
+    market_context: "Market Context",
+    symbol: "Symbol",
+    htf_bias: "HTF Bias",
+    liquidity: "Liquidity",
+    mss: "MSS",
+    fvg: "FVG",
+    environment: "Environment",
+    confidence: "Confidence",
+    ict_context: "ICT Context",
+    cot_positioning: "COT Positioning",
+    session_timeline: "Session Timeline",
+    why_score: "Why is the score here?",
+    full_analysis: "Full Analysis →",
+    waiting: "Waiting for data",
+    waiting_analysis: "Habboub will display the main factors here.",
+    markets: "MARKETS",
+    markets_title: "Market Watch",
+    markets_subtitle: "Monitor the assets that matter.",
+    intelligence_title: "Market Intelligence",
+    intelligence_subtitle: "Understand what is influencing the environment.",
+    ask_ai: "Ask Habboub AI",
+    current_analysis: "Current Analysis",
+    market_regime: "Market Regime",
+    risk_environment: "Risk Environment",
+    risk_note: "Risk describes the environment. It is not a trade instruction.",
+    news: "NEWS",
+    news_title: "Economic Calendar & Impact",
+    news_subtitle: "Major events can change the market environment quickly.",
+    loading_news: "Loading news...",
+    journal: "JOURNAL",
+    journal_title: "Trading Journal",
+    journal_subtitle: "Track execution, results and mistakes.",
+    add_trade: "Add Trade",
+    win_rate: "Win Rate",
+    average_r: "Average R",
+    drawdown: "Drawdown",
+    trades: "Trades",
+    recent_trades: "Recent Trades",
+    no_trades: "No trades yet",
+    add_first_trade: "Add your first trade to start building your journal.",
+    live: "LIVE",
+    live_title: "Live Room",
+    live_subtitle: "Live market sessions and broadcasts.",
+    no_live: "No live session right now",
+    live_waiting: "The live room will appear here when the admin starts a session.",
+    live_status: "Live Status",
+    academy: "ACADEMY",
+    academy_title: "Habboub Academy",
+    academy_subtitle: "Learn the concepts behind the analysis.",
+    loading_courses: "Loading courses...",
+    announcements: "ANNOUNCEMENTS",
+    announcements_title: "Latest Updates",
+    loading: "Loading...",
+    welcome_back: "Welcome back",
+    login_subtitle: "Enter your account to continue.",
+    create_account: "Create an account",
+    register: "Register",
+    register_subtitle: "Join Habboub Intelligence.",
+    already_account: "Already have an account?",
+    journal_form_subtitle: "Save the important details of your trade.",
+    save_trade: "Save Trade",
+    ai_welcome: "Ask about the current market context, risk, news or ICT structure."
+  },
 
-window.addEventListener("load", function () {
-
-  setTimeout(function () {
-
-    const loader =
-      document.getElementById("loader");
-
-    if (loader) {
-      loader.classList.add("hidden");
-    }
-
-  }, 900);
-
-});
-
-
-function openLogin() {
-
-  closeModals();
-
-  const modal =
-    document.getElementById("loginModal");
-
-  if (modal) {
-    modal.classList.add("active");
+  ar: {
+    nav_home: "الرئيسية",
+    nav_session: "جلسة التداول",
+    nav_markets: "الأسواق",
+    nav_intelligence: "الذكاء",
+    nav_news: "الأخبار",
+    nav_journal: "السجل",
+    nav_live: "البث المباشر",
+    nav_academy: "الأكاديمية",
+    login: "تسجيل الدخول",
+    system_online: "نظام حبوب يعمل الآن",
+    hero_title_1: "افهم السوق.",
+    hero_title_2: "تداول مع السياق.",
+    hero_description: "يجمع حبوب هيكل السوق وسياق ICT وتمركزات COT والأحداث الاقتصادية وذكاء الذكاء الاصطناعي في بيئة تداول واحدة واضحة.",
+    open_session: "افتح جلسة التداول",
+    view_markets: "عرض الأسواق",
+    current_score: "درجة حبوب الحالية",
+    market_condition: "حالة السوق",
+    risk: "المخاطرة",
+    overview: "نظرة عامة",
+    market_overview: "نظرة عامة على السوق",
+    ai_context: "سياق الذكاء الاصطناعي",
+    click_intelligence: "افتح الذكاء →",
+    session: "الجلسة",
+    trading_session: "جلسة التداول",
+    session_subtitle: "كل ما تحتاجه لجلسة تداول واحدة في مكان واحد.",
+    habboub_score: "درجة حبوب",
+    score_explanation: "الدرجة تصف بيئة السوق العامة وليست أمر شراء أو بيع.",
+    market_context: "سياق السوق",
+    symbol: "الأصل",
+    htf_bias: "اتجاه HTF",
+    liquidity: "السيولة",
+    mss: "MSS",
+    fvg: "FVG",
+    environment: "البيئة",
+    confidence: "الثقة",
+    ict_context: "سياق ICT",
+    cot_positioning: "تمركزات COT",
+    session_timeline: "مراحل الجلسة",
+    why_score: "لماذا الدرجة بهذا الشكل؟",
+    full_analysis: "التحليل الكامل →",
+    waiting: "بانتظار البيانات",
+    waiting_analysis: "سيعرض حبوب أهم العوامل هنا.",
+    markets: "الأسواق",
+    markets_title: "مراقبة الأسواق",
+    markets_subtitle: "راقب الأصول المهمة.",
+    intelligence_title: "ذكاء السوق",
+    intelligence_subtitle: "افهم العوامل التي تؤثر على البيئة.",
+    ask_ai: "اسأل حبوب AI",
+    current_analysis: "التحليل الحالي",
+    market_regime: "نظام السوق",
+    risk_environment: "بيئة المخاطرة",
+    risk_note: "المخاطرة تصف البيئة وليست توصية تداول.",
+    news: "الأخبار",
+    news_title: "الأجندة الاقتصادية والتأثير",
+    news_subtitle: "الأحداث الكبرى يمكن أن تغير بيئة السوق بسرعة.",
+    loading_news: "جاري تحميل الأخبار...",
+    journal: "السجل",
+    journal_title: "سجل التداول",
+    journal_subtitle: "تابع التنفيذ والنتائج والأخطاء.",
+    add_trade: "إضافة صفقة",
+    win_rate: "نسبة الفوز",
+    average_r: "متوسط R",
+    drawdown: "السحب",
+    trades: "الصفقات",
+    recent_trades: "آخر الصفقات",
+    no_trades: "لا توجد صفقات",
+    add_first_trade: "أضف أول صفقة لبدء بناء سجل التداول.",
+    live: "مباشر",
+    live_title: "غرفة البث",
+    live_subtitle: "جلسات السوق والبث المباشر.",
+    no_live: "لا توجد جلسة مباشرة الآن",
+    live_waiting: "سيظهر البث هنا عندما يبدأ المسؤول الجلسة.",
+    live_status: "حالة البث",
+    academy: "الأكاديمية",
+    academy_title: "أكاديمية حبوب",
+    academy_subtitle: "تعلم المفاهيم التي يعتمد عليها التحليل.",
+    loading_courses: "جاري تحميل الدورات...",
+    announcements: "الإعلانات",
+    announcements_title: "آخر التحديثات",
+    loading: "جاري التحميل...",
+    welcome_back: "أهلًا بعودتك",
+    login_subtitle: "أدخل حسابك للمتابعة.",
+    create_account: "إنشاء حساب",
+    register: "تسجيل",
+    register_subtitle: "انضم إلى Habboub Intelligence.",
+    already_account: "لديك حساب بالفعل؟",
+    journal_form_subtitle: "احفظ المعلومات المهمة عن صفقتك.",
+    save_trade: "حفظ الصفقة",
+    ai_welcome: "اسأل عن سياق السوق الحالي أو المخاطرة أو الأخبار أو هيكل ICT."
   }
-
-}
-
-
-function openRegister() {
-
-  closeModals();
-
-  const modal =
-    document.getElementById("registerModal");
-
-  if (modal) {
-    modal.classList.add("active");
-  }
-
-}
-
-
-function openJournal() {
-
-  closeModals();
-
-  const modal =
-    document.getElementById("journalModal");
-
-  if (modal) {
-    modal.classList.add("active");
-  }
-
-}
-
-
-function closeModals() {
-
-  document
-    .querySelectorAll(".modal")
-    .forEach(function (modal) {
-
-      modal.classList.remove("active");
-
-    });
-
-}
-
-
-function enterGuest() {
-
-  const dashboard =
-    document.getElementById("dashboard");
-
-  if (dashboard) {
-
-    dashboard.scrollIntoView({
-      behavior: "smooth"
-    });
-
-  }
-
-}
-
-
-function openAI() {
-
-  const ai =
-    document.getElementById("aiWindow");
-
-  if (ai) {
-    ai.classList.add("active");
-  }
-
-}
-
-
-function closeAI() {
-
-  const ai =
-    document.getElementById("aiWindow");
-
-  if (ai) {
-    ai.classList.remove("active");
-  }
-
-}
-
-
-function handleAI(event) {
-
-  if (event.key === "Enter") {
-    sendAI();
-  }
-
-}
-
-
-async function sendAI() {
-
-  const input =
-    document.getElementById("aiInput");
-
-  const messages =
-    document.getElementById("aiMessages");
-
-  if (!input || !messages) {
-    return;
-  }
-
-  const text =
-    input.value.trim();
-
-  if (!text) {
-    return;
-  }
-
-
-  const userMessage =
-    document.createElement("div");
-
-  userMessage.className =
-    "ai-message";
-
-  userMessage.textContent =
-    text;
-
-  messages.appendChild(userMessage);
-
-  input.value = "";
-
-
-  const response =
-    document.createElement("div");
-
-  response.className =
-    "ai-message";
-
-  response.textContent =
-    "Habboub AI is preparing market context. AI model connection will be added through the secure backend.";
-
-  messages.appendChild(response);
-
-  messages.scrollTop =
-    messages.scrollHeight;
-
-}
-
-
-function setText(id, value) {
-
-  const element =
-    document.getElementById(id);
-
-  if (element) {
-    element.textContent =
-      value ?? "--";
-  }
-
-}
-
-
-function escapeHTML(value) {
-
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-}
-
-
-function escapeAttribute(value) {
-
-  return escapeHTML(value);
-
-}
-
-
-async function loginUser() {
-
-  const email =
-    document.getElementById("loginEmail")?.value.trim();
-
-  const password =
-    document.getElementById("loginPassword")?.value;
-
-  const message =
-    document.getElementById("loginMessage");
-
-  const button =
-    document.getElementById("loginButton");
-
-
-  if (!email || !password) {
-
-    if (message) {
-      message.textContent =
-        "Please enter your email and password.";
-    }
-
-    return;
-
-  }
-
-
-  if (button) {
-    button.disabled = true;
-  }
-
-
-  const result =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-
-
-  if (result.error) {
-
-    if (message) {
-      message.textContent =
-        result.error.message;
-    }
-
-    if (button) {
-      button.disabled = false;
-    }
-
-    return;
-
-  }
-
-
-  if (message) {
-    message.textContent =
-      "Login successful.";
-  }
-
-
-  setTimeout(function () {
-    closeModals();
+};
+
+document.addEventListener("DOMContentLoaded", init);
+
+async function init() {
+  applyLanguage(state.language);
+  setupNavigation();
+  setupLanguage();
+  setupModals();
+  setupAI();
+  setupMobileMenu();
+
+  setTimeout(() => {
+    document.getElementById("loader")?.classList.add("hide");
   }, 500);
 
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  updateSessionTimeline();
+
+  await Promise.allSettled([
+    loadMarketAnalysis(),
+    loadJournal(),
+    loadAnnouncements(),
+    loadCourses(),
+    loadLive(),
+    loadNews()
+  ]);
+
+  subscribeToUpdates();
 }
 
+function $(id) {
+  return document.getElementById(id);
+}
 
-async function registerUser() {
+/* LANGUAGE */
 
-  const name =
-    document.getElementById("registerName")?.value.trim();
+function setupLanguage() {
+  $("langEN")?.addEventListener("click", () => changeLanguage("en"));
+  $("langAR")?.addEventListener("click", () => changeLanguage("ar"));
+}
 
-  const email =
-    document.getElementById("registerEmail")?.value.trim();
+function changeLanguage(language) {
+  state.language = language;
+  localStorage.setItem("habboub_language", language);
+  applyLanguage(language);
+  renderNews();
+}
 
-  const password =
-    document.getElementById("registerPassword")?.value;
+function applyLanguage(language) {
+  const isArabic = language === "ar";
 
-  const message =
-    document.getElementById("registerMessage");
+  document.documentElement.lang = language;
+  document.documentElement.dir = isArabic ? "rtl" : "ltr";
 
-  const button =
-    document.getElementById("registerButton");
-
-
-  if (!name || !email || !password) {
-
-    if (message) {
-      message.textContent =
-        "Please complete all fields.";
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    const key = element.dataset.i18n;
+    if (translations[language][key]) {
+      element.textContent = translations[language][key];
     }
+  });
 
-    return;
+  $("langEN")?.classList.toggle("active", language === "en");
+  $("langAR")?.classList.toggle("active", language === "ar");
+}
 
-  }
+/* NAVIGATION */
 
-
-  if (password.length < 6) {
-
-    if (message) {
-      message.textContent =
-        "Password must contain at least 6 characters.";
-    }
-
-    return;
-
-  }
-
-
-  if (button) {
-    button.disabled = true;
-  }
-
-
-  const result =
-    await supabaseClient.auth.signUp({
-
-      email,
-      password,
-
-      options: {
-        data: {
-          full_name: name
-        }
-      }
-
+function setupNavigation() {
+  document.querySelectorAll("[data-nav]").forEach((element) => {
+    element.addEventListener("click", () => {
+      const target = element.dataset.nav;
+      showSection(target);
     });
-
-
-  if (result.error) {
-
-    if (message) {
-      message.textContent =
-        result.error.message;
-    }
-
-    if (button) {
-      button.disabled = false;
-    }
-
-    return;
-
-  }
-
-
-  if (message) {
-
-    message.textContent =
-      "Account created. Check your email to verify your account.";
-
-  }
-
-
-  if (button) {
-    button.disabled = false;
-  }
-
+  });
 }
 
+function showSection(sectionId) {
+  const target = document.getElementById(sectionId);
 
-async function getCurrentUser() {
+  if (!target) return;
 
-  const result =
-    await supabaseClient.auth.getUser();
+  document.querySelectorAll(".page-section").forEach((section) => {
+    section.classList.remove("active-section");
+  });
 
-  if (result.error) {
-    return null;
-  }
+  target.classList.add("active-section");
 
-  return result.data.user || null;
-
-}
-
-
-async function saveJournalTrade() {
-
-  const user =
-    await getCurrentUser();
-
-  const message =
-    document.getElementById("journalMessage");
-
-
-  if (!user) {
-
-    if (message) {
-      message.textContent =
-        "Please login before saving a trade.";
-    }
-
-    return;
-
-  }
-
-
-  const symbol =
-    document.getElementById("journalSymbol")?.value.trim();
-
-  const direction =
-    document.getElementById("journalDirection")?.value.trim();
-
-  const entry =
-    document.getElementById("journalEntry")?.value;
-
-  const stop =
-    document.getElementById("journalStop")?.value;
-
-  const take =
-    document.getElementById("journalTake")?.value;
-
-  const resultValue =
-    document.getElementById("journalResult")?.value;
-
-  const notes =
-    document.getElementById("journalNotes")?.value.trim();
-
-
-  const result =
-    await supabaseClient
-      .from("trading_journal")
-      .insert({
-
-        user_id: user.id,
-        symbol: symbol || "XAUUSD",
-        direction: direction || null,
-        entry_price: entry ? Number(entry) : null,
-        stop_loss: stop ? Number(stop) : null,
-        take_profit: take ? Number(take) : null,
-        result: resultValue ? Number(resultValue) : 0,
-        notes: notes || null
-
-      });
-
-
-  if (result.error) {
-
-    console.error(
-      "Journal:",
-      result.error
+  document.querySelectorAll(".nav-link").forEach((button) => {
+    button.classList.toggle(
+      "active",
+      button.dataset.nav === sectionId
     );
+  });
 
-    if (message) {
-      message.textContent =
-        result.error.message;
-    }
+  $("mobileNav")?.classList.remove("open");
 
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+/* MOBILE */
+
+function setupMobileMenu() {
+  $("mobileMenuButton")?.addEventListener("click", () => {
+    $("mobileNav")?.classList.toggle("open");
+  });
+}
+
+/* MODALS */
+
+function setupModals() {
+  $("loginButton")?.addEventListener("click", () => openModal("loginModal"));
+
+  $("showRegisterButton")?.addEventListener("click", () => {
+    closeModal("loginModal");
+    openModal("registerModal");
+  });
+
+  $("showLoginButton")?.addEventListener("click", () => {
+    closeModal("registerModal");
+    openModal("loginModal");
+  });
+
+  $("openJournalButton")?.addEventListener("click", () => {
+    openModal("journalModal");
+  });
+
+  document.querySelectorAll("[data-close-modal]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const modal = button.closest(".modal");
+      modal?.classList.add("hidden");
+    });
+  });
+
+  document.querySelectorAll(".modal-overlay").forEach((overlay) => {
+    overlay.addEventListener("click", () => {
+      overlay.closest(".modal")?.classList.add("hidden");
+    });
+  });
+
+  $("loginForm")?.addEventListener("submit", loginUser);
+  $("registerForm")?.addEventListener("submit", registerUser);
+  $("journalForm")?.addEventListener("submit", saveJournalTrade);
+}
+
+function openModal(id) {
+  $(id)?.classList.remove("hidden");
+}
+
+function closeModal(id) {
+  $(id)?.classList.add("hidden");
+}
+
+/* AUTH */
+
+async function loginUser(event) {
+  event.preventDefault();
+
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+
+  setMessage("loginMessage", "Logging in...");
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    setMessage("loginMessage", error.message);
     return;
-
   }
 
-
-  if (message) {
-    message.textContent =
-      "Trade saved successfully.";
-  }
-
+  setMessage("loginMessage", "Login successful.");
+  closeModal("loginModal");
 
   await loadJournal();
-
+  showToast("Logged in");
 }
 
+async function registerUser(event) {
+  event.preventDefault();
 
-async function loadJournal() {
+  const email = $("registerEmail").value.trim();
+  const password = $("registerPassword").value;
 
-  const user =
-    await getCurrentUser();
+  setMessage("registerMessage", "Creating account...");
 
-  if (!user) {
+  const { error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo:
+        "https://yazanhabboub888-ui.github.io/habboub-trade/"
+    }
+  });
+
+  if (error) {
+    setMessage("registerMessage", error.message);
     return;
   }
 
+  setMessage(
+    "registerMessage",
+    "Account created. Check your email if verification is enabled."
+  );
+}
 
-  const result =
-    await supabaseClient
+async function getCurrentUser() {
+  const { data } = await supabaseClient.auth.getUser();
+  return data?.user || null;
+}
+
+/* MARKET ANALYSIS */
+
+async function loadMarketAnalysis() {
+  try {
+    const { data, error } = await supabaseClient
+      .from("market_analysis")
+      .select("*")
+      .eq("symbol", "XAUUSD")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.warn("Market analysis:", error.message);
+      return;
+    }
+
+    if (!data) return;
+
+    state.analysis = data;
+    state.lastUpdated = data.created_at;
+
+    renderMarketAnalysis(data);
+  } catch (error) {
+    console.warn("Market analysis failed:", error);
+  }
+}
+
+function renderMarketAnalysis(data) {
+  const score = normalizeScore(
+    data.score ??
+    data.habboub_score ??
+    data.confidence ??
+    0
+  );
+
+  const bias = data.bias ?? data.htf_bias ?? "--";
+  const tradeStatus = data.trade_status ?? data.status ?? "--";
+  const risk = data.risk_level ?? data.risk ?? "--";
+  const condition = data.market_condition ?? data.condition ?? "--";
+  const confidence = normalizeScore(data.confidence ?? score);
+  const analysisText =
+    data.analysis ??
+    data.description ??
+    data.market_analysis ??
+    "Market analysis is available.";
+
+  setText("heroScore", score);
+  setText("sessionScore", score);
+
+  setText("heroScoreState", tradeStatus);
+  setText("sessionScoreState", tradeStatus);
+
+  setText("heroCondition", condition);
+  setText("marketCondition", condition);
+
+  setText("heroRisk", risk);
+  setText("marketRisk", risk);
+
+  setText("analysisStatus", tradeStatus);
+  setText("analysisSymbol", data.symbol || "XAUUSD");
+  setText("analysisSymbolLarge", data.symbol || "XAUUSD");
+
+  setText("htfBias", bias);
+  setText("sessionBias", bias);
+  setText("intelBias", bias);
+
+  setText(
+    "liquidity",
+    data.liquidity ?? data.liquidity_status ?? "--"
+  );
+
+  setText(
+    "sessionLiquidity",
+    data.liquidity ?? data.liquidity_status ?? "--"
+  );
+
+  setText(
+    "intelLiquidity",
+    data.liquidity ?? data.liquidity_status ?? "--"
+  );
+
+  setText("mss", data.mss ?? data.market_structure ?? "--");
+  setText("sessionMSS", data.mss ?? data.market_structure ?? "--");
+  setText("intelMSS", data.mss ?? data.market_structure ?? "--");
+
+  setText("fvg", data.fvg ?? data.fvg_status ?? "--");
+  setText("sessionFVG", data.fvg ?? data.fvg_status ?? "--");
+  setText("intelFVG", data.fvg ?? data.fvg_status ?? "--");
+
+  setText("marketConfidence", `${confidence}%`);
+  setText("analysisConfidenceLarge", `${confidence}%`);
+
+  setText("marketAnalysisText", analysisText);
+  setText("analysisLongText", analysisText);
+
+  setText("analysisDescription", condition || "Market analysis");
+
+  setText(
+    "cotCommercial",
+    data.cot_commercial ?? data.commercial ?? "--"
+  );
+
+  setText(
+    "cotManaged",
+    data.cot_managed ?? data.managed_money ?? "--"
+  );
+
+  setText(
+    "cotNet",
+    data.cot_net ?? data.net_position ?? "--"
+  );
+
+  setText(
+    "cotBias",
+    data.cot_bias ?? "--"
+  );
+
+  setText(
+    "intelCommercial",
+    data.cot_commercial ?? data.commercial ?? "--"
+  );
+
+  setText(
+    "intelManaged",
+    data.cot_managed ?? data.managed_money ?? "--"
+  );
+
+  setText(
+    "intelNet",
+    data.cot_net ?? data.net_position ?? "--"
+  );
+
+  setText(
+    "intelCotBias",
+    data.cot_bias ?? "--"
+  );
+
+  setText(
+    "regimeTrend",
+    data.trend ?? data.market_trend ?? "--"
+  );
+
+  setText(
+    "regimeVolatility",
+    data.volatility ?? "--"
+  );
+
+  setText(
+    "regimeLiquidity",
+    data.liquidity ?? "--"
+  );
+
+  setText(
+    "regimeBadge",
+    data.regime ?? condition ?? "--"
+  );
+
+  const scoreBar = $("sessionScoreBar");
+  if (scoreBar) scoreBar.style.width = `${score}%`;
+
+  const confidenceBar = $("confidenceBar");
+  if (confidenceBar) confidenceBar.style.width = `${confidence}%`;
+
+  const riskMeter = $("riskMeter")?.querySelector("span");
+
+  if (riskMeter) {
+    const riskNumber = getRiskNumber(risk);
+    riskMeter.style.width = `${riskNumber}%`;
+  }
+
+  updateScoreRing(score);
+  renderReasons(data, score);
+}
+
+/* SCORE */
+
+function normalizeScore(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) return 0;
+
+  return Math.max(0, Math.min(100, Math.round(number)));
+}
+
+function updateScoreRing(score) {
+  const ring = $("heroScoreRing");
+
+  if (!ring) return;
+
+  const degrees = score * 3.6;
+
+  ring.style.background =
+    `conic-gradient(var(--cyan) 0deg, var(--blue) ${degrees}deg, rgba(255,255,255,.07) ${degrees}deg)`;
+}
+
+function getRiskNumber(risk) {
+  const text = String(risk).toLowerCase();
+
+  if (
+    text.includes("high") ||
+    text.includes("مرتفع") ||
+    text.includes("danger")
+  ) return 85;
+
+  if (
+    text.includes("medium") ||
+    text.includes("moderate") ||
+    text.includes("متوسط")
+  ) return 55;
+
+  if (
+    text.includes("low") ||
+    text.includes("منخفض")
+  ) return 25;
+
+  const number = Number(risk);
+
+  return Number.isFinite(number)
+    ? Math.max(0, Math.min(100, number))
+    : 0;
+}
+
+function renderReasons(data, score) {
+  const container = $("scoreReasons");
+
+  if (!container) return;
+
+  const reasons = [
+    {
+      icon: "◈",
+      title: "HTF Bias",
+      value: data.bias ?? data.htf_bias ?? "--"
+    },
+    {
+      icon: "◎",
+      title: "Liquidity",
+      value: data.liquidity ?? "--"
+    },
+    {
+      icon: "⚡",
+      title: "News",
+      value: getNewsSummary()
+    },
+    {
+      icon: "◆",
+      title: "COT",
+      value: data.cot_bias ?? "--"
+    },
+    {
+      icon: "◉",
+      title: "Risk",
+      value: data.risk_level ?? "--"
+    },
+    {
+      icon: "✦",
+      title: "Score",
+      value: `${score}/100`
+    }
+  ];
+
+  container.innerHTML = reasons.map((reason) => `
+    <div class="reason">
+      <span>${escapeHtml(reason.icon)}</span>
+      <div>
+        <strong>${escapeHtml(reason.title)}</strong>
+        <p>${escapeHtml(String(reason.value))}</p>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* NEWS */
+
+async function loadNews() {
+  try {
+    const { data, error } = await supabaseClient
+      .from("economic_news")
+      .select("*")
+      .order("event_time", { ascending: true })
+      .limit(40);
+
+    if (error) {
+      console.warn("News table unavailable:", error.message);
+      renderDemoNews();
+      return;
+    }
+
+    state.news = data || [];
+
+    renderNews();
+  } catch (error) {
+    console.warn("News failed:", error);
+    renderDemoNews();
+  }
+}
+
+function renderDemoNews() {
+  state.news = [];
+  renderNews();
+}
+
+function renderNews() {
+  const container = $("newsContainer");
+
+  if (!container) return;
+
+  const highImpact = state.news.filter(
+    (item) => normalizeImpact(item.impact) === "high"
+  );
+
+  renderMajorAlert(highImpact);
+
+  if (!state.news.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span>⚡</span>
+        <strong>${state.language === "ar" ? "لا توجد أخبار متاحة حاليًا" : "No economic events available"}</strong>
+        <p>${state.language === "ar"
+          ? "عند ربط التقويم الاقتصادي الحقيقي ستظهر الأحداث هنا."
+          : "Real economic calendar events will appear here once the feed is connected."}</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = state.news.map((item) => {
+    const impact = normalizeImpact(item.impact);
+    const time = formatNewsTime(item.event_time || item.time);
+
+    return `
+      <article class="news-item">
+        <div class="news-time">${escapeHtml(time)}</div>
+
+        <div>
+          <h3>${escapeHtml(item.title || item.event || "Economic Event")}</h3>
+          <p>${escapeHtml(
+            item.description ||
+            item.currency ||
+            "Economic event"
+          )}</p>
+        </div>
+
+        <div class="news-impact ${impact}">
+          ${escapeHtml(impact.toUpperCase())}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function normalizeImpact(value) {
+  const text = String(value || "").toLowerCase();
+
+  if (
+    text.includes("high") ||
+    text.includes("red") ||
+    text.includes("مرتفع")
+  ) return "high";
+
+  if (
+    text.includes("medium") ||
+    text.includes("yellow") ||
+    text.includes("متوسط")
+  ) return "medium";
+
+  return "low";
+}
+
+function renderMajorAlert(events) {
+  const html = events.length
+    ? `
+      <div class="alert-title">
+        🚨 ${state.language === "ar"
+          ? "أخبار عالية التأثير"
+          : "HIGH IMPACT NEWS"}
+      </div>
+
+      <div class="alert-list">
+        ${events.map((event) => `
+          <div class="alert-event">
+            <div class="alert-time">
+              ${escapeHtml(formatNewsTime(event.event_time || event.time))}
+            </div>
+
+            <div>
+              <strong>${escapeHtml(event.title || event.event || "Major Event")}</strong>
+              <small>
+                ${escapeHtml(
+                  event.currency ||
+                  event.description ||
+                  "Potential volatility"
+                )}
+              </small>
+            </div>
+
+            <div class="alert-impact">HIGH</div>
+          </div>
+        `).join("")}
+      </div>
+    `
+    : "";
+
+  setAlert("homeNewsAlert", html);
+  setAlert("sessionNewsAlert", html);
+}
+
+function setAlert(id, html) {
+  const element = $(id);
+
+  if (!element) return;
+
+  if (!html) {
+    element.classList.add("hidden");
+    element.innerHTML = "";
+    return;
+  }
+
+  element.innerHTML = html;
+  element.classList.remove("hidden");
+}
+
+function getNewsSummary() {
+  const high = state.news.filter(
+    (item) => normalizeImpact(item.impact) === "high"
+  ).length;
+
+  if (!high) {
+    return state.language === "ar" ? "لا أخبار قوية" : "No high impact";
+  }
+
+  return state.language === "ar"
+    ? `${high} أخبار قوية`
+    : `${high} high impact`;
+}
+
+function formatNewsTime(value) {
+  if (!value) return "--";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleTimeString(
+    state.language === "ar" ? "ar-PS" : "en-US",
+    {
+      hour: "2-digit",
+      minute: "2-digit"
+    }
+  );
+}
+
+/* JOURNAL */
+
+async function loadJournal() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    renderJournal([]);
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
       .from("trading_journal")
       .select("*")
       .eq("user_id", user.id)
-      .order("created_at", {
-        ascending: false
-      });
+      .order("created_at", { ascending: false })
+      .limit(100);
 
+    if (error) {
+      console.warn("Journal:", error.message);
+      renderJournal([]);
+      return;
+    }
 
-  if (result.error) {
+    state.journal = data || [];
 
-    console.error(
-      "Journal:",
-      result.error
-    );
-
-    return;
-
+    renderJournal(state.journal);
+  } catch (error) {
+    console.warn("Journal failed:", error);
+    renderJournal([]);
   }
-
-
-  renderJournalStats(
-    result.data || []
-  );
-
-  renderJournalTrades(
-    result.data || []
-  );
-
 }
 
+function renderJournal(trades) {
+  const total = trades.length;
 
-function renderJournalStats(trades) {
+  const wins = trades.filter((trade) => {
+    const result = String(
+      trade.result ?? trade.status ?? ""
+    ).toLowerCase();
+
+    return result === "win" || Number(trade.r_result ?? trade.r) > 0;
+  }).length;
+
+  const winRate = total
+    ? Math.round((wins / total) * 100)
+    : 0;
+
+  const rValues = trades
+    .map((trade) =>
+      Number(trade.r_result ?? trade.r ?? 0)
+    )
+    .filter(Number.isFinite);
+
+  const averageR = rValues.length
+    ? rValues.reduce((a, b) => a + b, 0) / rValues.length
+    : 0;
+
+  const positive = rValues
+    .filter((r) => r > 0)
+    .reduce((a, b) => a + b, 0);
+
+  const negative = Math.abs(
+    rValues
+      .filter((r) => r < 0)
+      .reduce((a, b) => a + b, 0)
+  );
+
+  const profitFactor = negative > 0
+    ? positive / negative
+    : positive > 0
+      ? positive
+      : 0;
+
+  setText("journalWinRate", `${winRate}%`);
+  setText("journalProfitFactor", profitFactor ? profitFactor.toFixed(2) : "--");
+  setText("journalAverageR", rValues.length ? `${averageR.toFixed(2)}R` : "--");
+  setText("journalDrawdown", calculateDrawdown(rValues));
+  setText("journalTrades", total);
+
+  const table = $("journalTable");
+
+  if (!table) return;
 
   if (!trades.length) {
-
-    setText("journalWinRate", "0%");
-    setText("journalProfitFactor", "0");
-    setText("journalAverageR", "0");
-    setText("journalDrawdown", "0");
-
+    table.innerHTML = `
+      <div class="empty-state">
+        <span>▤</span>
+        <strong>${state.language === "ar" ? "لا توجد صفقات" : "No trades yet"}</strong>
+        <p>${state.language === "ar"
+          ? "أضف أول صفقة لبدء السجل."
+          : "Add your first trade to start building your journal."}</p>
+      </div>
+    `;
     return;
-
   }
 
+  table.innerHTML = trades.slice(0, 30).map((trade) => `
+    <div class="trade-row">
+      <strong>${escapeHtml(trade.symbol || "XAUUSD")}</strong>
+      <span>${escapeHtml(trade.setup || "--")}</span>
+      <span>${escapeHtml(trade.result || trade.status || "--")}</span>
+      <strong>${escapeHtml(String(trade.r_result ?? trade.r ?? "--"))}R</strong>
+      <span>${escapeHtml(trade.notes || "")}</span>
+    </div>
+  `).join("");
+}
 
-  const results =
-    trades.map(function (trade) {
-
-      return Number(trade.result) || 0;
-
-    });
-
-
-  const wins =
-    results.filter(function (r) {
-      return r > 0;
-    }).length;
-
-
-  const winRate =
-    (wins / results.length) * 100;
-
-
-  const grossProfit =
-    results
-      .filter(function (r) {
-        return r > 0;
-      })
-      .reduce(function (sum, r) {
-        return sum + r;
-      }, 0);
-
-
-  const grossLoss =
-    Math.abs(
-      results
-        .filter(function (r) {
-          return r < 0;
-        })
-        .reduce(function (sum, r) {
-          return sum + r;
-        }, 0)
-    );
-
-
-  const profitFactor =
-    grossLoss === 0
-      ? grossProfit
-      : grossProfit / grossLoss;
-
-
-  const average =
-    results.reduce(function (sum, r) {
-      return sum + r;
-    }, 0) / results.length;
-
-
+function calculateDrawdown(values) {
   let equity = 0;
   let peak = 0;
   let maxDrawdown = 0;
 
-
-  results.forEach(function (r) {
-
-    equity += r;
+  values.forEach((value) => {
+    equity += value;
 
     if (equity > peak) {
       peak = equity;
     }
 
-    const drawdown =
-      peak - equity;
+    const drawdown = peak - equity;
 
     if (drawdown > maxDrawdown) {
       maxDrawdown = drawdown;
     }
-
   });
 
-
-  setText(
-    "journalWinRate",
-    winRate.toFixed(1) + "%"
-  );
-
-  setText(
-    "journalProfitFactor",
-    profitFactor.toFixed(2)
-  );
-
-  setText(
-    "journalAverageR",
-    average.toFixed(2)
-  );
-
-  setText(
-    "journalDrawdown",
-    maxDrawdown.toFixed(2)
-  );
-
+  return maxDrawdown
+    ? `-${maxDrawdown.toFixed(2)}R`
+    : "0R";
 }
 
+async function saveJournalTrade(event) {
+  event.preventDefault();
 
-function renderJournalTrades(trades) {
+  const user = await getCurrentUser();
 
-  const container =
-    document.getElementById("journalTrades");
-
-  if (!container) {
+  if (!user) {
+    setMessage(
+      "journalMessage",
+      state.language === "ar"
+        ? "سجّل الدخول أولًا."
+        : "Please login first."
+    );
     return;
   }
 
+  const payload = {
+    user_id: user.id,
+    symbol: $("tradeSymbol").value.trim(),
+    setup: $("tradeSetup").value.trim(),
+    result: $("tradeResult").value,
+    r_result: Number($("tradeR").value || 0),
+    notes: $("tradeNotes").value.trim()
+  };
 
-  if (!trades.length) {
+  setMessage(
+    "journalMessage",
+    state.language === "ar" ? "جاري الحفظ..." : "Saving..."
+  );
 
-    container.innerHTML = `
-      <div class="dashboard-card">
-        <h3>No trades yet</h3>
-        <p>Your trading journal will appear here.</p>
-      </div>
-    `;
+  const { error } = await supabaseClient
+    .from("trading_journal")
+    .insert(payload);
 
+  if (error) {
+    setMessage("journalMessage", error.message);
     return;
-
   }
 
+  setMessage(
+    "journalMessage",
+    state.language === "ar"
+      ? "تم حفظ الصفقة."
+      : "Trade saved."
+  );
 
-  container.innerHTML =
-    trades.slice(0, 10)
-      .map(function (trade) {
+  $("journalForm").reset();
 
-        const result =
-          Number(trade.result) || 0;
+  await loadJournal();
 
-        return `
-          <article class="dashboard-card">
-
-            <span class="eyebrow">
-              ${escapeHTML(trade.symbol || "XAUUSD")}
-            </span>
-
-            <h3>
-              ${escapeHTML(trade.direction || "Trade")}
-            </h3>
-
-            <p>
-              Result:
-              <strong>
-                ${result.toFixed(2)}
-              </strong>
-            </p>
-
-            <p>
-              ${escapeHTML(trade.notes || "")}
-            </p>
-
-          </article>
-        `;
-
-      })
-      .join("");
-
+  setTimeout(() => {
+    closeModal("journalModal");
+  }, 500);
 }
 
+/* ANNOUNCEMENTS */
 
 async function loadAnnouncements() {
-
-  const container =
-    document.getElementById(
-      "announcementsContainer"
-    );
-
-  if (!container) {
-    return;
-  }
-
-
-  const result =
-    await supabaseClient
+  try {
+    const { data, error } = await supabaseClient
       .from("announcements")
       .select("*")
       .eq("is_active", true)
-      .order("created_at", {
-        ascending: false
-      });
+      .order("created_at", { ascending: false })
+      .limit(30);
 
+    if (error) {
+      console.warn("Announcements:", error.message);
+      return;
+    }
 
-  if (result.error) {
+    state.announcements = data || [];
 
-    console.error(
-      "Announcements:",
-      result.error
-    );
-
-    return;
-
+    renderAnnouncements();
+  } catch (error) {
+    console.warn("Announcements failed:", error);
   }
-
-
-  if (!result.data || !result.data.length) {
-
-    container.innerHTML = `
-      <div class="dashboard-card">
-        <h3>No announcements</h3>
-        <p>There are no active announcements right now.</p>
-      </div>
-    `;
-
-    return;
-
-  }
-
-
-  container.innerHTML =
-    result.data.map(function (item) {
-
-      return `
-        <article class="dashboard-card">
-
-          <span class="eyebrow">
-            ANNOUNCEMENT
-          </span>
-
-          <h3>
-            ${escapeHTML(item.title)}
-          </h3>
-
-          <p>
-            ${escapeHTML(item.content || "")}
-          </p>
-
-        </article>
-      `;
-
-    }).join("");
-
 }
 
+function renderAnnouncements() {
+  const container = $("announcementsContainer");
 
-async function loadCourses() {
+  if (!container) return;
 
-  const container =
-    document.getElementById(
-      "courseContainer"
-    );
-
-  if (!container) {
+  if (!state.announcements.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span>◆</span>
+        <strong>${state.language === "ar" ? "لا توجد إعلانات" : "No announcements"}</strong>
+      </div>
+    `;
     return;
   }
 
+  container.innerHTML = state.announcements.map((item) => `
+    <article class="announcement">
+      <h3>${escapeHtml(item.title || "Announcement")}</h3>
+      <p>${escapeHtml(item.content || item.description || "")}</p>
+      <small>${escapeHtml(formatDate(item.created_at))}</small>
+    </article>
+  `).join("");
+}
 
-  const result =
-    await supabaseClient
+/* COURSES */
+
+async function loadCourses() {
+  try {
+    const { data, error } = await supabaseClient
       .from("courses")
       .select("*")
       .eq("is_published", true)
-      .order("created_at", {
-        ascending: false
-      });
+      .order("created_at", { ascending: false })
+      .limit(30);
 
+    if (error) {
+      console.warn("Courses:", error.message);
+      return;
+    }
 
-  if (result.error) {
+    state.courses = data || [];
 
-    console.error(
-      "Courses:",
-      result.error
-    );
-
-    return;
-
+    renderCourses();
+  } catch (error) {
+    console.warn("Courses failed:", error);
   }
+}
 
+function renderCourses() {
+  const container = $("courseContainer");
 
-  if (!result.data || !result.data.length) {
+  if (!container) return;
 
+  if (!state.courses.length) {
     container.innerHTML = `
-      <div class="course-card">
-        <span class="course-number">--</span>
-        <h3>No courses yet</h3>
-        <p>Courses will appear here when published.</p>
+      <div class="empty-state">
+        <span>◇</span>
+        <strong>${state.language === "ar" ? "لا توجد دورات منشورة" : "No published courses"}</strong>
       </div>
     `;
-
     return;
-
   }
 
+  container.innerHTML = state.courses.map((course) => `
+    <article class="course-card">
+      <div class="course-cover">
+        <span>HABBOUB ACADEMY</span>
+      </div>
 
-  container.innerHTML =
-    result.data.map(function (course, index) {
+      <div class="course-content">
+        <h3>${escapeHtml(course.title || "Course")}</h3>
+        <p>${escapeHtml(course.description || "")}</p>
 
-      return `
-        <article class="course-card">
-
-          <span class="course-number">
-            ${String(index + 1).padStart(2, "0")}
-          </span>
-
-          <h3>
-            ${escapeHTML(course.title)}
-          </h3>
-
-          <p>
-            ${escapeHTML(course.description || "")}
-          </p>
-
-          <button onclick="openCourse('${escapeAttribute(course.id)}')">
-            View Course →
-          </button>
-
-        </article>
-      `;
-
-    }).join("");
-
-}
-
-
-async function openCourse(courseId) {
-
-  const result =
-    await supabaseClient
-      .from("course_lessons")
-      .select("*")
-      .eq("course_id", courseId)
-      .order("lesson_order", {
-        ascending: true
-      });
-
-
-  if (result.error) {
-
-    alert(
-      "Unable to load course lessons."
-    );
-
-    return;
-
-  }
-
-
-  if (!result.data || !result.data.length) {
-
-    alert(
-      "This course does not have lessons yet."
-    );
-
-    return;
-
-  }
-
-
-  const lessons =
-    result.data.map(function (lesson) {
-
-      return `
-        <div class="dashboard-card">
-
-          <span class="eyebrow">
-            LESSON ${lesson.lesson_order}
-          </span>
-
-          <h3>
-            ${escapeHTML(lesson.title)}
-          </h3>
-
-          <p>
-            ${escapeHTML(lesson.content || "")}
-          </p>
-
+        <div class="course-meta">
+          <span>${escapeHtml(course.level || "All levels")}</span>
+          <span>${escapeHtml(String(course.lessons_count || "--"))} lessons</span>
         </div>
-      `;
-
-    }).join("");
-
-
-  const container =
-    document.getElementById(
-      "courseContainer"
-    );
-
-  if (container) {
-
-    container.innerHTML =
-      lessons;
-
-    container.scrollIntoView({
-      behavior: "smooth"
-    });
-
-  }
-
+      </div>
+    </article>
+  `).join("");
 }
 
+/* LIVE */
 
 async function loadLive() {
-
-  const result =
-    await supabaseClient
+  try {
+    const { data, error } = await supabaseClient
       .from("live_sessions")
       .select("*")
-      .eq("is_live", true)
-      .order("created_at", {
-        ascending: false
-      })
-      .limit(1);
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-
-  if (result.error) {
-
-    console.error(
-      "Live:",
-      result.error
-    );
-
-    return;
-
-  }
-
-
-  const live =
-    result.data &&
-    result.data.length
-      ? result.data[0]
-      : null;
-
-
-  const indicator =
-    document.getElementById(
-      "liveIndicator"
-    );
-
-
-  const title =
-    document.getElementById(
-      "liveTitleDisplay"
-    );
-
-
-  const description =
-    document.getElementById(
-      "liveDescriptionDisplay"
-    );
-
-
-  if (!live) {
-
-    setText(
-      "liveIndicator",
-      "● OFFLINE"
-    );
-
-    if (title) {
-      title.textContent =
-        "No live broadcast";
+    if (error) {
+      console.warn("Live:", error.message);
+      return;
     }
 
-    if (description) {
-      description.textContent =
-        "The administrator can start a live session from the Admin Panel.";
-    }
+    state.live = data;
 
-    return;
-
+    renderLive();
+  } catch (error) {
+    console.warn("Live failed:", error);
   }
-
-
-  if (indicator) {
-    indicator.textContent =
-      "● LIVE";
-  }
-
-
-  if (title) {
-    title.textContent =
-      live.title || "Habboub Live";
-  }
-
-
-  if (description) {
-    description.textContent =
-      live.description || "";
-  }
-
 }
 
-
-function subscribeToLive() {
-
-  supabaseClient
-    .channel("habboub-live")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "live_sessions"
-      },
-      function () {
-        loadLive();
-      }
-    )
-    .subscribe();
-
-}
-
-
-function subscribeToAnnouncements() {
-
-  supabaseClient
-    .channel("habboub-announcements")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "announcements"
-      },
-      function () {
-        loadAnnouncements();
-      }
-    )
-    .subscribe();
-
-}
-
-
-function subscribeToCourses() {
-
-  supabaseClient
-    .channel("habboub-courses")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "courses"
-      },
-      function () {
-        loadCourses();
-      }
-    )
-    .subscribe();
-
-}
-
-
-async function loadMarketAnalysis() {
-
-  const result =
-    await supabaseClient
-      .from("market_analysis")
-      .select("*")
-      .eq("symbol", "XAUUSD")
-      .order("created_at", {
-        ascending: false
-      })
-      .limit(1);
-
-
-  if (result.error) {
-
-    console.error(
-      "Market analysis:",
-      result.error
-    );
-
-    return;
-
-  }
-
-
-  const data =
-    result.data &&
-    result.data.length
-      ? result.data[0]
-      : null;
-
+function renderLive() {
+  const data = state.live;
 
   if (!data) {
+    setLiveOffline();
     return;
   }
 
-
-  setText(
-    "htfBias",
-    data.bias || "--"
-  );
-
-  setText(
-    "sessionHTFBias",
-    data.bias || "--"
-  );
-
-
-  setText(
-    "tradeDecision",
-    data.trade_status || "WAIT"
-  );
-
-  setText(
-    "analysisStatus",
-    data.trade_status || "WAIT"
-  );
-
-
-  setText(
-    "analysisSymbol",
-    data.symbol || "XAUUSD"
-  );
-
-
-  setText(
-    "marketRisk",
-    data.risk_level || "--"
-  );
-
-
-  setText(
-    "marketCondition",
-    data.market_condition || "--"
-  );
-
-
-  setText(
-    "marketConfidence",
-    data.confidence ?? "--"
-  );
-
-
-  setText(
-    "sessionScore",
-    data.confidence !== undefined
-      ? data.confidence + " / 100"
-      : "--"
-  );
-
-
-  setText(
-    "marketAnalysisText",
-    data.analysis || ""
-  );
-
-
-  setText(
-    "analysisDescription",
-    data.analysis || ""
-  );
-
-
-  setText(
-    "tradeDecisionText",
-    data.analysis || "Waiting for market context."
-  );
-
-
-  setText(
-    "scoreReason",
-    data.analysis || "Waiting for market data."
-  );
-
-
-  setText(
-    "macroReason",
-    data.market_condition || "Waiting for macro data."
-  );
-
-
-  setText(
-    "newsReason",
-    data.news_impact || "Waiting for news analysis."
-  );
-
-
-  setText(
-    "liquidity",
-    data.liquidity || "--"
-  );
-
-
-  setText(
-    "sessionLiquidity",
-    data.liquidity || "--"
-  );
-
-
-  setText(
-    "mss",
-    data.mss || "--"
-  );
-
-
-  setText(
-    "fvg",
-    data.fvg || "--"
-  );
-
-
-  setText(
-    "riskLevelText",
-    data.risk_level || "Risk level unavailable"
-  );
-
-
-  const riskMeter =
-    document.getElementById("riskMeter");
-
-  if (riskMeter) {
-
-    const confidence =
-      Number(data.confidence) || 0;
-
-    const risk =
-      Math.max(
-        0,
-        Math.min(
-          100,
-          100 - confidence
-        )
-      );
-
-    riskMeter.style.width =
-      risk + "%";
-
-  }
-
-
-  updateHabboubSession({
-
-    price:
-      data.price ??
-      data.current_price,
-
-    score:
-      data.confidence,
-
-    bias:
-      data.bias,
-
-    liquidity:
-      data.liquidity,
-
-    regime:
-      data.market_regime
-
-  });
-
-}
-
-
-function updateHabboubSession(data) {
-
-  data = data || {};
-
-
-  if (
-    data.price !== undefined &&
-    data.price !== null
-  ) {
-
-    setText(
-      "sessionPrice",
-      data.price
-    );
-
-  }
-
-
-  if (
-    data.score !== undefined &&
-    data.score !== null
-  ) {
-
-    const score =
-      Number(data.score) || 0;
-
-
-    setText(
-      "sessionScore",
-      score + " / 100"
-    );
-
-
-    setText(
-      "sessionScoreText",
-
-      score >= 70
-        ? "Favorable Conditions"
-        : score >= 45
-        ? "Neutral Conditions"
-        : "Elevated Risk"
-
-    );
-
-  }
-
-
-  if (data.bias) {
-
-    setText(
-      "sessionHTFBias",
-      data.bias
-    );
-
-  }
-
-
-  if (data.liquidity) {
-
-    setText(
-      "sessionLiquidity",
-      data.liquidity
-    );
-
-  }
-
-
-  if (data.regime) {
-
-    setHabboubMarketRegime(
-      data.regime
-    );
-
-  }
-
-}
-
-
-function setHabboubMarketRegime(regime) {
-
-  const element =
-    document.getElementById(
-      "sessionRegime"
-    );
-
-  if (!element) {
+  const active =
+    data.is_live === true ||
+    data.status === "live" ||
+    data.active === true;
+
+  if (!active) {
+    setLiveOffline();
     return;
   }
 
-
-  element.classList.remove(
-    "regime-trending",
-    "regime-ranging",
-    "regime-risk"
+  setText(
+    "liveTitleDisplay",
+    data.title || "Habboub Live"
   );
-
-
-  const normalized =
-    String(regime || "")
-      .toUpperCase();
-
-
-  if (normalized === "TRENDING") {
-
-    element.textContent =
-      "TRENDING";
-
-    element.classList.add(
-      "regime-trending"
-    );
-
-  }
-
-  else if (normalized === "RANGING") {
-
-    element.textContent =
-      "RANGING";
-
-    element.classList.add(
-      "regime-ranging"
-    );
-
-  }
-
-  else if (normalized) {
-
-    element.textContent =
-      "HIGH VOLATILITY";
-
-    element.classList.add(
-      "regime-risk"
-    );
-
-  }
-
-}
-
-
-function showHabboubNewsAlert(news) {
-
-  news = news || {};
-
-
-  const alert =
-    document.getElementById(
-      "habboubNewsAlert"
-    );
-
-
-  if (!alert) {
-    return;
-  }
-
 
   setText(
-    "newsAlertTitle",
-    news.title ||
-    "High Impact Economic Event"
+    "liveDescriptionDisplay",
+    data.description || "Live market session."
   );
 
+  const indicator = $("liveIndicator");
+
+  if (indicator) {
+    indicator.textContent = "LIVE";
+    indicator.className = "status-pill online";
+  }
+}
+
+function setLiveOffline() {
+  const indicator = $("liveIndicator");
+
+  if (indicator) {
+    indicator.textContent = "OFFLINE";
+    indicator.className = "status-pill offline";
+  }
 
   setText(
-    "newsAlertExplanation",
-    news.explanation ||
-    "A major economic event may increase market volatility."
+    "liveTitleDisplay",
+    state.language === "ar"
+      ? "لا توجد جلسة مباشرة الآن"
+      : "No live session right now"
   );
 
-
-  alert.classList.add("show");
-
-
-  if (news.timestamp) {
-
-    startNewsCountdown(
-      news.timestamp
-    );
-
-  }
-
+  setText(
+    "liveDescriptionDisplay",
+    state.language === "ar"
+      ? "سيظهر البث هنا عند بدء الجلسة."
+      : "The live room will appear here when a session starts."
+  );
 }
 
+/* AI */
 
-function hideHabboubNewsAlert() {
+function setupAI() {
+  $("floatingAI")?.addEventListener("click", openAI);
+  $("openAIButton")?.addEventListener("click", openAI);
+  $("closeAIButton")?.addEventListener("click", closeAI);
 
-  const alert =
-    document.getElementById(
-      "habboubNewsAlert"
-    );
-
-  if (alert) {
-    alert.classList.remove("show");
-  }
-
+  $("aiForm")?.addEventListener("submit", handleAI);
 }
 
-
-function renderNewsList(news) {
-
-  const container =
-    document.getElementById(
-      "newsListPanel"
-    );
-
-  if (!container) {
-    return;
-  }
-
-
-  if (!news || !news.length) {
-
-    container.innerHTML =
-      `
-        <div class="news-list-item">
-
-          <div class="news-list-time">
-            --
-          </div>
-
-          <div class="news-list-name">
-            No important events available.
-          </div>
-
-          <div class="news-list-impact">
-            --
-          </div>
-
-        </div>
-      `;
-
-    return;
-
-  }
-
-
-  container.innerHTML =
-    news.map(function (item) {
-
-      const impact =
-        String(item.impact || "HIGH")
-          .toUpperCase();
-
-
-      return `
-        <div class="news-list-item">
-
-          <div class="news-list-time">
-            ${escapeHTML(item.time || "--")}
-          </div>
-
-          <div class="news-list-name">
-            ${escapeHTML(item.title || "Economic Event")}
-          </div>
-
-          <div
-            class="news-list-impact ${
-              impact === "HIGH"
-                ? "news-high"
-                : "news-medium"
-            }">
-
-            ${escapeHTML(impact)}
-
-          </div>
-
-        </div>
-      `;
-
-    }).join("");
-
+function openAI() {
+  $("aiWindow")?.classList.remove("hidden");
+  $("aiInput")?.focus();
 }
 
-
-function toggleNewsList() {
-
-  const panel =
-    document.getElementById(
-      "newsListPanel"
-    );
-
-  if (!panel) {
-    return;
-  }
-
-  panel.classList.toggle("open");
-
+function closeAI() {
+  $("aiWindow")?.classList.add("hidden");
 }
 
+async function handleAI(event) {
+  event.preventDefault();
 
-let newsTimer = null;
+  const input = $("aiInput");
+  const message = input.value.trim();
 
+  if (!message) return;
 
-function startNewsCountdown(timestamp) {
+  addAIMessage("user", message);
 
-  if (newsTimer) {
-    clearInterval(newsTimer);
+  input.value = "";
+
+  addAIMessage(
+    "bot",
+    buildLocalAIResponse(message)
+  );
+}
+
+function buildLocalAIResponse(message) {
+  const analysis = state.analysis;
+
+  if (!analysis) {
+    return state.language === "ar"
+      ? "لسه ما وصلني تحليل السوق من قاعدة البيانات. أول ما تتوفر البيانات أقدر أعطيك سياق أوضح."
+      : "I do not have the latest market analysis yet. Once the data is available, I can explain the current context.";
   }
 
+  const score = normalizeScore(
+    analysis.score ??
+    analysis.habboub_score ??
+    analysis.confidence
+  );
 
-  const countdown =
-    document.getElementById(
-      "newsAlertCountdown"
-    );
+  const bias = analysis.bias ?? analysis.htf_bias ?? "--";
+  const risk = analysis.risk_level ?? analysis.risk ?? "--";
+  const condition =
+    analysis.market_condition ??
+    analysis.condition ??
+    "--";
 
-
-  if (!countdown) {
-    return;
+  if (state.language === "ar") {
+    return `السياق الحالي: درجة حبوب ${score}/100، الاتجاه HTF هو ${bias}، حالة السوق ${condition}، والمخاطرة ${risk}. هذا وصف لبيئة السوق وليس أمر شراء أو بيع.`;
   }
 
+  return `Current context: Habboub Score ${score}/100, HTF Bias ${bias}, market condition ${condition}, and risk ${risk}. This describes the environment and is not a BUY/SELL instruction.`;
+}
 
-  function update() {
+function addAIMessage(type, message) {
+  const container = $("aiMessages");
 
-    const difference =
-      new Date(timestamp).getTime() -
-      Date.now();
+  if (!container) return;
 
+  const element = document.createElement("div");
 
-    if (difference <= 0) {
+  element.className = `ai-message ${type}`;
 
-      countdown.textContent =
-        "LIVE";
+  element.innerHTML = `
+    <strong>${type === "user" ? "You" : "Habboub"}</strong>
+    <p>${escapeHtml(message)}</p>
+  `;
 
-      return;
+  container.appendChild(element);
 
+  while (container.children.length > 30) {
+    container.removeChild(container.firstChild);
+  }
+
+  container.scrollTop = container.scrollHeight;
+}
+
+/* CLOCK */
+
+function updateClock() {
+  const now = new Date();
+
+  const time = now.toLocaleTimeString(
+    state.language === "ar" ? "ar-PS" : "en-US",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
     }
+  );
 
+  setText("sessionClock", time);
 
-    const seconds =
-      Math.floor(
-        difference / 1000
-      );
-
-
-    const hours =
-      Math.floor(
-        seconds / 3600
-      );
-
-
-    const minutes =
-      Math.floor(
-        (seconds % 3600) / 60
-      );
-
-
-    const secs =
-      seconds % 60;
-
-
-    countdown.textContent =
-      String(hours).padStart(2,"0") +
-      ":" +
-      String(minutes).padStart(2,"0") +
-      ":" +
-      String(secs).padStart(2,"0");
-
-  }
-
-
-  update();
-
-  newsTimer =
-    setInterval(
-      update,
-      1000
-    );
-
+  updateSessionTimeline();
 }
 
+function updateSessionTimeline() {
+  const now = new Date();
 
-function updateSessionClock() {
+  const utcHour = now.getUTCHours() + now.getUTCMinutes() / 60;
 
-  const clock =
-    document.getElementById(
-      "sessionClock"
-    );
+  setActive("asiaSession", utcHour >= 0 && utcHour < 8);
+  setActive("londonSession", utcHour >= 8 && utcHour < 13);
+  setActive("newYorkSession", utcHour >= 13 && utcHour < 21);
 
+  let session = "Market closed";
 
-  if (!clock) {
-    return;
+  if (utcHour >= 0 && utcHour < 8) {
+    session = "Asia";
+  } else if (utcHour >= 8 && utcHour < 13) {
+    session = "London";
+  } else if (utcHour >= 13 && utcHour < 21) {
+    session = "New York";
   }
 
-
-  clock.textContent =
-    new Date().toLocaleTimeString(
-      [],
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-      }
-    );
-
-
-  updateTradingSessions();
-
+  setText("sessionName", session);
 }
 
+function setActive(id, active) {
+  $(id)?.classList.toggle("active", active);
+}
 
-function updateTradingSessions() {
+/* REALTIME */
 
-  const hour =
-    new Date().getUTCHours();
+function subscribeToUpdates() {
+  try {
+    supabaseClient
+      .channel("habboub-market-analysis")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "market_analysis"
+        },
+        () => loadMarketAnalysis()
+      )
+      .subscribe();
 
+    supabaseClient
+      .channel("habboub-announcements")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "announcements"
+        },
+        () => loadAnnouncements()
+      )
+      .subscribe();
 
-  const asia =
-    document.getElementById(
-      "asiaSession"
-    );
+    supabaseClient
+      .channel("habboub-courses")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "courses"
+        },
+        () => loadCourses()
+      )
+      .subscribe();
 
-  const london =
-    document.getElementById(
-      "londonSession"
-    );
+    supabaseClient
+      .channel("habboub-live")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "live_sessions"
+        },
+        () => loadLive()
+      )
+      .subscribe();
 
-  const newYork =
-    document.getElementById(
-      "newYorkSession"
-    );
+  } catch (error) {
+    console.warn("Realtime setup:", error);
+  }
+}
 
+/* HELPERS */
 
-  [
-    asia,
-    london,
-    newYork
-  ].forEach(function (element) {
+function setText(id, value) {
+  const element = $(id);
 
-    if (element) {
-      element.classList.remove("active");
+  if (element) {
+    element.textContent = value ?? "--";
+  }
+}
+
+function setMessage(id, message) {
+  setText(id, message);
+}
+
+function formatDate(value) {
+  if (!value) return "--";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleDateString(
+    state.language === "ar" ? "ar-PS" : "en-US",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
     }
-
-  });
-
-
-  if (hour >= 0 && hour < 8) {
-
-    asia?.classList.add("active");
-
-  }
-
-  else if (hour >= 8 && hour < 13) {
-
-    london?.classList.add("active");
-
-  }
-
-  else if (hour >= 13 && hour < 21) {
-
-    newYork?.classList.add("active");
-
-  }
-
-}
-
-
-const translations = {
-
-  en: {
-    dashboard: "Dashboard",
-    markets: "Markets",
-    intelligence: "Intelligence",
-    news: "News",
-    journal: "Journal",
-    live: "Live",
-    academy: "Academy",
-    login: "Login",
-    getStarted: "Get Started",
-    highImpact: "HIGH IMPACT NEWS",
-    tradingSession: "Trading Session"
-  },
-
-  ar: {
-    dashboard: "لوحة التحكم",
-    markets: "الأسواق",
-    intelligence: "الذكاء السوقي",
-    news: "الأخبار",
-    journal: "السجل",
-    live: "البث المباشر",
-    academy: "الأكاديمية",
-    login: "تسجيل الدخول",
-    getStarted: "ابدأ الآن",
-    highImpact: "خبر عالي التأثير",
-    tradingSession: "جلسة التداول"
-  }
-
-};
-
-
-function setHabboubLanguage(language) {
-
-  if (!translations[language]) {
-    language = "en";
-  }
-
-
-  localStorage.setItem(
-    "habboub_language",
-    language
   );
-
-
-  document.documentElement.lang =
-    language;
-
-
-  document.documentElement.dir =
-    language === "ar"
-      ? "rtl"
-      : "ltr";
-
-
-  const en =
-    document.getElementById("langEN");
-
-  const ar =
-    document.getElementById("langAR");
-
-
-  if (en) {
-    en.classList.toggle(
-      "active",
-      language === "en"
-    );
-  }
-
-
-  if (ar) {
-    ar.classList.toggle(
-      "active",
-      language === "ar"
-    );
-  }
-
 }
 
-
-document
-  .querySelectorAll(".modal")
-  .forEach(function (modal) {
-
-    modal.addEventListener(
-      "click",
-      function (event) {
-
-        if (event.target === modal) {
-          closeModals();
-        }
-
-      }
-    );
-
-  });
-
-
-try {
-
-  const observer =
-    new IntersectionObserver(
-      function (entries) {
-
-        entries.forEach(function (entry) {
-
-          if (entry.isIntersecting) {
-
-            entry.target.style.opacity =
-              "1";
-
-            entry.target.style.transform =
-              "translateY(0)";
-
-          }
-
-        });
-
-      },
-      {
-        threshold: .1
-      }
-    );
-
-
-  document
-    .querySelectorAll(
-      ".dashboard-card, .asset-card, .course-card, .journal-stat, .session-card, .reason-card"
-    )
-    .forEach(function (element) {
-
-      element.style.opacity =
-        "0";
-
-      element.style.transform =
-        "translateY(25px)";
-
-      element.style.transition =
-        "opacity .6s ease, transform .6s ease";
-
-      observer.observe(element);
-
-    });
-
-} catch (error) {
-
-  console.warn(
-    "Animation unavailable:",
-    error
-  );
-
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
+let toastTimer = null;
 
-document.addEventListener(
-  "DOMContentLoaded",
-  function () {
+function showToast(message) {
+  const toast = $("toast");
 
-    setHabboubLanguage(
-      localStorage.getItem(
-        "habboub_language"
-      ) || "en"
-    );
+  if (!toast) return;
 
+  toast.textContent = message;
+  toast.classList.add("show");
 
-    updateSessionClock();
+  clearTimeout(toastTimer);
 
-
-    setInterval(
-      updateSessionClock,
-      1000
-    );
-
-
-    renderNewsList([
-
-      {
-        time: "--:--",
-        title: "Major USD economic event",
-        impact: "HIGH"
-      },
-
-      {
-        time: "--:--",
-        title: "Federal Reserve related event",
-        impact: "HIGH"
-      },
-
-      {
-        time: "--:--",
-        title: "US inflation / employment data",
-        impact: "HIGH"
-      }
-
-    ]);
-
-
-    loadAnnouncements();
-    loadCourses();
-    loadLive();
-    loadMarketAnalysis();
-    loadJournal();
-
-
-    subscribeToLive();
-    subscribeToAnnouncements();
-    subscribeToCourses();
-
-
-    updateHabboubSession({
-
-      score: 0,
-      bias: "--",
-      liquidity: "--",
-      regime: ""
-
-    });
-
-  }
-);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2200);
+}
