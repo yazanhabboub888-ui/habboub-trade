@@ -3221,37 +3221,7 @@ function renderNews(newsItems) {
     });
 }
 
-   container.innerHTML = newsItems
-    .map((item) => {
-      const impactClass =
-        item.impact === "High" || item.impact === "high" || item.impact === "HIGH"
-          ? "high"
-          : item.impact === "Medium" || item.impact === "medium" || item.impact === "MEDIUM"
-          ? "medium"
-          : "low";
 
-      const eventTitle = item.event_name || item.title || "USD Event";
-      const displayTime = item.event_time ? new Date(item.event_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
-
-      return `
-      <div class="news-card" style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <span class="impact-badge ${impactClass}" style="padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase;">
-            ${escapeHtml(item.impact || "LOW")}
-          </span>
-          <span style="font-weight: 600; color: #f3f4f6;">${escapeHtml(eventTitle)}</span>
-        </div>
-        <div style="display: flex; gap: 16px; color: var(--text-muted); font-size: 13px;">
-          <span>Actual: <strong style="color: #fff;">${escapeHtml(item.actual || "-")}</strong></span>
-          <span>Forecast: <strong>${escapeHtml(item.forecast || "-")}</strong></span>
-          <span>Previous: <strong>${escapeHtml(item.previous || "-")}</strong></span>
-          <span style="color: #6b7280;">${escapeHtml(displayTime)}</span>
-        </div>
-      </div>
-    `;
-    })
-    .join("");
-}
 
 /* =========================================================
    ANNOUNCEMENTS
