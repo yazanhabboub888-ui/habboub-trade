@@ -16,7 +16,6 @@
   const SOURCES = {
     cfd: {
       label: "CFD",
-      // Yahoo's spot/cash references are used as the closest public CFD-style feed.
       XAUUSD: "XAUUSD=X",
       NAS100: "^NDX",
       SPX: "^GSPC"
@@ -69,20 +68,40 @@
     document.querySelectorAll("#markets .large-market-card .market-icon").forEach((icon) => icon.remove());
   }
 
-  function ensureSessionOpenButtons() {
-    document.querySelectorAll("#markets .large-market-card[data-symbol] .market-open-btn").forEach((button) => {
-      if (button.dataset.habboubSessionBound === "true") return;
+  /*
+     Market Watch uses one generic data-nav="dashboard" on all three buttons.
+     Own the click at document-capture level so the generic navigation handler
+     cannot overwrite the selected market. The clicked card is the source of truth.
+  */
+  function bindSessionRouting() {
+    if (window.__habboubMarketSessionRoutingBound) return;
+    window.__habboubMarketSessionRoutingBound = true;
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("#markets .large-market-card[data-symbol] .market-open-btn");
+      if (!button) return;
+
       const card = button.closest(".large-market-card");
-      const symbol = card?.dataset.symbol;
+      const symbol = String(card?.dataset?.symbol || "").toUpperCase();
       if (!MARKETS.some((market) => market.symbol === symbol)) return;
 
-      button.dataset.habboubSessionBound = "true";
-      button.addEventListener("click", () => {
-        // The main navigation still handles opening the Trading Session.
-        // We only persist the market here so the session opens in the same context.
-        localStorage.setItem(SESSION_MARKET_KEY, symbol);
-      }, true);
-    });
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      localStorage.setItem(SESSION_MARKET_KEY, symbol);
+
+      if (typeof window.navigateTo === "function") {
+        window.navigateTo("dashboard");
+      } else {
+        const dashboard = document.getElementById("dashboard");
+        document.querySelectorAll(".page-section").forEach((section) => section.classList.remove("active-section"));
+        dashboard?.classList.add("active-section");
+      }
+
+      window.dispatchEvent(new CustomEvent("habboub:trading-session-open", {
+        detail: { symbol, source: getSource() }
+      }));
+    }, true);
   }
 
   function ensureStatus(market) {
@@ -209,7 +228,7 @@
     removeUnwantedCards();
     removeMarketWatchBadges();
     ensureSourceSwitch();
-    ensureSessionOpenButtons();
+    bindSessionRouting();
     MARKETS.forEach(ensureStatus);
 
     const sourceAtStart = getSource();
@@ -229,7 +248,7 @@
     removeUnwantedCards();
     removeMarketWatchBadges();
     ensureSourceSwitch();
-    ensureSessionOpenButtons();
+    bindSessionRouting();
     MARKETS.forEach(ensureStatus);
     refresh();
     refreshTimer = window.setInterval(() => refresh(), REFRESH_MS);
@@ -238,7 +257,7 @@
       removeUnwantedCards();
       removeMarketWatchBadges();
       ensureSourceSwitch();
-      ensureSessionOpenButtons();
+      bindSessionRouting();
       MARKETS.forEach(ensureStatus);
       updateSourceButtons(getSource());
     }).observe(document.body, { childList: true, subtree: true });
