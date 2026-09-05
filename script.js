@@ -2892,15 +2892,28 @@ function subscribeToUpdates() {
 
   supabaseClient
     .channel("public-changes")
-    .on("postgres_changes", { event: "*", schema: "public", table: "news" }, () => {
-      loadNews();
-    })
-    .on("postgres_changes", { event: "*", schema: "public", table: "market_analysis" }, () => {
-      loadMarketAnalysis();
-    })
-    .on("postgres_changes", { event: "*", schema: "public", table: "live" }, () => {
-      loadLive();
-    })
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "news" },
+      (payload) => {
+        console.log("Realtime news update received:", payload);
+        loadNews();
+      }
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "market_analysis" },
+      () => {
+        loadMarketAnalysis();
+      }
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "live" },
+      () => {
+        loadLive();
+      }
+    )
     .subscribe();
 }
 
