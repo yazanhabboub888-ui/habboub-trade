@@ -1,90 +1,301 @@
 ```javascript
-const SUPABASE_URL = "https://feoyjasuvrqxzhskqzye.supabase.co";
-const SUPABASE_KEY = "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+/* =========================================================
+   HABBOUB — MAIN SCRIPT
+   Stable frontend + Supabase
+========================================================= */
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+"use strict";
 
-const $ = (id) => document.getElementById(id);
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+  "https://feoyjasuvrqxzhskqzye.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+
+
+let supabaseClient = null;
+
+
+/*
+ * Create Supabase safely.
+ */
+
+try {
+  if (
+    window.supabase &&
+    typeof window.supabase.createClient === "function"
+  ) {
+    supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+  } else {
+    console.error(
+      "Habboub: Supabase CDN was not loaded."
+    );
+  }
+} catch (error) {
+  console.error(
+    "Habboub: Supabase initialization failed:",
+    error
+  );
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const $ = (id) =>
+  document.getElementById(id);
+
+
+/* =========================================================
+   STATE
+========================================================= */
 
 const state = {
-  language: localStorage.getItem("habboub_language") || "en",
+  language:
+    localStorage.getItem(
+      "habboub_language"
+    ) || "en",
+
   analysis: null,
+
   journal: [],
+
   news: [],
+
   announcements: [],
+
   courses: [],
+
   live: null,
+
   lastUpdated: null,
+
   user: null,
+
   profile: null
 };
 
+
+/* =========================================================
+   TRANSLATIONS
+========================================================= */
+
 const translations = {
+
   en: {
+
     login: "Login",
+
     logout: "Logout",
+
     profile: "Profile",
+
     register: "Register",
-    create_account: "Create an account",
-    welcome_back: "Welcome back",
-    login_subtitle: "Enter your account to continue.",
-    register_subtitle: "Join Habboub Intelligence.",
-    full_name: "Full Name",
-    email: "Email",
-    password: "Password",
-    already_account: "Already have an account?",
-    account: "Account",
-    my_profile: "My Profile",
-    logged_in_as: "Logged in as",
-    login_success: "Login successful.",
+
+    create_account:
+      "Create an account",
+
+    welcome_back:
+      "Welcome back",
+
+    login_subtitle:
+      "Enter your account to continue.",
+
+    register_subtitle:
+      "Join Habboub Intelligence.",
+
+    full_name:
+      "Full Name",
+
+    email:
+      "Email",
+
+    password:
+      "Password",
+
+    already_account:
+      "Already have an account?",
+
+    account:
+      "Account",
+
+    my_profile:
+      "My Profile",
+
+    logged_in_as:
+      "Logged in as",
+
+    login_success:
+      "Login successful.",
+
     account_created:
       "Account created. Check your email if verification is enabled.",
-    profile_updated: "Profile updated.",
-    home: "Home",
-    nav_home: "Home",
-    nav_session: "Trading Session",
-    nav_markets: "Markets",
-    nav_intelligence: "Intelligence",
-    nav_news: "News",
-    nav_journal: "Journal",
-    nav_live: "Live",
-    nav_academy: "Academy"
+
+    profile_updated:
+      "Profile updated.",
+
+    home:
+      "Home",
+
+    nav_home:
+      "Home",
+
+    nav_session:
+      "Trading Session",
+
+    nav_markets:
+      "Markets",
+
+    nav_intelligence:
+      "Intelligence",
+
+    nav_news:
+      "News",
+
+    nav_journal:
+      "Journal",
+
+    nav_live:
+      "Live",
+
+    nav_academy:
+      "Academy"
   },
 
+
   ar: {
-    login: "تسجيل الدخول",
-    logout: "تسجيل الخروج",
-    profile: "الملف الشخصي",
-    register: "إنشاء حساب",
-    create_account: "إنشاء حساب",
-    welcome_back: "أهلاً بعودتك",
-    login_subtitle: "أدخل بيانات حسابك للمتابعة.",
-    register_subtitle: "انضم إلى Habboub Intelligence.",
-    full_name: "الاسم الكامل",
-    email: "البريد الإلكتروني",
-    password: "كلمة المرور",
-    already_account: "لديك حساب بالفعل؟",
-    account: "الحساب",
-    my_profile: "ملفي الشخصي",
-    logged_in_as: "مسجل الدخول باسم",
-    login_success: "تم تسجيل الدخول بنجاح.",
+
+    login:
+      "تسجيل الدخول",
+
+    logout:
+      "تسجيل الخروج",
+
+    profile:
+      "الملف الشخصي",
+
+    register:
+      "إنشاء حساب",
+
+    create_account:
+      "إنشاء حساب",
+
+    welcome_back:
+      "أهلاً بعودتك",
+
+    login_subtitle:
+      "أدخل بيانات حسابك للمتابعة.",
+
+    register_subtitle:
+      "انضم إلى Habboub Intelligence.",
+
+    full_name:
+      "الاسم الكامل",
+
+    email:
+      "البريد الإلكتروني",
+
+    password:
+      "كلمة المرور",
+
+    already_account:
+      "لديك حساب بالفعل؟",
+
+    account:
+      "الحساب",
+
+    my_profile:
+      "ملفي الشخصي",
+
+    logged_in_as:
+      "مسجل الدخول باسم",
+
+    login_success:
+      "تم تسجيل الدخول بنجاح.",
+
     account_created:
       "تم إنشاء الحساب. افحص بريدك الإلكتروني إذا كان تأكيد البريد مفعلاً.",
-    profile_updated: "تم تحديث الملف الشخصي.",
-    home: "الرئيسية",
-    nav_home: "الرئيسية",
-    nav_session: "جلسة التداول",
-    nav_markets: "الأسواق",
-    nav_intelligence: "الذكاء",
-    nav_news: "الأخبار",
-    nav_journal: "السجل",
-    nav_live: "البث المباشر",
-    nav_academy: "الأكاديمية"
+
+    profile_updated:
+      "تم تحديث الملف الشخصي.",
+
+    home:
+      "الرئيسية",
+
+    nav_home:
+      "الرئيسية",
+
+    nav_session:
+      "جلسة التداول",
+
+    nav_markets:
+      "الأسواق",
+
+    nav_intelligence:
+      "الذكاء",
+
+    nav_news:
+      "الأخبار",
+
+    nav_journal:
+      "السجل",
+
+    nav_live:
+      "البث المباشر",
+
+    nav_academy:
+      "الأكاديمية"
   }
 };
+
+
+/* =========================================================
+   LOADER
+========================================================= */
+
+/*
+ * VERY IMPORTANT:
+ * The loader is always removed.
+ */
+
+function hideLoader() {
+
+  const loader =
+    $("loader");
+
+  if (!loader) {
+    return;
+  }
+
+  loader.classList.add("hide");
+
+  /*
+   * Extra safety in case CSS is broken.
+   */
+
+  setTimeout(() => {
+
+    if (
+      loader &&
+      document.body.contains(loader)
+    ) {
+      loader.style.opacity = "0";
+      loader.style.visibility = "hidden";
+      loader.style.pointerEvents = "none";
+    }
+
+  }, 800);
+}
 
 
 /* =========================================================
@@ -92,41 +303,118 @@ const translations = {
 ========================================================= */
 
 async function init() {
-  applyLanguage(state.language);
 
-  setupNavigation();
-  setupLanguage();
-  setupModals();
-  setupAI();
-  setupMobileMenu();
-  setupAuthUI();
-  setupProfileMenu();
+  /*
+   * Always guarantee loader removal.
+   */
 
-  setTimeout(() => {
-    $("loader")?.classList.add("hide");
-  }, 500);
+  try {
 
-  updateClock();
+    applyLanguage(
+      state.language
+    );
 
-  setInterval(() => {
+    setupNavigation();
+
+    setupLanguage();
+
+    setupModals();
+
+    setupAI();
+
+    setupMobileMenu();
+
+    setupAuthUI();
+
+    setupProfileMenu();
+
     updateClock();
+
     updateSessionTimeline();
-  }, 1000);
 
-  updateSessionTimeline();
 
-  await refreshAuthUI();
+    /*
+     * Clock.
+     */
 
-  await Promise.allSettled([
-    loadMarketAnalysis(),
-    loadJournal(),
-    loadAnnouncements(),
-    loadCourses(),
-    loadLive(),
-    loadNews()
-  ]);
+    setInterval(() => {
 
-  subscribeToUpdates();
+      updateClock();
+
+      updateSessionTimeline();
+
+    }, 1000);
+
+
+    /*
+     * Auth.
+     */
+
+    await refreshAuthUI();
+
+
+    /*
+     * Load data independently.
+     *
+     * If one table fails,
+     * the others still load.
+     */
+
+    await Promise.allSettled([
+
+      loadMarketAnalysis(),
+
+      loadJournal(),
+
+      loadAnnouncements(),
+
+      loadCourses(),
+
+      loadLive(),
+
+      loadNews()
+
+    ]);
+
+
+    /*
+     * Realtime should NEVER prevent
+     * the page from loading.
+     */
+
+    try {
+
+      subscribeToUpdates();
+
+    } catch (error) {
+
+      console.error(
+        "Realtime setup error:",
+        error
+      );
+
+    }
+
+  } catch (error) {
+
+    /*
+     * Critical safety net.
+     */
+
+    console.error(
+      "Habboub initialization error:",
+      error
+    );
+
+  } finally {
+
+    /*
+     * LOADER ALWAYS CLOSES.
+     */
+
+    hideLoader();
+
+  }
 }
 
 
@@ -134,62 +422,142 @@ async function init() {
    LANGUAGE
 ========================================================= */
 
-function applyLanguage(language) {
-  const lang = translations[language] || translations.en;
+function applyLanguage(
+  language
+) {
 
-  document.documentElement.lang = language;
+  const lang =
+    translations[language] ||
+    translations.en;
+
+  state.language =
+    translations[language]
+      ? language
+      : "en";
+
+
+  document.documentElement.lang =
+    state.language;
+
 
   document.documentElement.dir =
-    language === "ar" ? "rtl" : "ltr";
+    state.language === "ar"
+      ? "rtl"
+      : "ltr";
 
-  document.querySelectorAll("[data-i18n]").forEach((element) => {
-    const key = element.dataset.i18n;
 
-    if (lang[key]) {
-      element.textContent = lang[key];
-    }
-  });
+  document
+    .querySelectorAll(
+      "[data-i18n]"
+    )
+    .forEach((element) => {
 
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(
-    (element) => {
-      const key = element.dataset.i18nPlaceholder;
+      const key =
+        element.dataset.i18n;
 
-      if (lang[key]) {
-        element.placeholder = lang[key];
+      if (
+        lang[key] !== undefined
+      ) {
+        element.textContent =
+          lang[key];
       }
-    }
-  );
+
+    });
+
+
+  document
+    .querySelectorAll(
+      "[data-i18n-placeholder]"
+    )
+    .forEach((element) => {
+
+      const key =
+        element.dataset
+          .i18nPlaceholder;
+
+      if (
+        lang[key] !== undefined
+      ) {
+        element.placeholder =
+          lang[key];
+      }
+
+    });
+
 
   $("langEN")?.classList.toggle(
     "active",
-    language === "en"
+    state.language === "en"
   );
+
 
   $("langAR")?.classList.toggle(
     "active",
-    language === "ar"
+    state.language === "ar"
   );
+
 
   localStorage.setItem(
     "habboub_language",
-    language
+    state.language
   );
+
 
   if (state.user) {
     renderAuthUI();
   }
+
+
+  renderJournal(
+    state.journal
+  );
+
+
+  renderNews(
+    state.news
+  );
+
+
+  renderAnnouncements(
+    state.announcements
+  );
+
+
+  renderCourses(
+    state.courses
+  );
+
+
+  renderLive(
+    state.live
+  );
 }
 
-function setupLanguage() {
-  $("langEN")?.addEventListener("click", () => {
-    state.language = "en";
-    applyLanguage("en");
-  });
 
-  $("langAR")?.addEventListener("click", () => {
-    state.language = "ar";
-    applyLanguage("ar");
-  });
+function setupLanguage() {
+
+  $("langEN")?.addEventListener(
+    "click",
+    () => {
+
+      state.language = "en";
+
+      applyLanguage("en");
+
+    }
+  );
+
+
+  $("langAR")?.addEventListener(
+    "click",
+    () => {
+
+      state.language = "ar";
+
+      applyLanguage("ar");
+
+    }
+  );
 }
 
 
@@ -198,42 +566,91 @@ function setupLanguage() {
 ========================================================= */
 
 function setupNavigation() {
-  document.querySelectorAll("[data-nav]").forEach((element) => {
-    element.addEventListener("click", () => {
-      const target = element.dataset.nav;
 
-      if (!target) return;
+  document
+    .querySelectorAll(
+      "[data-nav]"
+    )
+    .forEach((element) => {
 
-      navigateTo(target);
+      element.addEventListener(
+        "click",
+        () => {
+
+          const target =
+            element.dataset.nav;
+
+          if (!target) {
+            return;
+          }
+
+          navigateTo(target);
+
+        }
+      );
+
     });
-  });
 }
 
-function navigateTo(target) {
-  document.querySelectorAll(".page-section").forEach((section) => {
-    section.classList.remove("active-section");
-  });
 
-  const section = $(target);
+function navigateTo(
+  target
+) {
+
+  document
+    .querySelectorAll(
+      ".page-section"
+    )
+    .forEach((section) => {
+
+      section.classList.remove(
+        "active-section"
+      );
+
+    });
+
+
+  const section =
+    $(target);
+
 
   if (section) {
-    section.classList.add("active-section");
+
+    section.classList.add(
+      "active-section"
+    );
+
   }
 
-  document.querySelectorAll("[data-nav]").forEach((element) => {
-    if (
-      element.classList.contains("nav-link") &&
-      element.dataset.nav === target
-    ) {
-      element.classList.add("active");
-    } else if (
-      element.classList.contains("nav-link")
-    ) {
-      element.classList.remove("active");
-    }
-  });
 
-  $("mobileNav")?.classList.remove("open");
+  document
+    .querySelectorAll(
+      "[data-nav]"
+    )
+    .forEach((element) => {
+
+      if (
+        element.classList.contains(
+          "nav-link"
+        )
+      ) {
+
+        element.classList.toggle(
+          "active",
+          element.dataset.nav ===
+            target
+        );
+
+      }
+
+    });
+
+
+  $("mobileNav")
+    ?.classList.remove(
+      "open"
+    );
+
 
   window.scrollTo({
     top: 0,
@@ -247,9 +664,19 @@ function navigateTo(target) {
 ========================================================= */
 
 function setupMobileMenu() {
-  $("mobileMenuButton")?.addEventListener("click", () => {
-    $("mobileNav")?.classList.toggle("open");
-  });
+
+  $("mobileMenuButton")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        $("mobileNav")
+          ?.classList.toggle(
+            "open"
+          );
+
+      }
+    );
 }
 
 
@@ -258,157 +685,343 @@ function setupMobileMenu() {
 ========================================================= */
 
 function openModal(id) {
-  $(id)?.classList.remove("hidden");
+
+  $(id)
+    ?.classList.remove(
+      "hidden"
+    );
 }
+
 
 function closeModal(id) {
-  $(id)?.classList.add("hidden");
+
+  $(id)
+    ?.classList.add(
+      "hidden"
+    );
 }
 
+
 function setupModals() {
-  $("loginButton")?.addEventListener("click", async () => {
-    const user = await getCurrentUser();
 
-    if (user) {
-      toggleProfileMenu();
-      return;
-    }
+  $("loginButton")
+    ?.addEventListener(
+      "click",
+      async () => {
 
-    openModal("loginModal");
-  });
+        const user =
+          await getCurrentUser();
 
-  $("showRegisterButton")?.addEventListener("click", () => {
-    closeModal("loginModal");
-    clearMessage("loginMessage");
-    openModal("registerModal");
-  });
+        if (user) {
 
-  $("showLoginButton")?.addEventListener("click", () => {
-    closeModal("registerModal");
-    clearMessage("registerMessage");
-    openModal("loginModal");
-  });
+          renderAuthUI();
 
-  $("openJournalButton")?.addEventListener(
-    "click",
-    async () => {
-      const user = await getCurrentUser();
+          toggleProfileMenu();
 
-      if (!user) {
-        openModal("loginModal");
+          return;
+        }
 
-        showToast(
-          state.language === "ar"
-            ? "سجل الدخول أولاً لاستخدام السجل."
-            : "Please login first to use the journal."
+        openModal(
+          "loginModal"
         );
 
-        return;
       }
+    );
 
-      openModal("journalModal");
-    }
-  );
+
+  $("showRegisterButton")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        closeModal(
+          "loginModal"
+        );
+
+        clearMessage(
+          "loginMessage"
+        );
+
+        openModal(
+          "registerModal"
+        );
+
+      }
+    );
+
+
+  $("showLoginButton")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        closeModal(
+          "registerModal"
+        );
+
+        clearMessage(
+          "registerMessage"
+        );
+
+        openModal(
+          "loginModal"
+        );
+
+      }
+    );
+
+
+  $("openJournalButton")
+    ?.addEventListener(
+      "click",
+      async () => {
+
+        const user =
+          await getCurrentUser();
+
+        if (!user) {
+
+          openModal(
+            "loginModal"
+          );
+
+          showToast(
+            state.language === "ar"
+              ? "سجل الدخول أولاً لاستخدام السجل."
+              : "Please login first to use the journal."
+          );
+
+          return;
+        }
+
+        openModal(
+          "journalModal"
+        );
+
+      }
+    );
+
 
   document
-    .querySelectorAll("[data-close-modal]")
+    .querySelectorAll(
+      "[data-close-modal]"
+    )
     .forEach((button) => {
-      button.addEventListener("click", () => {
-        const modal = button.closest(".modal");
 
-        modal?.classList.add("hidden");
-      });
+      button.addEventListener(
+        "click",
+        () => {
+
+          const modal =
+            button.closest(
+              ".modal"
+            );
+
+          modal?.classList.add(
+            "hidden"
+          );
+
+        }
+      );
+
     });
+
 
   document
-    .querySelectorAll(".modal-overlay")
+    .querySelectorAll(
+      ".modal-overlay"
+    )
     .forEach((overlay) => {
-      overlay.addEventListener("click", () => {
-        overlay
-          .closest(".modal")
-          ?.classList.add("hidden");
-      });
+
+      overlay.addEventListener(
+        "click",
+        () => {
+
+          overlay
+            .closest(
+              ".modal"
+            )
+            ?.classList.add(
+              "hidden"
+            );
+
+        }
+      );
+
     });
 
-  $("loginForm")?.addEventListener(
-    "submit",
-    loginUser
-  );
 
-  $("registerForm")?.addEventListener(
-    "submit",
-    registerUser
-  );
+  $("loginForm")
+    ?.addEventListener(
+      "submit",
+      loginUser
+    );
 
-  $("journalForm")?.addEventListener(
-    "submit",
-    saveJournalTrade
-  );
+
+  $("registerForm")
+    ?.addEventListener(
+      "submit",
+      registerUser
+    );
+
+
+  $("journalForm")
+    ?.addEventListener(
+      "submit",
+      saveJournalTrade
+    );
 }
 
 
 /* =========================================================
-   AUTH STATE
+   AUTH
 ========================================================= */
 
 function setupAuthUI() {
-  supabaseClient.auth.onAuthStateChange(
-    async (event, session) => {
-      console.log(
-        "Habboub Auth Event:",
-        event
-      );
 
-      if (
-        event === "SIGNED_IN" ||
-        event === "SIGNED_OUT" ||
-        event === "USER_UPDATED"
-      ) {
-        setTimeout(async () => {
-          await refreshAuthUI();
+  if (
+    !supabaseClient
+  ) {
+    return;
+  }
 
-          if (session?.user) {
-            await ensureProfile(session.user);
-            await refreshAuthUI();
+
+  try {
+
+    supabaseClient.auth
+      .onAuthStateChange(
+        async (
+          event,
+          session
+        ) => {
+
+          console.log(
+            "Habboub Auth Event:",
+            event
+          );
+
+
+          if (
+            event ===
+              "SIGNED_IN" ||
+            event ===
+              "SIGNED_OUT" ||
+            event ===
+              "USER_UPDATED"
+          ) {
+
+            setTimeout(
+              async () => {
+
+                try {
+
+                  await refreshAuthUI();
+
+                  await loadJournal();
+
+                } catch (
+                  error
+                ) {
+
+                  console.error(
+                    "Auth refresh error:",
+                    error
+                  );
+
+                }
+
+              },
+              100
+            );
+
           }
 
-          await loadJournal();
-        }, 100);
-      }
-    }
-  );
+        }
+      );
+
+  } catch (error) {
+
+    console.error(
+      "Auth listener error:",
+      error
+    );
+
+  }
 }
 
-async function refreshAuthUI() {
-  const user = await getCurrentUser();
 
-  state.user = user;
-  state.profile = null;
+async function refreshAuthUI() {
+
+  const user =
+    await getCurrentUser();
+
+
+  state.user =
+    user;
+
+
+  state.profile =
+    null;
+
 
   if (user) {
-    state.profile = await getProfile(user.id);
 
-    if (!state.profile) {
-      state.profile = await ensureProfile(user);
+    state.profile =
+      await getProfile(
+        user.id
+      );
+
+
+    if (
+      !state.profile
+    ) {
+
+      state.profile =
+        await ensureProfile(
+          user
+        );
+
     }
+
   }
+
 
   renderAuthUI();
 }
 
+
 async function getCurrentUser() {
+
+  if (
+    !supabaseClient
+  ) {
+    return null;
+  }
+
+
   try {
+
     const {
       data,
       error
-    } = await supabaseClient.auth.getUser();
+    } =
+      await supabaseClient
+        .auth
+        .getUser();
+
 
     if (error) {
       return null;
     }
 
-    return data?.user || null;
+
+    return (
+      data?.user ||
+      null
+    );
+
   } catch (error) {
+
     console.error(
       "Get current user error:",
       error
@@ -423,134 +1036,233 @@ async function getCurrentUser() {
    PROFILE DATABASE
 ========================================================= */
 
-async function getProfile(userId) {
-  if (!userId) return null;
+async function getProfile(
+  userId
+) {
 
-  const {
-    data,
-    error
-  } = await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
+  if (
+    !userId ||
+    !supabaseClient
+  ) {
+    return null;
+  }
 
-  if (error) {
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "Profile load error:",
+        error
+      );
+
+      return null;
+    }
+
+
+    return data || null;
+
+  } catch (error) {
+
     console.error(
-      "Profile load error:",
+      "Profile request error:",
       error
     );
 
     return null;
   }
-
-  return data || null;
 }
 
-async function ensureProfile(user) {
-  if (!user?.id) {
+
+async function ensureProfile(
+  user
+) {
+
+  if (
+    !user?.id ||
+    !supabaseClient
+  ) {
     return null;
   }
 
-  const existing = await getProfile(user.id);
+
+  const existing =
+    await getProfile(
+      user.id
+    );
+
 
   if (existing) {
     return existing;
   }
 
+
   const fullName =
-    user.user_metadata?.full_name ||
-    user.email?.split("@")[0] ||
+    user.user_metadata
+      ?.full_name ||
+    user.email
+      ?.split("@")[0] ||
     "User";
 
+
   const avatarUrl =
-    user.user_metadata?.avatar_url ||
+    user.user_metadata
+      ?.avatar_url ||
     null;
 
-  const {
-    data,
-    error
-  } = await supabaseClient
-    .from("profiles")
-    .insert({
-      id: user.id,
-      full_name: fullName,
-      email: user.email || null,
-      avatar_url: avatarUrl
-    })
-    .select("*")
-    .maybeSingle();
 
-  if (error) {
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("profiles")
+        .insert({
+          id: user.id,
+          full_name: fullName,
+          email:
+            user.email ||
+            null,
+          avatar_url:
+            avatarUrl
+        })
+        .select("*")
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "Profile creation error:",
+        error
+      );
+
+      return null;
+    }
+
+
+    return data || null;
+
+  } catch (error) {
+
     console.error(
-      "Profile creation error:",
+      "Profile creation request error:",
       error
     );
 
     return null;
   }
-
-  return data || null;
 }
 
 
 /* =========================================================
    AUTH UI
-   IMPORTANT:
-   Uses the EXISTING HTML profileArea/profileMenu.
-   Does NOT create another profile menu.
 ========================================================= */
 
 function renderAuthUI() {
-  const loginButton = $("loginButton");
-  const profileArea = $("profileArea");
 
-  if (!loginButton) return;
+  const loginButton =
+    $("loginButton");
+
+  const profileArea =
+    $("profileArea");
+
+
+  if (!loginButton) {
+    return;
+  }
+
 
   /*
    * LOGGED OUT
    */
 
   if (!state.user) {
-    loginButton.classList.remove("hidden");
-    loginButton.classList.remove("user-account-button");
+
+    loginButton.classList.remove(
+      "hidden"
+    );
+
+
+    loginButton.classList.remove(
+      "user-account-button"
+    );
+
 
     loginButton.innerHTML =
-      translations[state.language]?.login ||
+      translations[
+        state.language
+      ]?.login ||
       "Login";
 
-    profileArea?.classList.add("hidden");
 
-    $("profileMenu")?.classList.add("hidden");
+    profileArea
+      ?.classList.add(
+        "hidden"
+      );
+
+
+    $("profileMenu")
+      ?.classList.add(
+        "hidden"
+      );
+
 
     return;
   }
+
 
   /*
    * LOGGED IN
    */
 
-  loginButton.classList.add("hidden");
+  loginButton.classList.add(
+    "hidden"
+  );
 
-  profileArea?.classList.remove("hidden");
+
+  profileArea
+    ?.classList.remove(
+      "hidden"
+    );
+
 
   const name =
-    state.profile?.full_name ||
-    state.user.user_metadata?.full_name ||
-    state.user.email?.split("@")[0] ||
+    state.profile
+      ?.full_name ||
+    state.user.user_metadata
+      ?.full_name ||
+    state.user.email
+      ?.split("@")[0] ||
     "User";
 
-  const email =
-    state.user.email || "";
 
-  const avatarUrl =
-    state.profile?.avatar_url ||
-    state.user.user_metadata?.avatar_url ||
+  const email =
+    state.user.email ||
     "";
 
-  /*
-   * Header avatar
-   */
+
+  const avatarUrl =
+    state.profile
+      ?.avatar_url ||
+    state.user.user_metadata
+      ?.avatar_url ||
+    "";
+
 
   updateAvatarElement(
     $("profileAvatar"),
@@ -558,9 +1270,6 @@ function renderAuthUI() {
     avatarUrl
   );
 
-  /*
-   * Menu avatar
-   */
 
   updateAvatarElement(
     $("profileAvatarLarge"),
@@ -568,30 +1277,29 @@ function renderAuthUI() {
     avatarUrl
   );
 
-  /*
-   * Names
-   */
 
   setText(
     "profileButtonName",
     name
   );
 
+
   setText(
     "profileName",
     name
   );
+
 
   setText(
     "profileEmail",
     email
   );
 
-  /*
-   * Keep menu closed after rendering.
-   */
 
-  $("profileMenu")?.classList.add("hidden");
+  $("profileMenu")
+    ?.classList.add(
+      "hidden"
+    );
 }
 
 
@@ -604,71 +1312,131 @@ function updateAvatarElement(
   name,
   avatarUrl
 ) {
-  if (!element) return;
+
+  if (!element) {
+    return;
+  }
+
 
   const initial =
-    String(name || "U")
+    String(
+      name || "U"
+    )
       .trim()
       .charAt(0)
-      .toUpperCase() || "U";
+      .toUpperCase() ||
+    "U";
 
-  /*
-   * Clear previous content.
-   */
 
   element.innerHTML = "";
 
-  /*
-   * Prevent any old inline sizing from causing problems.
-   */
-
-  element.style.overflow = "hidden";
-  element.style.borderRadius = "50%";
-  element.style.backgroundSize = "cover";
-  element.style.backgroundPosition = "center";
-  element.style.backgroundRepeat = "no-repeat";
 
   /*
-   * Avatar image.
+   * DO NOT overwrite container
+   * width / height from CSS.
+   *
+   * Only force image safety.
    */
+
+  element.style.borderRadius =
+    "50%";
+
+  element.style.overflow =
+    "hidden";
+
 
   if (avatarUrl) {
+
     const img =
-      document.createElement("img");
+      document.createElement(
+        "img"
+      );
 
-    img.src = avatarUrl;
-    img.alt = "Profile avatar";
 
-    img.style.display = "block";
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.maxWidth = "100%";
-    img.style.maxHeight = "100%";
-    img.style.minWidth = "0";
-    img.style.minHeight = "0";
-    img.style.objectFit = "cover";
-    img.style.objectPosition = "center";
-    img.style.borderRadius = "50%";
+    img.src =
+      avatarUrl;
+
+
+    img.alt =
+      "Profile avatar";
+
+
+    img.style.width =
+      "100%";
+
+
+    img.style.height =
+      "100%";
+
+
+    img.style.maxWidth =
+      "100%";
+
+
+    img.style.maxHeight =
+      "100%";
+
+
+    img.style.minWidth =
+      "0";
+
+
+    img.style.minHeight =
+      "0";
+
+
+    img.style.display =
+      "block";
+
+
+    img.style.objectFit =
+      "cover";
+
+
+    img.style.objectPosition =
+      "center";
+
+
+    img.style.borderRadius =
+      "50%";
+
 
     img.onerror = () => {
-      element.innerHTML = "";
-      element.textContent = initial;
-      element.classList.remove("has-image");
+
+      element.innerHTML =
+        "";
+
+      element.textContent =
+        initial;
+
+      element.classList.remove(
+        "has-image"
+      );
+
     };
 
-    element.classList.add("has-image");
 
-    element.appendChild(img);
+    element.classList.add(
+      "has-image"
+    );
+
+
+    element.appendChild(
+      img
+    );
+
 
     return;
   }
 
-  /*
-   * No avatar: first letter.
-   */
 
-  element.classList.remove("has-image");
-  element.textContent = initial;
+  element.classList.remove(
+    "has-image"
+  );
+
+
+  element.textContent =
+    initial;
 }
 
 
@@ -676,7 +1444,35 @@ function updateAvatarElement(
    PROFILE MENU
 ========================================================= */
 
+function toggleProfileMenu() {
+
+  if (!state.user) {
+
+    openModal(
+      "loginModal"
+    );
+
+    return;
+  }
+
+
+  const menu =
+    $("profileMenu");
+
+
+  if (!menu) {
+    return;
+  }
+
+
+  menu.classList.toggle(
+    "hidden"
+  );
+}
+
+
 function setupProfileMenu() {
+
   const profileButton =
     $("profileButton");
 
@@ -689,81 +1485,85 @@ function setupProfileMenu() {
   const logoutButton =
     $("logoutButton");
 
-  /*
-   * Profile button
-   */
 
-  profileButton?.addEventListener(
+  if (!profileButton) {
+    return;
+  }
+
+
+  profileButton.addEventListener(
     "click",
     (event) => {
+
       event.stopPropagation();
 
       toggleProfileMenu();
+
     }
   );
 
-  /*
-   * Profile
-   */
 
   profileLabel?.addEventListener(
     "click",
     () => {
-      profileMenu?.classList.add("hidden");
+
+      profileMenu
+        ?.classList.add(
+          "hidden"
+        );
 
       showProfileModal();
+
     }
   );
 
-  /*
-   * Logout
-   */
 
   logoutButton?.addEventListener(
     "click",
     async () => {
-      profileMenu?.classList.add("hidden");
+
+      profileMenu
+        ?.classList.add(
+          "hidden"
+        );
 
       await logoutUser();
+
     }
   );
 
-  /*
-   * Click outside.
-   */
 
   document.addEventListener(
     "click",
     (event) => {
+
       if (
         !profileMenu ||
-        profileMenu.classList.contains("hidden")
+        profileMenu.classList.contains(
+          "hidden"
+        )
       ) {
         return;
       }
 
+
       if (
-        !profileMenu.contains(event.target) &&
-        !profileButton?.contains(event.target)
+        !profileMenu.contains(
+          event.target
+        ) &&
+        !profileButton.contains(
+          event.target
+        )
       ) {
-        profileMenu.classList.add("hidden");
+
+        profileMenu.classList.add(
+          "hidden"
+        );
+
       }
+
     }
   );
-}
-
-function toggleProfileMenu() {
-  if (!state.user) {
-    openModal("loginModal");
-    return;
-  }
-
-  const menu =
-    $("profileMenu");
-
-  if (!menu) return;
-
-  menu.classList.toggle("hidden");
 }
 
 
@@ -772,36 +1572,75 @@ function toggleProfileMenu() {
 ========================================================= */
 
 async function logoutUser() {
-  const {
-    error
-  } = await supabaseClient.auth.signOut();
 
-  if (error) {
-    console.error(
-      "Logout error:",
-      error
-    );
-
-    showToast(error.message);
-
+  if (!supabaseClient) {
     return;
   }
 
-  state.user = null;
-  state.profile = null;
-  state.journal = [];
 
-  $("profileMenu")?.classList.add("hidden");
+  try {
 
-  renderAuthUI();
+    const {
+      error
+    } =
+      await supabaseClient
+        .auth
+        .signOut();
 
-  renderJournal([]);
 
-  showToast(
-    state.language === "ar"
-      ? "تم تسجيل الخروج."
-      : "Logged out successfully."
-  );
+    if (error) {
+
+      console.error(
+        "Logout error:",
+        error
+      );
+
+      showToast(
+        error.message
+      );
+
+      return;
+    }
+
+
+    state.user =
+      null;
+
+    state.profile =
+      null;
+
+    state.journal =
+      [];
+
+
+    $("profileMenu")
+      ?.classList.add(
+        "hidden"
+      );
+
+
+    renderAuthUI();
+
+
+    renderJournal(
+      []
+    );
+
+
+    showToast(
+      state.language === "ar"
+        ? "تم تسجيل الخروج."
+        : "Logged out successfully."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Logout request error:",
+      error
+    );
+
+  }
 }
 
 
@@ -810,54 +1649,113 @@ async function logoutUser() {
 ========================================================= */
 
 function showProfileModal() {
+
   /*
-   * Remove an old dynamically-created profile modal.
+   * Remove old profile modals.
    */
 
   document
-    .querySelectorAll("#profileModal")
+    .querySelectorAll(
+      "#profileModal"
+    )
     .forEach((element) => {
+
       element.remove();
+
     });
 
-  const profile =
-    state.profile;
 
   const user =
     state.user;
 
-  if (!user) return;
+
+  if (!user) {
+    return;
+  }
+
+
+  const profile =
+    state.profile;
+
 
   const name =
     profile?.full_name ||
-    user.user_metadata?.full_name ||
-    user.email?.split("@")[0] ||
+    user.user_metadata
+      ?.full_name ||
+    user.email
+      ?.split("@")[0] ||
     "User";
+
 
   const avatarUrl =
     profile?.avatar_url ||
-    user.user_metadata?.avatar_url ||
+    user.user_metadata
+      ?.avatar_url ||
     "";
 
+
   const lang =
-    translations[state.language] ||
+    translations[
+      state.language
+    ] ||
     translations.en;
 
-  const modal =
-    document.createElement("div");
 
-  modal.id = "profileModal";
-  modal.className = "modal";
+  const modal =
+    document.createElement(
+      "div"
+    );
+
+
+  modal.id =
+    "profileModal";
+
+
+  modal.className =
+    "modal";
+
+
+  /*
+   * Hard safety dimensions.
+   */
+
+  modal.style.position =
+    "fixed";
+
+  modal.style.inset =
+    "0";
+
+  modal.style.zIndex =
+    "10000";
+
+  modal.style.display =
+    "flex";
+
+  modal.style.alignItems =
+    "center";
+
+  modal.style.justifyContent =
+    "center";
+
+  modal.style.padding =
+    "20px";
+
+  modal.style.boxSizing =
+    "border-box";
+
 
   modal.innerHTML = `
+
     <div
       class="modal-overlay"
       data-profile-close
     ></div>
 
+
     <div
       class="modal-box profile-modal-box"
       style="
+        position:relative;
         width:min(460px, calc(100vw - 32px));
         max-width:460px;
         min-width:0;
@@ -865,6 +1763,7 @@ function showProfileModal() {
         max-height:calc(100vh - 40px);
         overflow-y:auto;
         box-sizing:border-box;
+        z-index:2;
       "
     >
 
@@ -876,6 +1775,7 @@ function showProfileModal() {
       >
         ×
       </button>
+
 
       <div
         id="profileLargeAvatarPreview"
@@ -900,44 +1800,67 @@ function showProfileModal() {
         "
       ></div>
 
+
       <h2>
-        ${escapeHtml(lang.my_profile)}
+        ${escapeHtml(
+          lang.my_profile
+        )}
       </h2>
 
+
       <p class="profile-email">
-        ${escapeHtml(user.email || "")}
+        ${escapeHtml(
+          user.email || ""
+        )}
       </p>
 
-      <form id="profileForm">
+
+      <form
+        id="profileForm"
+      >
 
         <label>
+
           <span>
-            ${escapeHtml(lang.full_name)}
+            ${escapeHtml(
+              lang.full_name
+            )}
           </span>
+
 
           <input
             id="profileFullName"
             type="text"
-            value="${escapeAttribute(name)}"
+            value="${escapeAttribute(
+              name
+            )}"
             minlength="2"
             maxlength="80"
             required
           >
+
         </label>
 
+
         <label>
+
           <span>
             Avatar URL
           </span>
 
+
           <input
             id="profileAvatarUrl"
             type="url"
-            value="${escapeAttribute(avatarUrl)}"
+            value="${escapeAttribute(
+              avatarUrl
+            )}"
             placeholder="https://..."
             autocomplete="off"
           >
+
         </label>
+
 
         <button
           class="primary-btn full"
@@ -952,6 +1875,7 @@ function showProfileModal() {
 
       </form>
 
+
       <div
         class="form-message"
         id="profileMessage"
@@ -960,11 +1884,11 @@ function showProfileModal() {
     </div>
   `;
 
-  document.body.appendChild(modal);
 
-  /*
-   * Render preview.
-   */
+  document.body.appendChild(
+    modal
+  );
+
 
   updateAvatarElement(
     $("profileLargeAvatarPreview"),
@@ -972,90 +1896,93 @@ function showProfileModal() {
     avatarUrl
   );
 
-  /*
-   * Close.
-   */
 
-  $("profileModalClose")?.addEventListener(
-    "click",
-    () => {
-      modal.remove();
-    }
-  );
-
-  /*
-   * Overlay close.
-   */
-
-  modal
-    .querySelector("[data-profile-close]")
+  $("profileModalClose")
     ?.addEventListener(
       "click",
       () => {
+
         modal.remove();
+
       }
     );
 
-  /*
-   * Save.
-   */
 
-  $("profileForm")?.addEventListener(
-    "submit",
-    updateProfile
-  );
+  modal
+    .querySelector(
+      "[data-profile-close]"
+    )
+    ?.addEventListener(
+      "click",
+      () => {
 
-  /*
-   * Live avatar preview.
-   */
+        modal.remove();
 
-  $("profileAvatarUrl")?.addEventListener(
-    "input",
-    () => {
-      const currentUrl =
-        $("profileAvatarUrl")
-          ?.value
-          .trim() || "";
+      }
+    );
 
-      const currentName =
-        $("profileFullName")
-          ?.value
-          .trim() ||
-        name;
 
-      updateAvatarElement(
-        $("profileLargeAvatarPreview"),
-        currentName,
-        currentUrl
-      );
-    }
-  );
+  $("profileForm")
+    ?.addEventListener(
+      "submit",
+      updateProfile
+    );
 
-  /*
-   * Live name preview.
-   */
 
-  $("profileFullName")?.addEventListener(
-    "input",
-    () => {
-      const currentName =
-        $("profileFullName")
-          ?.value
-          .trim() ||
-        "User";
+  $("profileAvatarUrl")
+    ?.addEventListener(
+      "input",
+      () => {
 
-      const currentUrl =
-        $("profileAvatarUrl")
-          ?.value
-          .trim() || "";
+        const url =
+          $("profileAvatarUrl")
+            ?.value
+            .trim() || "";
 
-      updateAvatarElement(
-        $("profileLargeAvatarPreview"),
-        currentName,
-        currentUrl
-      );
-    }
-  );
+
+        const currentName =
+          $("profileFullName")
+            ?.value
+            .trim() ||
+          name;
+
+
+        updateAvatarElement(
+          $("profileLargeAvatarPreview"),
+          currentName,
+          url
+        );
+
+      }
+    );
+
+
+  $("profileFullName")
+    ?.addEventListener(
+      "input",
+      () => {
+
+        const currentName =
+          $("profileFullName")
+            ?.value
+            .trim() ||
+          "User";
+
+
+        const currentUrl =
+          $("profileAvatarUrl")
+            ?.value
+            .trim() || "";
+
+
+        updateAvatarElement(
+          $("profileLargeAvatarPreview"),
+          currentName,
+          currentUrl
+        );
+
+      }
+    );
 }
 
 
@@ -1063,27 +1990,35 @@ function showProfileModal() {
    UPDATE PROFILE
 ========================================================= */
 
-async function updateProfile(event) {
+async function updateProfile(
+  event
+) {
+
   event.preventDefault();
 
-  if (!state.user) {
+
+  if (
+    !state.user ||
+    !supabaseClient
+  ) {
     return;
   }
+
 
   const fullName =
     $("profileFullName")
       ?.value
       .trim();
 
+
   const avatarUrl =
     $("profileAvatarUrl")
       ?.value
       .trim();
 
-  const message =
-    $("profileMessage");
 
   if (!fullName) {
+
     setMessage(
       "profileMessage",
       state.language === "ar"
@@ -1094,86 +2029,122 @@ async function updateProfile(event) {
     return;
   }
 
-  if (message) {
-    message.textContent =
-      state.language === "ar"
-        ? "جاري الحفظ..."
-        : "Saving...";
-  }
 
-  const {
-    error
-  } = await supabaseClient
-    .from("profiles")
-    .upsert(
-      {
-        id: state.user.id,
-        full_name: fullName,
-        email: state.user.email || null,
-        avatar_url:
-          avatarUrl || null
-      },
-      {
-        onConflict: "id"
-      }
+  setMessage(
+    "profileMessage",
+    state.language === "ar"
+      ? "جاري الحفظ..."
+      : "Saving..."
+  );
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("profiles")
+        .upsert(
+          {
+            id:
+              state.user.id,
+
+            full_name:
+              fullName,
+
+            email:
+              state.user.email ||
+              null,
+
+            avatar_url:
+              avatarUrl ||
+              null
+          },
+          {
+            onConflict:
+              "id"
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Profile update error:",
+        error
+      );
+
+      setMessage(
+        "profileMessage",
+        error.message
+      );
+
+      return;
+    }
+
+
+    try {
+
+      await supabaseClient
+        .auth
+        .updateUser({
+          data: {
+            full_name:
+              fullName,
+
+            avatar_url:
+              avatarUrl ||
+              null
+          }
+        });
+
+    } catch (error) {
+
+      console.error(
+        "Auth metadata update error:",
+        error
+      );
+
+    }
+
+
+    state.profile =
+      await getProfile(
+        state.user.id
+      );
+
+
+    renderAuthUI();
+
+
+    setMessage(
+      "profileMessage",
+      state.language === "ar"
+        ? "تم حفظ التغييرات."
+        : "Changes saved."
     );
 
-  if (error) {
+
+    showToast(
+      state.language === "ar"
+        ? "تم تحديث الملف الشخصي."
+        : "Profile updated."
+    );
+
+  } catch (error) {
+
     console.error(
-      "Profile update error:",
+      "Profile update request error:",
       error
     );
 
     setMessage(
       "profileMessage",
-      error.message
-    );
-
-    return;
-  }
-
-  /*
-   * Update Supabase Auth metadata too.
-   */
-
-  const {
-    error: authError
-  } = await supabaseClient.auth.updateUser(
-    {
-      data: {
-        full_name: fullName,
-        avatar_url:
-          avatarUrl || null
-      }
-    }
-  );
-
-  if (authError) {
-    console.error(
-      "Auth metadata update error:",
-      authError
+      error.message ||
+        "Profile update failed."
     );
   }
-
-  state.profile =
-    await getProfile(
-      state.user.id
-    );
-
-  renderAuthUI();
-
-  if (message) {
-    message.textContent =
-      state.language === "ar"
-        ? "تم حفظ التغييرات."
-        : "Changes saved.";
-  }
-
-  showToast(
-    state.language === "ar"
-      ? "تم تحديث الملف الشخصي."
-      : "Profile updated."
-  );
 }
 
 
@@ -1181,28 +2152,47 @@ async function updateProfile(event) {
    LOGIN
 ========================================================= */
 
-async function loginUser(event) {
+async function loginUser(
+  event
+) {
+
   event.preventDefault();
+
+
+  if (!supabaseClient) {
+
+    setMessage(
+      "loginMessage",
+      "Supabase is not available."
+    );
+
+    return;
+  }
+
 
   const email =
     $("loginEmail")
       ?.value
       .trim();
 
+
   const password =
     $("loginPassword")
       ?.value;
 
+
   if (!email || !password) {
+
     setMessage(
       "loginMessage",
       state.language === "ar"
         ? "أدخل البريد الإلكتروني وكلمة المرور."
-        : "Enter your email and password."
+        : "Enter the email and password."
     );
 
     return;
   }
+
 
   setMessage(
     "loginMessage",
@@ -1211,62 +2201,94 @@ async function loginUser(event) {
       : "Logging in..."
   );
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.auth.signInWithPassword(
-      {
-        email,
-        password
-      }
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .signInWithPassword({
+          email,
+          password
+        });
+
+
+    if (error) {
+
+      console.error(
+        "Login error:",
+        error
+      );
+
+      setMessage(
+        "loginMessage",
+        error.message
+      );
+
+      return;
+    }
+
+
+    state.user =
+      data?.user ||
+      null;
+
+
+    if (!state.user) {
+
+      setMessage(
+        "loginMessage",
+        state.language === "ar"
+          ? "تعذر الحصول على بيانات الحساب."
+          : "Could not load account information."
+      );
+
+      return;
+    }
+
+
+    await ensureProfile(
+      state.user
     );
 
-  if (error) {
+
+    await refreshAuthUI();
+
+
+    closeModal(
+      "loginModal"
+    );
+
+
+    $("loginForm")
+      ?.reset();
+
+
+    await loadJournal();
+
+
+    showToast(
+      state.language === "ar"
+        ? "تم تسجيل الدخول بنجاح."
+        : "Login successful."
+    );
+
+  } catch (error) {
+
     console.error(
-      "Login error:",
+      "Login request error:",
       error
     );
 
     setMessage(
       "loginMessage",
-      error.message
+      error.message ||
+        "Login failed."
     );
-
-    return;
   }
-
-  state.user =
-    data?.user || null;
-
-  if (!state.user) {
-    setMessage(
-      "loginMessage",
-      state.language === "ar"
-        ? "تعذر الحصول على بيانات الحساب."
-        : "Could not load account information."
-    );
-
-    return;
-  }
-
-  await ensureProfile(
-    state.user
-  );
-
-  await refreshAuthUI();
-
-  closeModal("loginModal");
-
-  $("loginForm")?.reset();
-
-  await loadJournal();
-
-  showToast(
-    state.language === "ar"
-      ? "تم تسجيل الدخول بنجاح."
-      : "Login successful."
-  );
 }
 
 
@@ -1274,19 +2296,39 @@ async function loginUser(event) {
    REGISTER
 ========================================================= */
 
-async function registerUser(event) {
+async function registerUser(
+  event
+) {
+
   event.preventDefault();
 
+
+  if (!supabaseClient) {
+
+    setMessage(
+      "registerMessage",
+      "Supabase is not available."
+    );
+
+    return;
+  }
+
+
   /*
-   * IMPORTANT:
-   * HTML must use:
-   * id="registerFullName"
+   * Supports BOTH IDs:
+   *
+   * registerFullName
+   * registerName
    */
 
   const fullName =
-    $("registerFullName")
+    (
+      $("registerFullName") ||
+      $("registerName")
+    )
       ?.value
       .trim();
+
 
   const email =
     $("registerEmail")
@@ -1294,11 +2336,14 @@ async function registerUser(event) {
       .trim()
       .toLowerCase();
 
+
   const password =
     $("registerPassword")
       ?.value;
 
+
   if (!fullName) {
+
     setMessage(
       "registerMessage",
       state.language === "ar"
@@ -1309,7 +2354,11 @@ async function registerUser(event) {
     return;
   }
 
-  if (fullName.length < 2) {
+
+  if (
+    fullName.length < 2
+  ) {
+
     setMessage(
       "registerMessage",
       state.language === "ar"
@@ -1320,7 +2369,9 @@ async function registerUser(event) {
     return;
   }
 
+
   if (!email) {
+
     setMessage(
       "registerMessage",
       state.language === "ar"
@@ -1331,7 +2382,9 @@ async function registerUser(event) {
     return;
   }
 
+
   if (!password) {
+
     setMessage(
       "registerMessage",
       state.language === "ar"
@@ -1342,7 +2395,11 @@ async function registerUser(event) {
     return;
   }
 
-  if (password.length < 6) {
+
+  if (
+    password.length < 6
+  ) {
+
     setMessage(
       "registerMessage",
       state.language === "ar"
@@ -1353,6 +2410,7 @@ async function registerUser(event) {
     return;
   }
 
+
   setMessage(
     "registerMessage",
     state.language === "ar"
@@ -1360,79 +2418,113 @@ async function registerUser(event) {
       : "Creating account..."
   );
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.auth.signUp(
-      {
-        email,
-        password,
 
-        options: {
-          data: {
-            full_name: fullName
-          },
+  try {
 
-          emailRedirectTo:
-            "https://yazanhabboub888-ui.github.io/habboub-trade/"
-        }
-      }
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .auth
+        .signUp({
+          email,
+          password,
+
+          options: {
+
+            data: {
+              full_name:
+                fullName
+            },
+
+            emailRedirectTo:
+              "https://yazanhabboub888-ui.github.io/habboub-trade/"
+          }
+        });
+
+
+    if (error) {
+
+      console.error(
+        "Register error:",
+        error
+      );
+
+      setMessage(
+        "registerMessage",
+        error.message
+      );
+
+      return;
+    }
+
+
+    /*
+     * Email confirmation disabled.
+     */
+
+    if (
+      data?.session &&
+      data?.user
+    ) {
+
+      state.user =
+        data.user;
+
+
+      await ensureProfile(
+        data.user
+      );
+
+
+      await refreshAuthUI();
+
+
+      closeModal(
+        "registerModal"
+      );
+
+
+      $("registerForm")
+        ?.reset();
+
+
+      showToast(
+        state.language === "ar"
+          ? "تم إنشاء الحساب بنجاح."
+          : "Account created successfully."
+      );
+
+
+      return;
+    }
+
+
+    /*
+     * Email confirmation enabled.
+     */
+
+    setMessage(
+      "registerMessage",
+      state.language === "ar"
+        ? "تم إنشاء الحساب. افحص بريدك الإلكتروني واضغط رابط التأكيد."
+        : "Account created. Check your email and click the confirmation link."
     );
 
-  if (error) {
+  } catch (error) {
+
     console.error(
-      "Register error:",
+      "Register request error:",
       error
     );
 
     setMessage(
       "registerMessage",
-      error.message
+      error.message ||
+        "Registration failed."
     );
-
-    return;
   }
-
-  /*
-   * Confirmation disabled.
-   */
-
-  if (data?.session && data?.user) {
-    state.user =
-      data.user;
-
-    await ensureProfile(
-      data.user
-    );
-
-    await refreshAuthUI();
-
-    closeModal(
-      "registerModal"
-    );
-
-    $("registerForm")?.reset();
-
-    showToast(
-      state.language === "ar"
-        ? "تم إنشاء الحساب بنجاح."
-        : "Account created successfully."
-    );
-
-    return;
-  }
-
-  /*
-   * Confirmation enabled.
-   */
-
-  setMessage(
-    "registerMessage",
-    state.language === "ar"
-      ? "تم إنشاء الحساب. افحص بريدك الإلكتروني واضغط رابط التأكيد."
-      : "Account created. Check your email and click the confirmation link."
-  );
 }
 
 
@@ -1441,48 +2533,85 @@ async function registerUser(event) {
 ========================================================= */
 
 async function loadJournal() {
+
   const user =
     await getCurrentUser();
 
-  if (!user) {
-    state.journal = [];
 
-    renderJournal([]);
+  if (!user) {
+
+    state.journal =
+      [];
+
+    renderJournal(
+      []
+    );
 
     return;
   }
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("trading_journal")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", {
-        ascending: false
-      });
 
-  if (error) {
+  if (!supabaseClient) {
+    return;
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("trading_journal")
+        .select("*")
+        .eq(
+          "user_id",
+          user.id
+        )
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Journal load error:",
+        error
+      );
+
+      state.journal =
+        [];
+
+      renderJournal(
+        []
+      );
+
+      return;
+    }
+
+
+    state.journal =
+      data || [];
+
+
+    renderJournal(
+      state.journal
+    );
+
+  } catch (error) {
+
     console.error(
-      "Journal load error:",
+      "Journal request error:",
       error
     );
 
-    state.journal = [];
-
-    renderJournal([]);
-
-    return;
   }
-
-  state.journal =
-    data || [];
-
-  renderJournal(
-    state.journal
-  );
 }
 
 
@@ -1490,13 +2619,19 @@ async function loadJournal() {
    JOURNAL — SAVE
 ========================================================= */
 
-async function saveJournalTrade(event) {
+async function saveJournalTrade(
+  event
+) {
+
   event.preventDefault();
+
 
   const user =
     await getCurrentUser();
 
+
   if (!user) {
+
     setMessage(
       "journalMessage",
       state.language === "ar"
@@ -1507,6 +2642,7 @@ async function saveJournalTrade(event) {
     return;
   }
 
+
   const symbol =
     $("tradeSymbol")
       ?.value
@@ -1514,22 +2650,27 @@ async function saveJournalTrade(event) {
       .toUpperCase() ||
     "XAUUSD";
 
+
   const setup =
     $("tradeSetup")
       ?.value
       .trim() ||
     "";
 
+
   const result =
     $("tradeResult")
       ?.value ||
     "win";
 
+
   const rResult =
     Number(
       $("tradeR")
-        ?.value || 0
+        ?.value ||
+      0
     );
+
 
   const notes =
     $("tradeNotes")
@@ -1537,20 +2678,13 @@ async function saveJournalTrade(event) {
       .trim() ||
     "";
 
-  if (!symbol) {
-    setMessage(
-      "journalMessage",
-      state.language === "ar"
-        ? "أدخل الرمز."
-        : "Enter a symbol."
-    );
-
-    return;
-  }
 
   if (
-    Number.isNaN(rResult)
+    Number.isNaN(
+      rResult
+    )
   ) {
+
     setMessage(
       "journalMessage",
       state.language === "ar"
@@ -1561,6 +2695,7 @@ async function saveJournalTrade(event) {
     return;
   }
 
+
   setMessage(
     "journalMessage",
     state.language === "ar"
@@ -1568,78 +2703,126 @@ async function saveJournalTrade(event) {
       : "Saving trade..."
   );
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("trading_journal")
-      .insert({
-        user_id: user.id,
-        journal_type: "manual",
-        symbol,
-        direction:
-          result === "win"
-            ? "WIN"
-            : result === "loss"
-            ? "LOSS"
-            : "BREAKEVEN",
-        setup,
-        result,
-        r_result: rResult,
-        notes
-      })
-      .select("*")
-      .maybeSingle();
 
-  if (error) {
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("trading_journal")
+        .insert({
+          user_id:
+            user.id,
+
+          journal_type:
+            "manual",
+
+          symbol,
+
+          direction:
+            result === "win"
+              ? "WIN"
+              : result === "loss"
+              ? "LOSS"
+              : "BREAKEVEN",
+
+          setup,
+
+          result,
+
+          r_result:
+            rResult,
+
+          notes
+
+        })
+        .select("*")
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "Journal save error:",
+        error
+      );
+
+      setMessage(
+        "journalMessage",
+        error.message
+      );
+
+      return;
+    }
+
+
+    console.log(
+      "Trade saved:",
+      data
+    );
+
+
+    setMessage(
+      "journalMessage",
+      state.language === "ar"
+        ? "تم حفظ الصفقة."
+        : "Trade saved."
+    );
+
+
+    $("journalForm")
+      ?.reset();
+
+
+    if ($("tradeSymbol")) {
+
+      $("tradeSymbol").value =
+        "XAUUSD";
+
+    }
+
+
+    if ($("tradeR")) {
+
+      $("tradeR").value =
+        "1";
+
+    }
+
+
+    await loadJournal();
+
+
+    showToast(
+      state.language === "ar"
+        ? "تم حفظ الصفقة بنجاح."
+        : "Trade saved successfully."
+    );
+
+
+    setTimeout(() => {
+
+      closeModal(
+        "journalModal"
+      );
+
+    }, 500);
+
+  } catch (error) {
+
     console.error(
-      "Journal save error:",
+      "Journal save request error:",
       error
     );
 
     setMessage(
       "journalMessage",
-      error.message
+      error.message ||
+        "Could not save trade."
     );
-
-    return;
   }
-
-  console.log(
-    "Trade saved:",
-    data
-  );
-
-  setMessage(
-    "journalMessage",
-    state.language === "ar"
-      ? "تم حفظ الصفقة."
-      : "Trade saved."
-  );
-
-  $("journalForm")?.reset();
-
-  if ($("tradeSymbol")) {
-    $("tradeSymbol").value =
-      "XAUUSD";
-  }
-
-  if ($("tradeR")) {
-    $("tradeR").value = "1";
-  }
-
-  await loadJournal();
-
-  showToast(
-    state.language === "ar"
-      ? "تم حفظ الصفقة بنجاح."
-      : "Trade saved successfully."
-  );
-
-  setTimeout(() => {
-    closeModal("journalModal");
-  }, 500);
 }
 
 
@@ -1647,56 +2830,88 @@ async function saveJournalTrade(event) {
    JOURNAL — DELETE
 ========================================================= */
 
-async function deleteJournalTrade(tradeId) {
+async function deleteJournalTrade(
+  tradeId
+) {
+
   if (!tradeId) {
     return;
   }
 
+
   const user =
     await getCurrentUser();
+
 
   if (!user) {
     return;
   }
+
 
   const confirmText =
     state.language === "ar"
       ? "هل أنت متأكد أنك تريد حذف هذه الصفقة؟"
       : "Are you sure you want to delete this trade?";
 
-  if (!window.confirm(confirmText)) {
+
+  if (
+    !window.confirm(
+      confirmText
+    )
+  ) {
     return;
   }
 
-  const {
-    error
-  } =
-    await supabaseClient
-      .from("trading_journal")
-      .delete()
-      .eq("id", tradeId)
-      .eq("user_id", user.id);
 
-  if (error) {
-    console.error(
-      "Journal delete error:",
+  try {
+
+    const {
       error
-    );
+    } =
+      await supabaseClient
+        .from("trading_journal")
+        .delete()
+        .eq(
+          "id",
+          tradeId
+        )
+        .eq(
+          "user_id",
+          user.id
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Journal delete error:",
+        error
+      );
+
+      showToast(
+        error.message
+      );
+
+      return;
+    }
+
+
+    await loadJournal();
+
 
     showToast(
-      error.message
+      state.language === "ar"
+        ? "تم حذف الصفقة."
+        : "Trade deleted."
     );
 
-    return;
+  } catch (error) {
+
+    console.error(
+      "Journal delete request error:",
+      error
+    );
   }
-
-  await loadJournal();
-
-  showToast(
-    state.language === "ar"
-      ? "تم حذف الصفقة."
-      : "Trade deleted."
-  );
 }
 
 
@@ -1704,16 +2919,23 @@ async function deleteJournalTrade(tradeId) {
    JOURNAL — RENDER
 ========================================================= */
 
-function renderJournal(trades) {
+function renderJournal(
+  trades
+) {
+
   const container =
     $("journalTable");
+
 
   if (!container) {
     return;
   }
 
+
   if (!trades?.length) {
+
     container.innerHTML = `
+
       <div class="empty-state">
 
         <span>▤</span>
@@ -1736,6 +2958,7 @@ function renderJournal(trades) {
 
       </div>
     `;
+
 
     setText(
       "journalWinRate",
@@ -1765,55 +2988,67 @@ function renderJournal(trades) {
     return;
   }
 
+
   const wins =
     trades.filter(
       (trade) =>
-        trade.result === "win"
+        trade.result ===
+        "win"
     ).length;
 
+
   const winRate =
-    trades.length > 0
-      ? (
-          (wins /
-            trades.length) *
-          100
-        ).toFixed(1)
-      : "0.0";
+    (
+      wins /
+      trades.length *
+      100
+    ).toFixed(1);
+
 
   const totalR =
     trades.reduce(
-      (sum, trade) =>
+      (
+        sum,
+        trade
+      ) =>
         sum +
         Number(
-          trade.r_result || 0
+          trade.r_result ||
+            0
         ),
       0
     );
 
+
   const averageR =
-    trades.length > 0
-      ? (
-          totalR /
-          trades.length
-        ).toFixed(2)
-      : "0.00";
+    (
+      totalR /
+      trades.length
+    ).toFixed(2);
+
 
   const grossProfit =
     trades
       .filter(
         (trade) =>
           Number(
-            trade.r_result || 0
+            trade.r_result ||
+              0
           ) > 0
       )
       .reduce(
-        (sum, trade) =>
+        (
+          sum,
+          trade
+        ) =>
           sum +
           Number(
-            trade.r_result || 0
+            trade.r_result ||
+              0
           ),
         0
       );
+
 
   const grossLoss =
     Math.abs(
@@ -1821,18 +3056,24 @@ function renderJournal(trades) {
         .filter(
           (trade) =>
             Number(
-              trade.r_result || 0
+              trade.r_result ||
+                0
             ) < 0
         )
         .reduce(
-          (sum, trade) =>
+          (
+            sum,
+            trade
+          ) =>
             sum +
             Number(
-              trade.r_result || 0
+              trade.r_result ||
+                0
             ),
           0
         )
     );
+
 
   const profitFactor =
     grossLoss > 0
@@ -1842,48 +3083,64 @@ function renderJournal(trades) {
         ).toFixed(2)
       : "--";
 
-  /*
-   * Maximum drawdown.
-   */
 
-  let cumulative = 0;
-  let peak = 0;
-  let maxDrawdown = 0;
+  let cumulative =
+    0;
+
+  let peak =
+    0;
+
+  let maxDrawdown =
+    0;
+
 
   [...trades]
     .reverse()
-    .forEach((trade) => {
-      cumulative +=
-        Number(
-          trade.r_result || 0
-        );
+    .forEach(
+      (trade) => {
 
-      peak = Math.max(
-        peak,
-        cumulative
-      );
+        cumulative +=
+          Number(
+            trade.r_result ||
+              0
+          );
 
-      maxDrawdown =
-        Math.max(
-          maxDrawdown,
-          peak - cumulative
-        );
-    });
+
+        peak =
+          Math.max(
+            peak,
+            cumulative
+          );
+
+
+        maxDrawdown =
+          Math.max(
+            maxDrawdown,
+            peak -
+              cumulative
+          );
+
+      }
+    );
+
 
   setText(
     "journalWinRate",
     `${winRate}%`
   );
 
+
   setText(
     "journalProfitFactor",
     profitFactor
   );
 
+
   setText(
     "journalAverageR",
     averageR
   );
+
 
   setText(
     "journalDrawdown",
@@ -1892,111 +3149,152 @@ function renderJournal(trades) {
       : "0R"
   );
 
+
   setText(
     "journalTrades",
     trades.length
   );
 
+
   container.innerHTML =
     trades
-      .map((trade) => {
-        const resultClass =
-          trade.result === "win"
-            ? "positive"
-            : trade.result === "loss"
-            ? "negative"
-            : "neutral";
+      .map(
+        (trade) => {
 
-        const resultLabel =
-          trade.result === "win"
-            ? state.language === "ar"
-              ? "ربح"
-              : "Win"
-            : trade.result === "loss"
-            ? state.language === "ar"
-              ? "خسارة"
-              : "Loss"
-            : state.language === "ar"
-            ? "تعادل"
-            : "Breakeven";
+          const resultClass =
+            trade.result ===
+            "win"
+              ? "positive"
+              : trade.result ===
+                "loss"
+              ? "negative"
+              : "neutral";
 
-        return `
-          <div class="journal-row">
 
-            <div>
-              <strong>
-                ${escapeHtml(
-                  trade.symbol ||
-                    "XAUUSD"
-                )}
-              </strong>
+          const resultLabel =
+            trade.result ===
+            "win"
+              ? state.language ===
+                "ar"
+                ? "ربح"
+                : "Win"
+              : trade.result ===
+                "loss"
+              ? state.language ===
+                "ar"
+                ? "خسارة"
+                : "Loss"
+              : state.language ===
+                "ar"
+              ? "تعادل"
+              : "Breakeven";
 
-              <small>
-                ${escapeHtml(
-                  trade.setup ||
-                    "—"
-                )}
-              </small>
+
+          return `
+
+            <div class="journal-row">
+
+              <div>
+
+                <strong>
+                  ${escapeHtml(
+                    trade.symbol ||
+                      "XAUUSD"
+                  )}
+                </strong>
+
+                <small>
+                  ${escapeHtml(
+                    trade.setup ||
+                      "—"
+                  )}
+                </small>
+
+              </div>
+
+
+              <div>
+
+                <span
+                  class="${resultClass}"
+                >
+                  ${resultLabel}
+                </span>
+
+              </div>
+
+
+              <div>
+
+                <strong>
+                  ${Number(
+                    trade.r_result ||
+                      0
+                  ).toFixed(2)}R
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <small>
+                  ${escapeHtml(
+                    trade.notes ||
+                      ""
+                  )}
+                </small>
+
+              </div>
+
+
+              <div>
+
+                <button
+                  type="button"
+                  class="text-btn journal-delete-btn"
+                  data-delete-trade="${escapeAttribute(
+                    trade.id
+                  )}"
+                >
+                  ${
+                    state.language ===
+                    "ar"
+                      ? "حذف"
+                      : "Delete"
+                  }
+                </button>
+
+              </div>
+
             </div>
-
-            <div>
-              <span class="${resultClass}">
-                ${resultLabel}
-              </span>
-            </div>
-
-            <div>
-              <strong>
-                ${Number(
-                  trade.r_result || 0
-                ).toFixed(2)}R
-              </strong>
-            </div>
-
-            <div>
-              <small>
-                ${escapeHtml(
-                  trade.notes ||
-                    ""
-                )}
-              </small>
-            </div>
-
-            <div>
-              <button
-                type="button"
-                class="text-btn journal-delete-btn"
-                data-delete-trade="${escapeAttribute(
-                  trade.id
-                )}"
-              >
-                ${
-                  state.language === "ar"
-                    ? "حذف"
-                    : "Delete"
-                }
-              </button>
-            </div>
-
-          </div>
-        `;
-      })
+          `;
+        }
+      )
       .join("");
+
 
   container
     .querySelectorAll(
       "[data-delete-trade]"
     )
-    .forEach((button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          deleteJournalTrade(
-            button.dataset.deleteTrade
-          );
-        }
-      );
-    });
+    .forEach(
+      (button) => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            deleteJournalTrade(
+              button.dataset
+                .deleteTrade
+            );
+
+          }
+        );
+
+      }
+    );
 }
 
 
@@ -2005,58 +3303,95 @@ function renderJournal(trades) {
 ========================================================= */
 
 async function loadMarketAnalysis() {
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("market_analysis")
-      .select("*")
-      .order("created_at", {
-        ascending: false
-      })
-      .limit(1)
-      .maybeSingle();
 
-  if (error) {
+  if (!supabaseClient) {
+    return;
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from(
+          "market_analysis"
+        )
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        )
+        .limit(1)
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "Market analysis error:",
+        error
+      );
+
+      return;
+    }
+
+
+    if (!data) {
+      return;
+    }
+
+
+    state.analysis =
+      data;
+
+
+    state.lastUpdated =
+      data.created_at ||
+      null;
+
+
+    renderAnalysis(
+      data
+    );
+
+
+    setText(
+      "lastUpdated",
+      data.created_at
+        ? formatDate(
+            data.created_at
+          )
+        : "--"
+    );
+
+  } catch (error) {
+
     console.error(
-      "Market analysis error:",
+      "Market analysis request error:",
       error
     );
 
-    return;
   }
-
-  if (!data) {
-    return;
-  }
-
-  state.analysis =
-    data;
-
-  state.lastUpdated =
-    data.created_at ||
-    null;
-
-  renderAnalysis(data);
-
-  setText(
-    "lastUpdated",
-    data.created_at
-      ? formatDate(
-          data.created_at
-        )
-      : "--"
-  );
 }
 
-function renderAnalysis(data) {
+
+function renderAnalysis(
+  data
+) {
+
   const score =
     Number(
       data.score ??
         data.habboub_score ??
         0
     );
+
 
   const confidence =
     Number(
@@ -2065,16 +3400,19 @@ function renderAnalysis(data) {
         0
     );
 
+
   const condition =
     data.market_condition ||
     data.condition ||
     data.environment ||
     "--";
 
+
   const risk =
     data.risk ||
     data.risk_level ||
     "--";
+
 
   setText(
     "heroScore",
@@ -2083,6 +3421,7 @@ function renderAnalysis(data) {
       : "--"
   );
 
+
   setText(
     "sessionScore",
     Number.isFinite(score)
@@ -2090,35 +3429,54 @@ function renderAnalysis(data) {
       : "--"
   );
 
+
   setText(
     "heroCondition",
     condition
   );
+
 
   setText(
     "marketCondition",
     condition
   );
 
+
   setText(
     "heroRisk",
     risk
   );
+
 
   setText(
     "marketRisk",
     risk
   );
 
+
   setText(
     "marketConfidence",
-    `${Number.isFinite(confidence) ? confidence : 0}%`
+    `${
+      Number.isFinite(
+        confidence
+      )
+        ? confidence
+        : 0
+    }%`
   );
+
 
   setText(
     "analysisConfidenceLarge",
-    `${Number.isFinite(confidence) ? confidence : 0}%`
+    `${
+      Number.isFinite(
+        confidence
+      )
+        ? confidence
+        : 0
+    }%`
   );
+
 
   setText(
     "marketAnalysisText",
@@ -2126,6 +3484,7 @@ function renderAnalysis(data) {
       data.description ||
       "Waiting for market analysis..."
   );
+
 
   setText(
     "analysisLongText",
@@ -2135,6 +3494,7 @@ function renderAnalysis(data) {
       "Waiting for the latest market analysis."
   );
 
+
   setText(
     "analysisDescription",
     data.title ||
@@ -2142,11 +3502,13 @@ function renderAnalysis(data) {
       "Market analysis"
   );
 
+
   setText(
     "analysisStatus",
     data.status ||
       "LIVE"
   );
+
 
   setText(
     "analysisSymbol",
@@ -2154,11 +3516,13 @@ function renderAnalysis(data) {
       "XAUUSD"
   );
 
+
   setText(
     "analysisSymbolLarge",
     data.symbol ||
       "XAUUSD"
   );
+
 
   setText(
     "htfBias",
@@ -2166,11 +3530,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "sessionBias",
     data.htf_bias ||
       "--"
   );
+
 
   setText(
     "intelBias",
@@ -2178,11 +3544,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "liquidity",
     data.liquidity ||
       "--"
   );
+
 
   setText(
     "sessionLiquidity",
@@ -2190,11 +3558,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "intelLiquidity",
     data.liquidity ||
       "--"
   );
+
 
   setText(
     "mss",
@@ -2202,11 +3572,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "sessionMSS",
     data.mss ||
       "--"
   );
+
 
   setText(
     "intelMSS",
@@ -2214,11 +3586,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "fvg",
     data.fvg ||
       "--"
   );
+
 
   setText(
     "sessionFVG",
@@ -2226,11 +3600,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "intelFVG",
     data.fvg ||
       "--"
   );
+
 
   setText(
     "cotCommercial",
@@ -2238,11 +3614,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "intelCommercial",
     data.cot_commercial ||
       "--"
   );
+
 
   setText(
     "cotManaged",
@@ -2250,11 +3628,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "intelManaged",
     data.cot_managed ||
       "--"
   );
+
 
   setText(
     "cotNet",
@@ -2262,11 +3642,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "intelNet",
     data.cot_net ||
       "--"
   );
+
 
   setText(
     "cotBias",
@@ -2274,11 +3656,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "intelCotBias",
     data.cot_bias ||
       "--"
   );
+
 
   setText(
     "regimeTrend",
@@ -2286,11 +3670,13 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "regimeVolatility",
     data.volatility ||
       "--"
   );
+
 
   setText(
     "regimeLiquidity",
@@ -2298,10 +3684,12 @@ function renderAnalysis(data) {
       "--"
   );
 
+
   setText(
     "riskLevelText",
     risk
   );
+
 
   updateScoreVisuals(
     score,
@@ -2309,7 +3697,10 @@ function renderAnalysis(data) {
     risk
   );
 
-  renderScoreReasons(data);
+
+  renderScoreReasons(
+    data
+  );
 }
 
 
@@ -2322,65 +3713,94 @@ function updateScoreVisuals(
   confidence,
   risk
 ) {
+
   const safeScore =
     Math.max(
       0,
       Math.min(
         100,
-        Number(score) || 0
+        Number(score) ||
+          0
       )
     );
+
 
   const safeConfidence =
     Math.max(
       0,
       Math.min(
         100,
-        Number(confidence) || 0
+        Number(confidence) ||
+          0
       )
     );
+
 
   const heroRing =
     $("heroScoreRing");
 
+
   const sessionBar =
     $("sessionScoreBar");
+
 
   const confidenceBar =
     $("confidenceBar");
 
+
   const riskMeter =
     $("riskMeter");
 
+
   if (heroRing) {
+
     heroRing.style.setProperty(
       "--score",
       `${safeScore}%`
     );
+
   }
+
 
   if (sessionBar) {
+
     sessionBar.style.width =
       `${safeScore}%`;
+
   }
+
 
   if (confidenceBar) {
+
     confidenceBar.style.width =
       `${safeConfidence}%`;
+
   }
+
 
   if (riskMeter) {
+
     const riskValue =
-      riskToNumber(risk);
+      riskToNumber(
+        risk
+      );
+
 
     const meter =
-      riskMeter.querySelector("span");
+      riskMeter.querySelector(
+        "span"
+      );
+
 
     if (meter) {
+
       meter.style.width =
         `${riskValue}%`;
+
     }
+
   }
+
 
   const stateText =
     safeScore >= 80
@@ -2393,10 +3813,12 @@ function updateScoreVisuals(
       ? "HIGH RISK ENVIRONMENT"
       : "EXTREME RISK";
 
+
   setText(
     "heroScoreState",
     stateText
   );
+
 
   setText(
     "sessionScoreState",
@@ -2404,11 +3826,16 @@ function updateScoreVisuals(
   );
 }
 
-function riskToNumber(risk) {
+
+function riskToNumber(
+  risk
+) {
+
   if (
     typeof risk ===
     "number"
   ) {
+
     return Math.max(
       0,
       Math.min(
@@ -2416,35 +3843,60 @@ function riskToNumber(risk) {
         risk
       )
     );
+
   }
+
 
   const text =
-    String(risk)
+    String(
+      risk
+    )
       .toLowerCase();
 
+
   if (
-    text.includes("extreme")
+    text.includes(
+      "extreme"
+    )
   ) {
+
     return 90;
+
   }
 
+
   if (
-    text.includes("high")
+    text.includes(
+      "high"
+    )
   ) {
+
     return 75;
+
   }
 
+
   if (
-    text.includes("medium")
+    text.includes(
+      "medium"
+    )
   ) {
+
     return 50;
+
   }
 
+
   if (
-    text.includes("low")
+    text.includes(
+      "low"
+    )
   ) {
+
     return 25;
+
   }
+
 
   return 50;
 }
@@ -2454,54 +3906,73 @@ function riskToNumber(risk) {
    SCORE REASONS
 ========================================================= */
 
-function renderScoreReasons(data) {
+function renderScoreReasons(
+  data
+) {
+
   const container =
     $("scoreReasons");
+
 
   if (!container) {
     return;
   }
 
+
   const reasons = [
+
     [
       "HTF Bias",
       data.htf_bias
     ],
+
     [
       "Liquidity",
       data.liquidity
     ],
+
     [
       "MSS",
       data.mss
     ],
+
     [
       "FVG",
       data.fvg
     ],
+
     [
       "COT",
       data.cot_bias
     ],
+
     [
       "Risk",
       data.risk
     ]
+
   ].filter(
     (item) =>
-      item[1] !== null &&
-      item[1] !== undefined &&
-      String(item[1]).trim() !== ""
+      item[1] !==
+        null &&
+      item[1] !==
+        undefined &&
+      String(
+        item[1]
+      ).trim() !== ""
   );
+
 
   if (!reasons.length) {
     return;
   }
 
+
   container.innerHTML =
     reasons
       .map(
         ([title, value]) => `
+
           <div class="reason neutral">
 
             <span>◌</span>
@@ -2509,12 +3980,16 @@ function renderScoreReasons(data) {
             <div>
 
               <strong>
-                ${escapeHtml(title)}
+                ${escapeHtml(
+                  title
+                )}
               </strong>
 
               <p>
                 ${escapeHtml(
-                  String(value)
+                  String(
+                    value
+                  )
                 )}
               </p>
 
@@ -2532,47 +4007,89 @@ function renderScoreReasons(data) {
 ========================================================= */
 
 async function loadNews() {
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("news")
-      .select("*")
-      .order(
-        "event_time",
-        {
-          ascending: true
-        }
-      );
 
-  if (error) {
-    console.error(
-      "News load error:",
-      error
-    );
-
+  if (!supabaseClient) {
     return;
   }
 
-  state.news =
-    data || [];
 
-  renderNews(
-    state.news
-  );
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("news")
+        .select("*")
+        .order(
+          "event_time",
+          {
+            ascending:
+              true
+          }
+        );
+
+
+    if (error) {
+
+      /*
+       * News table may not exist yet.
+       * DO NOT BREAK THE WEBSITE.
+       */
+
+      console.warn(
+        "News unavailable:",
+        error.message
+      );
+
+      state.news =
+        [];
+
+      renderNews(
+        []
+      );
+
+      return;
+    }
+
+
+    state.news =
+      data || [];
+
+
+    renderNews(
+      state.news
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "News request failed:",
+      error
+    );
+
+  }
 }
 
-function renderNews(news) {
+
+function renderNews(
+  news
+) {
+
   const container =
     $("newsContainer");
+
 
   if (!container) {
     return;
   }
 
+
   if (!news?.length) {
+
     container.innerHTML = `
+
       <div class="empty-state">
 
         <span>◌</span>
@@ -2591,10 +4108,12 @@ function renderNews(news) {
     return;
   }
 
+
   container.innerHTML =
     news
       .map(
         (item) => `
+
           <article class="news-card">
 
             <div>
@@ -2640,47 +4159,79 @@ function renderNews(news) {
 ========================================================= */
 
 async function loadAnnouncements() {
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("announcements")
-      .select("*")
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
 
-  if (error) {
-    console.error(
-      "Announcements error:",
-      error
-    );
-
+  if (!supabaseClient) {
     return;
   }
 
-  state.announcements =
-    data || [];
 
-  renderAnnouncements(
-    state.announcements
-  );
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from(
+          "announcements"
+        )
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Announcements error:",
+        error
+      );
+
+      return;
+    }
+
+
+    state.announcements =
+      data || [];
+
+
+    renderAnnouncements(
+      state.announcements
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Announcements request error:",
+      error
+    );
+
+  }
 }
 
-function renderAnnouncements(items) {
+
+function renderAnnouncements(
+  items
+) {
+
   const container =
     $("announcementsContainer");
+
 
   if (!container) {
     return;
   }
 
-  if (!items.length) {
+
+  if (!items?.length) {
+
     container.innerHTML = `
+
       <div class="empty-state">
 
         <span>◆</span>
@@ -2699,10 +4250,12 @@ function renderAnnouncements(items) {
     return;
   }
 
+
   container.innerHTML =
     items
       .map(
         (item) => `
+
           <article class="announcement-card">
 
             <span>◆</span>
@@ -2744,47 +4297,77 @@ function renderAnnouncements(items) {
 ========================================================= */
 
 async function loadCourses() {
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("courses")
-      .select("*")
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
 
-  if (error) {
-    console.error(
-      "Courses error:",
-      error
-    );
-
+  if (!supabaseClient) {
     return;
   }
 
-  state.courses =
-    data || [];
 
-  renderCourses(
-    state.courses
-  );
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("courses")
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Courses error:",
+        error
+      );
+
+      return;
+    }
+
+
+    state.courses =
+      data || [];
+
+
+    renderCourses(
+      state.courses
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Courses request error:",
+      error
+    );
+
+  }
 }
 
-function renderCourses(courses) {
+
+function renderCourses(
+  courses
+) {
+
   const container =
     $("courseContainer");
+
 
   if (!container) {
     return;
   }
 
-  if (!courses.length) {
+
+  if (!courses?.length) {
+
     container.innerHTML = `
+
       <div class="empty-state">
 
         <span>◇</span>
@@ -2803,10 +4386,12 @@ function renderCourses(courses) {
     return;
   }
 
+
   container.innerHTML =
     courses
       .map(
         (course) => `
+
           <article class="course-card">
 
             <div class="course-icon">
@@ -2832,7 +4417,8 @@ function renderCourses(courses) {
               type="button"
             >
               ${
-                state.language === "ar"
+                state.language ===
+                "ar"
                   ? "فتح الدورة"
                   : "Open Course"
               }
@@ -2850,89 +4436,137 @@ function renderCourses(courses) {
 ========================================================= */
 
 async function loadLive() {
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("live_sessions")
-      .select("*")
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      )
-      .limit(1)
-      .maybeSingle();
 
-  if (error) {
-    console.error(
-      "Live error:",
-      error
-    );
-
+  if (!supabaseClient) {
     return;
   }
 
-  state.live =
-    data;
 
-  renderLive(data);
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from(
+          "live_sessions"
+        )
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending:
+              false
+          }
+        )
+        .limit(1)
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "Live error:",
+        error
+      );
+
+      return;
+    }
+
+
+    state.live =
+      data || null;
+
+
+    renderLive(
+      state.live
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Live request error:",
+      error
+    );
+
+  }
 }
 
-function renderLive(data) {
+
+function renderLive(
+  data
+) {
+
   const indicator =
     $("liveIndicator");
+
 
   const title =
     $("liveTitleDisplay");
 
+
   const description =
     $("liveDescriptionDisplay");
+
 
   const isLive =
     data &&
     (
-      data.is_live === true ||
-      data.status === "live"
+      data.is_live ===
+        true ||
+      data.status ===
+        "live"
     );
 
+
   if (indicator) {
+
     indicator.textContent =
       isLive
         ? "LIVE"
         : "OFFLINE";
+
 
     indicator.classList.toggle(
       "offline",
       !isLive
     );
 
+
     indicator.classList.toggle(
       "online",
       isLive
     );
+
   }
 
+
   if (title) {
+
     title.textContent =
       isLive
         ? data.title ||
           "Habboub Live"
-        : state.language === "ar"
+        : state.language ===
+          "ar"
         ? "لا توجد جلسة مباشرة الآن"
         : "No live session right now";
+
   }
 
+
   if (description) {
+
     description.textContent =
       isLive
         ? data.description ||
           ""
-        : state.language === "ar"
+        : state.language ===
+          "ar"
         ? "ستظهر جلسة البث هنا عندما يبدأ المشرف جلسة."
         : "The live room will appear here when the admin starts a session.";
+
   }
 }
 
@@ -2942,72 +4576,114 @@ function renderLive(data) {
 ========================================================= */
 
 function subscribeToUpdates() {
-  supabaseClient
-    .channel("habboub-realtime")
 
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "market_analysis"
-      },
-      () => {
-        loadMarketAnalysis();
-      }
-    )
+  if (!supabaseClient) {
+    return;
+  }
 
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "announcements"
-      },
-      () => {
-        loadAnnouncements();
-      }
-    )
 
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "courses"
-      },
-      () => {
-        loadCourses();
-      }
-    )
+  try {
 
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "live_sessions"
-      },
-      () => {
-        loadLive();
-      }
-    )
+    supabaseClient
+      .channel(
+        "habboub-realtime"
+      )
 
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "trading_journal"
-      },
-      async () => {
-        if (state.user) {
-          await loadJournal();
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table:
+            "market_analysis"
+        },
+        () => {
+
+          loadMarketAnalysis();
+
         }
-      }
-    )
+      )
 
-    .subscribe();
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table:
+            "announcements"
+        },
+        () => {
+
+          loadAnnouncements();
+
+        }
+      )
+
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table:
+            "courses"
+        },
+        () => {
+
+          loadCourses();
+
+        }
+      )
+
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table:
+            "live_sessions"
+        },
+        () => {
+
+          loadLive();
+
+        }
+      )
+
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table:
+            "trading_journal"
+        },
+        async () => {
+
+          if (state.user) {
+
+            await loadJournal();
+
+          }
+
+        }
+      )
+
+
+      .subscribe();
+
+  } catch (error) {
+
+    console.error(
+      "Realtime error:",
+      error
+    );
+
+  }
 }
 
 
@@ -3016,92 +4692,145 @@ function subscribeToUpdates() {
 ========================================================= */
 
 function setupAI() {
-  $("openAIButton")?.addEventListener(
-    "click",
-    () => {
-      $("aiWindow")
-        ?.classList.remove("hidden");
-    }
-  );
 
-  $("floatingAI")?.addEventListener(
-    "click",
-    () => {
-      $("aiWindow")
-        ?.classList.toggle("hidden");
-    }
-  );
+  $("openAIButton")
+    ?.addEventListener(
+      "click",
+      () => {
 
-  $("closeAIButton")?.addEventListener(
-    "click",
-    () => {
-      $("aiWindow")
-        ?.classList.add("hidden");
-    }
-  );
+        $("aiWindow")
+          ?.classList.remove(
+            "hidden"
+          );
 
-  $("aiForm")?.addEventListener(
-    "submit",
-    handleAI
-  );
+      }
+    );
+
+
+  $("floatingAI")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        $("aiWindow")
+          ?.classList.toggle(
+            "hidden"
+          );
+
+      }
+    );
+
+
+  $("closeAIButton")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        $("aiWindow")
+          ?.classList.add(
+            "hidden"
+          );
+
+      }
+    );
+
+
+  $("aiForm")
+    ?.addEventListener(
+      "submit",
+      handleAI
+    );
 }
 
-async function handleAI(event) {
+
+async function handleAI(
+  event
+) {
+
   event.preventDefault();
+
 
   const input =
     $("aiInput");
 
+
   const messages =
     $("aiMessages");
 
-  if (!input || !messages) {
+
+  if (
+    !input ||
+    !messages
+  ) {
     return;
   }
+
 
   const message =
     input.value.trim();
 
+
   if (!message) {
     return;
   }
+
 
   addAIMessage(
     "user",
     message
   );
 
-  input.value = "";
+
+  input.value =
+    "";
+
 
   const response =
-    buildLocalAIResponse(message);
-
-  setTimeout(() => {
-    addAIMessage(
-      "bot",
-      response
+    buildLocalAIResponse(
+      message
     );
-  }, 400);
+
+
+  setTimeout(
+    () => {
+
+      addAIMessage(
+        "bot",
+        response
+      );
+
+    },
+    400
+  );
 }
+
 
 function addAIMessage(
   type,
   text
 ) {
+
   const container =
     $("aiMessages");
+
 
   if (!container) {
     return;
   }
 
+
   const message =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
+
 
   message.className =
     `ai-message ${type}`;
 
+
   message.innerHTML = `
+
     <strong>
       ${
         type === "bot"
@@ -3111,64 +4840,103 @@ function addAIMessage(
     </strong>
 
     <p>
-      ${escapeHtml(text)}
+      ${escapeHtml(
+        text
+      )}
     </p>
+
   `;
+
 
   container.appendChild(
     message
   );
 
+
   container.scrollTop =
     container.scrollHeight;
 }
 
-function buildLocalAIResponse(message) {
+
+function buildLocalAIResponse(
+  message
+) {
+
   const text =
     message.toLowerCase();
 
+
   const score =
     state.analysis?.score ??
-    state.analysis?.habboub_score;
+    state.analysis
+      ?.habboub_score;
+
 
   const condition =
-    state.analysis?.market_condition ||
-    state.analysis?.condition;
+    state.analysis
+      ?.market_condition ||
+    state.analysis
+      ?.condition;
+
 
   const risk =
     state.analysis?.risk ||
-    state.analysis?.risk_level;
+    state.analysis
+      ?.risk_level;
+
 
   if (
-    text.includes("score") ||
-    text.includes("درجة")
+    text.includes(
+      "score"
+    ) ||
+    text.includes(
+      "درجة"
+    )
   ) {
+
     return `Current Habboub Score: ${
       score ?? "--"
     }/100.`;
   }
 
+
   if (
-    text.includes("risk") ||
-    text.includes("خطر") ||
-    text.includes("مخاطرة")
+    text.includes(
+      "risk"
+    ) ||
+    text.includes(
+      "خطر"
+    ) ||
+    text.includes(
+      "مخاطرة"
+    )
   ) {
+
     return `Current risk environment: ${
       risk ?? "--"
     }.`;
   }
 
+
   if (
-    text.includes("gold") ||
-    text.includes("xau") ||
-    text.includes("ذهب")
+    text.includes(
+      "gold"
+    ) ||
+    text.includes(
+      "xau"
+    ) ||
+    text.includes(
+      "ذهب"
+    )
   ) {
+
     return `XAUUSD is currently being monitored through the Habboub market context. Current environment: ${
       condition ?? "--"
     }.`;
   }
 
-  return `Habboub is monitoring market structure, liquidity, risk and the current market environment.`;
+
+  return "Habboub is monitoring market structure, liquidity, risk and the current market environment.";
 }
 
 
@@ -3177,41 +4945,53 @@ function buildLocalAIResponse(message) {
 ========================================================= */
 
 function updateClock() {
+
   const now =
     new Date();
+
 
   const time =
     now.toLocaleTimeString(
       "en-GB",
       {
-        hour12: false
+        hour12:
+          false
       }
     );
+
 
   setText(
     "sessionClock",
     time
   );
 
+
   const hour =
     now.getUTCHours();
 
+
   let session =
     "Asia";
+
 
   if (
     hour >= 8 &&
     hour < 13
   ) {
+
     session =
       "London";
+
   } else if (
     hour >= 13 &&
     hour < 21
   ) {
+
     session =
       "New York";
+
   }
+
 
   setText(
     "sessionName",
@@ -3219,37 +4999,62 @@ function updateClock() {
   );
 }
 
+
 function updateSessionTimeline() {
+
   const now =
     new Date();
+
 
   const hour =
     now.getUTCHours();
 
+
   document
-    .querySelectorAll(".timeline-item")
-    .forEach((item) => {
-      item.classList.remove("current");
-    });
+    .querySelectorAll(
+      ".timeline-item"
+    )
+    .forEach(
+      (item) => {
+
+        item.classList.remove(
+          "current"
+        );
+
+      }
+    );
+
 
   if (
     hour >= 0 &&
     hour < 8
   ) {
+
     $("asiaSession")
-      ?.classList.add("current");
+      ?.classList.add(
+        "current"
+      );
+
   } else if (
     hour >= 8 &&
     hour < 13
   ) {
+
     $("londonSession")
-      ?.classList.add("current");
+      ?.classList.add(
+        "current"
+      );
+
   } else if (
     hour >= 13 &&
     hour < 21
   ) {
+
     $("newYorkSession")
-      ?.classList.add("current");
+      ?.classList.add(
+        "current"
+      );
+
   }
 }
 
@@ -3262,68 +5067,105 @@ function setText(
   id,
   value
 ) {
+
   const element =
     $(id);
 
+
   if (element) {
+
     element.textContent =
       value === null ||
       value === undefined
         ? "--"
         : String(value);
+
   }
 }
+
 
 function setMessage(
   id,
   message
 ) {
+
   const element =
     $(id);
 
+
   if (element) {
+
     element.textContent =
       message || "";
+
   }
 }
 
-function clearMessage(id) {
+
+function clearMessage(
+  id
+) {
+
   setMessage(
     id,
     ""
   );
 }
 
-function showToast(message) {
+
+function showToast(
+  message
+) {
+
   const toast =
     $("toast");
+
 
   if (!toast) {
     return;
   }
 
+
   toast.textContent =
     message;
 
-  toast.classList.add("show");
+
+  toast.classList.add(
+    "show"
+  );
+
 
   clearTimeout(
     showToast.timeout
   );
 
+
   showToast.timeout =
-    setTimeout(() => {
-      toast.classList.remove("show");
-    }, 3000);
+    setTimeout(
+      () => {
+
+        toast.classList.remove(
+          "show"
+        );
+
+      },
+      3000
+    );
 }
 
-function formatDate(value) {
+
+function formatDate(
+  value
+) {
+
   if (!value) {
     return "--";
   }
 
+
   const date =
     new Date(value);
+
 
   if (
     Number.isNaN(
@@ -3333,18 +5175,26 @@ function formatDate(value) {
     return "--";
   }
 
+
   return date.toLocaleString(
     state.language === "ar"
       ? "ar"
       : "en",
     {
-      dateStyle: "medium",
-      timeStyle: "short"
+      dateStyle:
+        "medium",
+
+      timeStyle:
+        "short"
     }
   );
 }
 
-function escapeHtml(value) {
+
+function escapeHtml(
+  value
+) {
+
   return String(
     value ?? ""
   )
@@ -3370,8 +5220,14 @@ function escapeHtml(value) {
     );
 }
 
-function escapeAttribute(value) {
-  return escapeHtml(value);
+
+function escapeAttribute(
+  value
+) {
+
+  return escapeHtml(
+    value
+  );
 }
 
 
@@ -3379,8 +5235,22 @@ function escapeAttribute(value) {
    START
 ========================================================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  init
-);
+if (
+  document.readyState ===
+  "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    init,
+    {
+      once: true
+    }
+  );
+
+} else {
+
+  init();
+
+}
 ```
