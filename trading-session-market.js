@@ -5,23 +5,35 @@
     XAUUSD: {
       name: "Gold",
       icon: "Au",
-      drivers: ["DXY", "US10Y", "Gold COT", "USD News"]
+      drivers: {
+        cfd: ["DXY", "US10Y", "Gold COT", "USD News"],
+        futures: ["DXY", "US10Y", "Gold COT", "GC Futures"]
+      }
     },
     NAS100: {
       name: "Nasdaq 100",
       icon: "NQ",
-      drivers: ["US10Y", "VIX", "NQ Futures", "US Tech News"]
+      drivers: {
+        cfd: ["US10Y", "VIX", "Nasdaq CFD", "US Tech News"],
+        futures: ["US10Y", "VIX", "NQ Futures", "US Tech News"]
+      }
     },
     SPX: {
       name: "S&P 500",
       icon: "SP",
-      drivers: ["US10Y", "VIX", "ES Futures", "US Macro News"]
+      drivers: {
+        cfd: ["US10Y", "VIX", "S&P CFD", "US Macro News"],
+        futures: ["US10Y", "VIX", "ES Futures", "US Macro News"]
+      }
     }
   };
 
   const STORAGE_KEY = "habboub_trading_session_symbol";
+  const SOURCE_KEY = "habboub_market_source";
   let selected = localStorage.getItem(STORAGE_KEY) || "XAUUSD";
+  let source = localStorage.getItem(SOURCE_KEY) || "cfd";
   if (!MARKETS[selected]) selected = "XAUUSD";
+  if (source !== "cfd" && source !== "futures") source = "cfd";
 
   const q = (id) => document.getElementById(id);
 
@@ -31,13 +43,19 @@
           market: "السوق",
           live: "السوق المختار",
           waiting: "بانتظار تحليل هذا السوق",
-          drivers: "عوامل السوق"
+          drivers: "عوامل السوق",
+          source: "مصدر السعر",
+          cfd: "CFD",
+          futures: "FUTURES"
         }
       : {
           market: "MARKET",
           live: "SELECTED MARKET",
           waiting: "Waiting for this market's analysis",
-          drivers: "MARKET DRIVERS"
+          drivers: "MARKET DRIVERS",
+          source: "PRICE SOURCE",
+          cfd: "CFD",
+          futures: "FUTURES"
         };
   }
 
@@ -52,17 +70,22 @@
       #dashboard .habboub-session-market-copy{min-width:0;}
       #dashboard .habboub-session-market-copy small{display:block;color:#7f8a98;font-size:9px;font-weight:800;letter-spacing:.08em;}
       #dashboard .habboub-session-market-copy strong{display:block;margin-top:2px;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      #dashboard .habboub-session-market-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
       #dashboard .habboub-session-market-switch{display:flex;align-items:center;gap:4px;padding:3px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(0,0,0,.18);flex:0 0 auto;}
-      #dashboard .habboub-session-market-switch button{border:0;background:transparent;color:#7f8a98;padding:7px 10px;border-radius:7px;font:800 10px/1 Inter,sans-serif;letter-spacing:.04em;cursor:pointer;transition:.18s ease;}
-      #dashboard .habboub-session-market-switch button:hover{color:#fff;background:rgba(255,255,255,.05);}
-      #dashboard .habboub-session-market-switch button.active{color:#061017;background:#36d9ff;box-shadow:0 4px 14px rgba(54,217,255,.18);}
+      #dashboard .habboub-session-source-switch{display:flex;align-items:center;gap:4px;padding:3px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(0,0,0,.18);flex:0 0 auto;}
+      #dashboard .habboub-session-market-switch button,#dashboard .habboub-session-source-switch button{border:0;background:transparent;color:#7f8a98;padding:7px 10px;border-radius:7px;font:800 10px/1 Inter,sans-serif;letter-spacing:.04em;cursor:pointer;transition:.18s ease;}
+      #dashboard .habboub-session-market-switch button:hover,#dashboard .habboub-session-source-switch button:hover{color:#fff;background:rgba(255,255,255,.05);}
+      #dashboard .habboub-session-market-switch button.active,#dashboard .habboub-session-source-switch button.active{color:#061017;background:#36d9ff;box-shadow:0 4px 14px rgba(54,217,255,.18);}
+      #dashboard .habboub-session-source-label{display:block;color:#657180;font-size:8px;font-weight:800;letter-spacing:.07em;margin:0 0 3px 2px;}
+      #dashboard .habboub-session-source-wrap{display:flex;flex-direction:column;align-items:stretch;}
       #dashboard .habboub-session-market-drivers{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:-8px 0 18px;}
       #dashboard .habboub-session-market-driver-label{font-size:9px;font-weight:800;letter-spacing:.07em;color:#657180;margin-right:2px;}
       #dashboard .habboub-session-market-driver{font-size:9px;font-weight:800;color:#9ba6b3;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025);border-radius:999px;padding:5px 8px;}
       #dashboard[data-active-symbol="XAUUSD"] .habboub-session-market-driver{border-color:rgba(246,193,75,.14);}
       #dashboard[data-active-symbol="NAS100"] .habboub-session-market-driver{border-color:rgba(54,217,255,.14);}
       #dashboard[data-active-symbol="SPX"] .habboub-session-market-driver{border-color:rgba(161,122,255,.14);}
-      @media(max-width:600px){#dashboard .habboub-session-marketbar{align-items:stretch;flex-direction:column;}#dashboard .habboub-session-market-switch{width:100%;}#dashboard .habboub-session-market-switch button{flex:1;}}
+      @media(max-width:760px){#dashboard .habboub-session-marketbar{align-items:stretch;flex-direction:column;}#dashboard .habboub-session-market-controls{width:100%;display:grid;grid-template-columns:1fr 1fr;}#dashboard .habboub-session-market-switch,#dashboard .habboub-session-source-wrap{width:100%;}#dashboard .habboub-session-market-switch button,#dashboard .habboub-session-source-switch button{flex:1;}#dashboard .habboub-session-source-switch{width:100%;}}
+      @media(max-width:430px){#dashboard .habboub-session-market-controls{grid-template-columns:1fr;}}
     `;
     document.head.appendChild(style);
   }
@@ -85,10 +108,19 @@
           <strong id="habboubSessionMarketName">XAUUSD · Gold</strong>
         </div>
       </div>
-      <div class="habboub-session-market-switch" role="tablist" aria-label="Trading session market">
-        <button type="button" data-session-market="XAUUSD">XAUUSD</button>
-        <button type="button" data-session-market="NAS100">NAS100</button>
-        <button type="button" data-session-market="SPX">SPX</button>
+      <div class="habboub-session-market-controls">
+        <div class="habboub-session-market-switch" role="tablist" aria-label="Trading session market">
+          <button type="button" data-session-market="XAUUSD">XAUUSD</button>
+          <button type="button" data-session-market="NAS100">NAS100</button>
+          <button type="button" data-session-market="SPX">SPX</button>
+        </div>
+        <div class="habboub-session-source-wrap">
+          <span class="habboub-session-source-label" id="habboubSessionSourceLabel"></span>
+          <div class="habboub-session-source-switch" role="tablist" aria-label="Trading session price source">
+            <button type="button" data-session-source="cfd">CFD</button>
+            <button type="button" data-session-source="futures">FUTURES</button>
+          </div>
+        </div>
       </div>
     `;
 
@@ -101,6 +133,9 @@
 
     bar.querySelectorAll("[data-session-market]").forEach((button) => {
       button.addEventListener("click", () => selectMarket(button.dataset.sessionMarket));
+    });
+    bar.querySelectorAll("[data-session-source]").forEach((button) => {
+      button.addEventListener("click", () => selectSource(button.dataset.sessionSource));
     });
   }
 
@@ -117,6 +152,15 @@
     loadMarketSpecificAnalysis();
   }
 
+  function selectSource(nextSource) {
+    if (nextSource !== "cfd" && nextSource !== "futures") return;
+    source = nextSource;
+    localStorage.setItem(SOURCE_KEY, source);
+    renderMarketShell();
+    loadMarketSpecificAnalysis();
+    window.dispatchEvent(new CustomEvent("habboub:market-source-change", { detail: { source } }));
+  }
+
   function renderMarketShell() {
     const market = MARKETS[selected];
     const text = labels();
@@ -124,12 +168,18 @@
     if (!market || !dashboard) return;
 
     dashboard.dataset.activeSymbol = selected;
+    dashboard.dataset.activeSource = source;
     setText("habboubSessionMarketLabel", text.live);
     setText("habboubSessionMarketName", `${selected} · ${market.name}`);
+    setText("habboubSessionSourceLabel", text.source);
 
     document.querySelectorAll("[data-session-market]").forEach((button) => {
       button.classList.toggle("active", button.dataset.sessionMarket === selected);
       button.setAttribute("aria-selected", button.dataset.sessionMarket === selected ? "true" : "false");
+    });
+    document.querySelectorAll("[data-session-source]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.sessionSource === source);
+      button.setAttribute("aria-selected", button.dataset.sessionSource === source ? "true" : "false");
     });
 
     setText("analysisSymbol", selected);
@@ -138,7 +188,7 @@
     const drivers = q("habboubSessionMarketDrivers");
     if (drivers) {
       drivers.innerHTML = `<span class="habboub-session-market-driver-label">${text.drivers}</span>` +
-        market.drivers.map((driver) => `<span class="habboub-session-market-driver">${driver}</span>`).join("");
+        market.drivers[source].map((driver) => `<span class="habboub-session-market-driver">${driver}</span>`).join("");
     }
   }
 
@@ -176,6 +226,14 @@
   function findSymbol(row) {
     if (!row || typeof row !== "object") return "";
     return normalizeSymbol(row.symbol || row.ticker || row.pair || row.market || row.asset || row.instrument);
+  }
+
+  function findSource(row) {
+    if (!row || typeof row !== "object") return "";
+    const raw = String(row.source || row.price_source || row.market_source || row.feed || row.data_source || row.instrument_type || "").toLowerCase();
+    if (raw.includes("future") || raw.includes("futures") || raw === "nq" || raw === "es" || raw === "gc") return "futures";
+    if (raw.includes("cfd")) return "cfd";
+    return "";
   }
 
   function applyAnalysis(row) {
@@ -256,7 +314,9 @@
       }
 
       const rows = Array.isArray(data) ? data : [];
-      const matching = rows.find((row) => findSymbol(row) === selected);
+      const symbolRows = rows.filter((row) => findSymbol(row) === selected);
+      const sourceMatch = symbolRows.find((row) => findSource(row) === source);
+      const matching = sourceMatch || symbolRows.find((row) => !findSource(row)) || symbolRows[0];
       if (matching) applyAnalysis(matching);
     } catch (error) {
       console.warn("Habboub market session analysis failed:", error);
