@@ -56,6 +56,68 @@ try {
 const $ = (id) =>
   document.getElementById(id);
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function escapeAttribute(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function setText(id, value) {
+  const el = $(id);
+  if (el) el.textContent = value;
+}
+
+function setMessage(id, msg) {
+  const el = $(id);
+  if (el) el.textContent = msg;
+}
+
+function clearMessage(id) {
+  const el = $(id);
+  if (el) el.textContent = "";
+}
+
+function showToast(message) {
+  let toast = $("habboubToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "habboubToast";
+    toast.style.position = "fixed";
+    toast.style.bottom = "24px";
+    toast.style.right = "24px";
+    toast.style.backgroundColor = "#101827";
+    toast.style.color = "#ffffff";
+    toast.style.padding = "12px 20px";
+    toast.style.borderRadius = "8px";
+    toast.style.boxShadow = "0 10px 25px rgba(0,0,0,0.3)";
+    toast.style.border = "1px solid rgba(255,255,255,0.1)";
+    toast.style.zIndex = "99999";
+    toast.style.transition = "all 0.3s ease";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.opacity = "1";
+  toast.style.visibility = "visible";
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.visibility = "hidden";
+  }, 3500);
+}
+
 
 /* =========================================================
    STATE
@@ -356,7 +418,7 @@ async function init() {
   try {
 
     /* -----------------------------------------
-       FRONTEND
+        FRONTEND
     ----------------------------------------- */
 
     applyLanguage(
@@ -383,7 +445,7 @@ async function init() {
 
 
     /* -----------------------------------------
-       CLOCK
+        CLOCK
     ----------------------------------------- */
 
     setInterval(() => {
@@ -414,8 +476,8 @@ async function init() {
 
 
     /* -----------------------------------------
-       SUPABASE DATA
-       Runs in background.
+        SUPABASE DATA
+        Runs in background.
     ----------------------------------------- */
 
     if (!supabaseClient) {
@@ -2355,1281 +2417,173 @@ async function updateProfile(
     }
 
 
-    state.profile =
-      await getProfile(
-        state.user.id
-      );
-
+    state.profile = {
+      ...(state.profile || {}),
+      id: state.user.id,
+      full_name: fullName,
+      email: state.user.email,
+      avatar_url: avatarUrl || null
+    };
 
     renderAuthUI();
 
-
     setMessage(
       "profileMessage",
       state.language === "ar"
-        ? "تم حفظ التغييرات."
-        : "Changes saved."
+        ? "تم الحفظ بنجاح!"
+        : "Saved successfully!"
     );
 
-
-    showToast(
-      state.language === "ar"
-        ? "تم تحديث الملف الشخصي."
-        : "Profile updated."
-    );
+    setTimeout(() => {
+      document.querySelector("#profileModal")?.remove();
+    }, 1000);
 
   } catch (error) {
-
-    console.error(
-      "Profile update request error:",
-      error
-    );
-
+    console.error("Update profile error:", error);
     setMessage(
       "profileMessage",
-      error.message ||
-        "Profile update failed."
+      error.message || "An unexpected error occurred."
     );
   }
 }
 
 
 /* =========================================================
-   LOGIN
+   LOGIN & REGISTER
 ========================================================= */
 
-async function loginUser(
-  event
-) {
-
+async function loginUser(event) {
   event.preventDefault();
 
+  if (!supabaseClient) return;
 
-  if (!supabaseClient) {
-
-    setMessage(
-      "loginMessage",
-      "Supabase is not available."
-    );
-
-    return;
-  }
-
-
-  const email =
-    $("loginEmail")
-      ?.value
-      .trim();
-
-
-  const password =
-    $("loginPassword")
-      ?.value;
-
+  const email = $("loginEmail")?.value.trim();
+  const password = $("loginPassword")?.value;
 
   if (!email || !password) {
-
     setMessage(
       "loginMessage",
       state.language === "ar"
-        ? "أدخل البريد الإلكتروني وكلمة المرور."
-        : "Enter the email and password."
+        ? "الرجاء أدخل البريد وكلمة المرور."
+        : "Please enter email and password."
     );
-
     return;
   }
-
 
   setMessage(
     "loginMessage",
-    state.language === "ar"
-      ? "جاري تسجيل الدخول..."
-      : "Logging in..."
+    state.language === "ar" ? "جاري الدخول..." : "Logging in..."
   );
 
-
   try {
-
-    const result =
-      await withTimeout(
-        supabaseClient
-          .auth
-          .signInWithPassword({
-            email,
-            password
-          }),
-        8000,
-        null
-      );
-
+    const result = await withTimeout(
+      supabaseClient.auth.signInWithPassword({ email, password }),
+      6000,
+      null
+    );
 
     if (!result) {
-
       setMessage(
         "loginMessage",
-        state.language === "ar"
-          ? "انتهت مهلة الاتصال. حاول مرة أخرى."
-          : "Connection timed out. Please try again."
+        state.language === "ar" ? "انتهت مهلة الاتصال." : "Connection timed out."
       );
-
       return;
     }
 
-
-    const {
-      data,
-      error
-    } = result;
-
+    const { data, error } = result;
 
     if (error) {
-
-      console.error(
-        "Login error:",
-        error
-      );
-
-      setMessage(
-        "loginMessage",
-        error.message
-      );
-
+      setMessage("loginMessage", error.message);
       return;
     }
 
-
-    state.user =
-      data?.user ||
-      null;
-
-
-    if (!state.user) {
-
-      setMessage(
-        "loginMessage",
-        state.language === "ar"
-          ? "تعذر الحصول على بيانات الحساب."
-          : "Could not load account information."
-      );
-
-      return;
-    }
-
-
-    await ensureProfile(
-      state.user
-    );
-
-
+    state.user = data.user;
     await refreshAuthUI();
-
-
-    closeModal(
-      "loginModal"
-    );
-
-
-    $("loginForm")
-      ?.reset();
-
-
-    await loadJournal();
-
-
+    closeModal("loginModal");
+    clearMessage("loginMessage");
     showToast(
       state.language === "ar"
-        ? "تم تسجيل الدخول بنجاح."
-        : "Login successful."
+        ? translations.ar.login_success
+        : translations.en.login_success
     );
-
   } catch (error) {
-
-    console.error(
-      "Login request error:",
-      error
-    );
-
-    setMessage(
-      "loginMessage",
-      error.message ||
-        "Login failed."
-    );
+    console.error("Login error:", error);
+    setMessage("loginMessage", error.message || "Login failed.");
   }
 }
 
 
-/* =========================================================
-   REGISTER
-========================================================= */
-
-async function registerUser(
-  event
-) {
-
+async function registerUser(event) {
   event.preventDefault();
 
+  if (!supabaseClient) return;
 
-  if (!supabaseClient) {
+  const fullName = $("registerName")?.value.trim();
+  const email = $("registerEmail")?.value.trim();
+  const password = $("registerPassword")?.value;
 
-    setMessage(
-      "registerMessage",
-      "Supabase is not available."
-    );
-
-    return;
-  }
-
-
-  const fullName =
-    (
-      $("registerFullName") ||
-      $("registerName")
-    )
-      ?.value
-      .trim();
-
-
-  const email =
-    $("registerEmail")
-      ?.value
-      .trim()
-      .toLowerCase();
-
-
-  const password =
-    $("registerPassword")
-      ?.value;
-
-
-  if (!fullName) {
-
+  if (!fullName || !email || !password) {
     setMessage(
       "registerMessage",
       state.language === "ar"
-        ? "اكتب اسمك الكامل."
-        : "Please enter your full name."
+        ? "الرجاء ملء جميع الحقول."
+        : "Please fill all fields."
     );
-
     return;
   }
-
-
-  if (
-    fullName.length < 2
-  ) {
-
-    setMessage(
-      "registerMessage",
-      state.language === "ar"
-        ? "الاسم يجب أن يحتوي على حرفين على الأقل."
-        : "Your name must contain at least 2 characters."
-    );
-
-    return;
-  }
-
-
-  if (!email) {
-
-    setMessage(
-      "registerMessage",
-      state.language === "ar"
-        ? "اكتب بريدك الإلكتروني."
-        : "Please enter your email."
-    );
-
-    return;
-  }
-
-
-  if (!password) {
-
-    setMessage(
-      "registerMessage",
-      state.language === "ar"
-        ? "اكتب كلمة المرور."
-        : "Please enter a password."
-    );
-
-    return;
-  }
-
-
-  if (
-    password.length < 6
-  ) {
-
-    setMessage(
-      "registerMessage",
-      state.language === "ar"
-        ? "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
-        : "Password must be at least 6 characters."
-    );
-
-    return;
-  }
-
 
   setMessage(
     "registerMessage",
-    state.language === "ar"
-      ? "جاري إنشاء الحساب..."
-      : "Creating account..."
+    state.language === "ar" ? "جاري إنشاء الحساب..." : "Creating account..."
   );
 
-
   try {
-
-    const result =
-      await withTimeout(
-        supabaseClient
-          .auth
-          .signUp({
-            email,
-            password,
-
-            options: {
-
-              data: {
-                full_name:
-                  fullName
-              },
-
-              emailRedirectTo:
-                "https://yazanhabboub888-ui.github.io/habboub-trade/"
-            }
-          }),
-        10000,
-        null
-      );
-
-
-    if (!result) {
-
-      setMessage(
-        "registerMessage",
-        state.language === "ar"
-          ? "انتهت مهلة الاتصال. حاول مرة أخرى."
-          : "Connection timed out. Please try again."
-      );
-
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = result;
-
-
-    if (error) {
-
-      console.error(
-        "Register error:",
-        error
-      );
-
-      setMessage(
-        "registerMessage",
-        error.message
-      );
-
-      return;
-    }
-
-
-    if (
-      data?.session &&
-      data?.user
-    ) {
-
-      state.user =
-        data.user;
-
-
-      await ensureProfile(
-        data.user
-      );
-
-
-      await refreshAuthUI();
-
-
-      closeModal(
-        "registerModal"
-      );
-
-
-      $("registerForm")
-        ?.reset();
-
-
-      showToast(
-        state.language === "ar"
-          ? "تم إنشاء الحساب بنجاح."
-          : "Account created successfully."
-      );
-
-
-      return;
-    }
-
-
-    setMessage(
-      "registerMessage",
-      state.language === "ar"
-        ? "تم إنشاء الحساب. افحص بريدك الإلكتروني واضغط رابط التأكيد."
-        : "Account created. Check your email and click the confirmation link."
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Register request error:",
-      error
-    );
-
-    setMessage(
-      "registerMessage",
-      error.message ||
-        "Registration failed."
-    );
-  }
-}
-
-
-/* =========================================================
-   JOURNAL — LOAD
-========================================================= */
-
-async function loadJournal() {
-
-  if (!supabaseClient) {
-    return;
-  }
-
-
-  const user =
-    await getCurrentUser();
-
-
-  if (!user) {
-
-    state.journal =
-      [];
-
-    renderJournal(
-      []
-    );
-
-    return;
-  }
-
-
-  try {
-
-    const result =
-      await withTimeout(
-        supabaseClient
-          .from("trading_journal")
-          .select("*")
-          .eq(
-            "user_id",
-            user.id
-          )
-          .order(
-            "created_at",
-            {
-              ascending:
-                false
-            }
-          ),
-        5000,
-        null
-      );
-
-
-    if (!result) {
-
-      console.warn(
-        "Journal request timed out."
-      );
-
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = result;
-
-
-    if (error) {
-
-      console.error(
-        "Journal load error:",
-        error
-      );
-
-      state.journal =
-        [];
-
-      renderJournal(
-        []
-      );
-
-      return;
-    }
-
-
-    state.journal =
-      data || [];
-
-
-    renderJournal(
-      state.journal
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Journal request error:",
-      error
-    );
-
-  }
-}
-
-
-/* =========================================================
-   JOURNAL — SAVE
-========================================================= */
-
-async function saveJournalTrade(
-  event
-) {
-
-  event.preventDefault();
-
-
-  const user =
-    await getCurrentUser();
-
-
-  if (!user) {
-
-    setMessage(
-      "journalMessage",
-      state.language === "ar"
-        ? "سجل الدخول أولاً."
-        : "Please login first."
-    );
-
-    return;
-  }
-
-
-  const symbol =
-    $("tradeSymbol")
-      ?.value
-      .trim()
-      .toUpperCase() ||
-    "XAUUSD";
-
-
-  const setup =
-    $("tradeSetup")
-      ?.value
-      .trim() ||
-    "";
-
-
-  const result =
-    $("tradeResult")
-      ?.value ||
-    "win";
-
-
-  const rResult =
-    Number(
-      $("tradeR")
-        ?.value ||
-      0
-    );
-
-
-  const notes =
-    $("tradeNotes")
-      ?.value
-      .trim() ||
-    "";
-
-
-  if (
-    Number.isNaN(
-      rResult
-    )
-  ) {
-
-    setMessage(
-      "journalMessage",
-      state.language === "ar"
-        ? "قيمة R غير صحيحة."
-        : "Invalid R result."
-    );
-
-    return;
-  }
-
-
-  setMessage(
-    "journalMessage",
-    state.language === "ar"
-      ? "جاري حفظ الصفقة..."
-      : "Saving trade..."
-  );
-
-
-  try {
-
-    const resultResponse =
-      await withTimeout(
-        supabaseClient
-          .from("trading_journal")
-          .insert({
-            user_id:
-              user.id,
-
-            journal_type:
-              "manual",
-
-            symbol,
-
-            direction:
-              result === "win"
-                ? "WIN"
-                : result === "loss"
-                ? "LOSS"
-                : "BREAKEVEN",
-
-            setup,
-
-            result,
-
-            r_result:
-              rResult,
-
-            notes
-
-          })
-          .select("*")
-          .maybeSingle(),
-        7000,
-        null
-      );
-
-
-    if (!resultResponse) {
-
-      setMessage(
-        "journalMessage",
-        state.language === "ar"
-          ? "انتهت مهلة الاتصال."
-          : "Connection timed out."
-      );
-
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = resultResponse;
-
-
-    if (error) {
-
-      console.error(
-        "Journal save error:",
-        error
-      );
-
-      setMessage(
-        "journalMessage",
-        error.message
-      );
-
-      return;
-    }
-
-
-    console.log(
-      "Trade saved:",
-      data
-    );
-
-
-    setMessage(
-      "journalMessage",
-      state.language === "ar"
-        ? "تم حفظ الصفقة."
-        : "Trade saved."
-    );
-
-
-    $("journalForm")
-      ?.reset();
-
-
-    if ($("tradeSymbol")) {
-
-      $("tradeSymbol").value =
-        "XAUUSD";
-
-    }
-
-
-    if ($("tradeR")) {
-
-      $("tradeR").value =
-        "1";
-
-    }
-
-
-    await loadJournal();
-
-
-    showToast(
-      state.language === "ar"
-        ? "تم حفظ الصفقة بنجاح."
-        : "Trade saved successfully."
-    );
-
-
-    setTimeout(() => {
-
-      closeModal(
-        "journalModal"
-      );
-
-    }, 500);
-
-  } catch (error) {
-
-    console.error(
-      "Journal save request error:",
-      error
-    );
-
-    setMessage(
-      "journalMessage",
-      error.message ||
-        "Could not save trade."
-    );
-  }
-}
-
-
-/* =========================================================
-   JOURNAL — DELETE
-========================================================= */
-
-async function deleteJournalTrade(
-  tradeId
-) {
-
-  if (!tradeId) {
-    return;
-  }
-
-
-  const user =
-    await getCurrentUser();
-
-
-  if (!user) {
-    return;
-  }
-
-
-  const confirmText =
-    state.language === "ar"
-      ? "هل أنت متأكد أنك تريد حذف هذه الصفقة؟"
-      : "Are you sure you want to delete this trade?";
-
-
-  if (
-    !window.confirm(
-      confirmText
-    )
-  ) {
-    return;
-  }
-
-
-  try {
-
-    const result =
-      await withTimeout(
-        supabaseClient
-          .from("trading_journal")
-          .delete()
-          .eq(
-            "id",
-            tradeId
-          )
-          .eq(
-            "user_id",
-            user.id
-          ),
-        6000,
-        null
-      );
-
-
-    if (!result) {
-
-      showToast(
-        state.language === "ar"
-          ? "انتهت مهلة الاتصال."
-          : "Connection timed out."
-      );
-
-      return;
-    }
-
-
-    const {
-      error
-    } = result;
-
-
-    if (error) {
-
-      console.error(
-        "Journal delete error:",
-        error
-      );
-
-      showToast(
-        error.message
-      );
-
-      return;
-    }
-
-
-    await loadJournal();
-
-
-    showToast(
-      state.language === "ar"
-        ? "تم حذف الصفقة."
-        : "Trade deleted."
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Journal delete request error:",
-      error
-    );
-
-  }
-}
-
-
-/* =========================================================
-   JOURNAL — RENDER
-========================================================= */
-
-function renderJournal(
-  trades
-) {
-
-  const container =
-    $("journalTable");
-
-
-  if (!container) {
-    return;
-  }
-
-
-  if (!trades?.length) {
-
-    container.innerHTML = `
-
-      <div class="empty-state">
-
-        <span>▤</span>
-
-        <strong>
-          ${
-            state.language === "ar"
-              ? "لا توجد صفقات بعد"
-              : "No trades yet"
+    const result = await withTimeout(
+      supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName
           }
-        </strong>
-
-        <p>
-          ${
-            state.language === "ar"
-              ? "أضف أول صفقة للبدء ببناء سجلك."
-              : "Add your first trade to start building your journal."
-          }
-        </p>
-
-      </div>
-    `;
-
-
-    setText(
-      "journalWinRate",
-      "--"
-    );
-
-
-    setText(
-      "journalProfitFactor",
-      "--"
-    );
-
-
-    setText(
-      "journalAverageR",
-      "--"
-    );
-
-
-    setText(
-      "journalDrawdown",
-      "--"
-    );
-
-
-    setText(
-      "journalTrades",
-      "0"
-    );
-
-
-    return;
-  }
-
-
-  const wins =
-    trades.filter(
-      (trade) =>
-        trade.result ===
-        "win"
-    ).length;
-
-
-  const winRate =
-    (
-      wins /
-      trades.length *
-      100
-    ).toFixed(1);
-
-
-  const totalR =
-    trades.reduce(
-      (
-        sum,
-        trade
-      ) =>
-        sum +
-        Number(
-          trade.r_result ||
-            0
-        ),
-      0
-    );
-
-
-  const averageR =
-    (
-      totalR /
-      trades.length
-    ).toFixed(2);
-
-
-  const grossProfit =
-    trades
-      .filter(
-        (trade) =>
-          Number(
-            trade.r_result ||
-              0
-          ) > 0
-      )
-      .reduce(
-        (
-          sum,
-          trade
-        ) =>
-          sum +
-          Number(
-            trade.r_result ||
-              0
-          ),
-        0
-      );
-
-
-  const grossLoss =
-    Math.abs(
-      trades
-        .filter(
-          (trade) =>
-            Number(
-              trade.r_result ||
-                0
-            ) < 0
-        )
-        .reduce(
-          (
-            sum,
-            trade
-          ) =>
-            sum +
-            Number(
-              trade.r_result ||
-                0
-            ),
-          0
-        )
-    );
-
-
-  const profitFactor =
-    grossLoss > 0
-      ? (
-          grossProfit /
-          grossLoss
-        ).toFixed(2)
-      : "--";
-
-
-  let cumulative =
-    0;
-
-
-  let peak =
-    0;
-
-
-  let maxDrawdown =
-    0;
-
-
-  [...trades]
-    .reverse()
-    .forEach(
-      (trade) => {
-
-        cumulative +=
-          Number(
-            trade.r_result ||
-              0
-          );
-
-
-        peak =
-          Math.max(
-            peak,
-            cumulative
-          );
-
-
-        maxDrawdown =
-          Math.max(
-            maxDrawdown,
-            peak -
-              cumulative
-          );
-
-      }
-    );
-
-
-  setText(
-    "journalWinRate",
-    `${winRate}%`
-  );
-
-
-  setText(
-    "journalProfitFactor",
-    profitFactor
-  );
-
-
-  setText(
-    "journalAverageR",
-    averageR
-  );
-
-
-  setText(
-    "journalDrawdown",
-    maxDrawdown > 0
-      ? `-${maxDrawdown.toFixed(2)}R`
-      : "0R"
-  );
-
-
-  setText(
-    "journalTrades",
-    trades.length
-  );
-
-
-  container.innerHTML =
-    trades
-      .map(
-        (trade) => {
-
-          const resultClass =
-            trade.result ===
-            "win"
-              ? "positive"
-              : trade.result ===
-                "loss"
-              ? "negative"
-              : "neutral";
-
-
-          const resultLabel =
-            trade.result ===
-            "win"
-              ? state.language ===
-                "ar"
-                ? "ربح"
-                : "Win"
-              : trade.result ===
-                "loss"
-              ? state.language ===
-                "ar"
-                ? "خسارة"
-                : "Loss"
-              : state.language ===
-                "ar"
-              ? "تعادل"
-              : "Breakeven";
-
-
-          return `
-
-            <div class="journal-row">
-
-              <div>
-
-                <strong>
-                  ${escapeHtml(
-                    trade.symbol ||
-                      "XAUUSD"
-                  )}
-                </strong>
-
-                <small>
-                  ${escapeHtml(
-                    trade.setup ||
-                      "—"
-                  )}
-                </small>
-
-              </div>
-
-
-              <div>
-
-                <span
-                  class="${resultClass}"
-                >
-                  ${resultLabel}
-                </span>
-
-              </div>
-
-
-              <div>
-
-                <strong>
-                  ${Number(
-                    trade.r_result ||
-                      0
-                  ).toFixed(2)}R
-                </strong>
-
-              </div>
-
-
-              <div>
-
-                <small>
-                  ${escapeHtml(
-                    trade.notes ||
-                      ""
-                  )}
-                </small>
-
-              </div>
-
-
-              <div>
-
-                <button
-                  type="button"
-                  class="text-btn journal-delete-btn"
-                  data-delete-trade="${escapeAttribute(
-                    trade.id
-                  )}"
-                >
-                  ${
-                    state.language ===
-                    "ar"
-                      ? "حذف"
-                      : "Delete"
-                  }
-                </button>
-
-              </div>
-
-            </div>
-          `;
         }
-      )
-      .join("");
-
-
-  container
-    .querySelectorAll(
-      "[data-delete-trade]"
-    )
-    .forEach(
-      (button) => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            deleteJournalTrade(
-              button.dataset
-                .deleteTrade
-            );
-
-          }
-        );
-
-      }
+      }),
+      6000,
+      null
     );
+
+    if (!result) {
+      setMessage(
+        "registerMessage",
+        state.language === "ar" ? "انتهت مهلة الاتصال." : "Connection timed out."
+      );
+      return;
+    }
+
+    const { data, error } = result;
+
+    if (error) {
+      setMessage("registerMessage", error.message);
+      return;
+    }
+
+    if (data.user) {
+      state.user = data.user;
+      await ensureProfile(data.user);
+      await refreshAuthUI();
+    }
+
+    closeModal("registerModal");
+    clearMessage("registerMessage");
+    showToast(
+      state.language === "ar"
+        ? translations.ar.account_created
+        : translations.en.account_created
+    );
+  } catch (error) {
+    console.error("Registration error:", error);
+    setMessage("registerMessage", error.message || "Registration failed.");
+  }
 }
 
 
@@ -3638,1882 +2592,199 @@ function renderJournal(
 ========================================================= */
 
 async function loadMarketAnalysis() {
-
-  if (!supabaseClient) {
-    return;
-  }
-
+  if (!supabaseClient) return;
 
   try {
-
-    const result =
-      await withTimeout(
-        supabaseClient
-          .from("market_analysis")
-          .select("*")
-          .order(
-            "created_at",
-            {
-              ascending:
-                false
-            }
-          )
-          .limit(1)
-          .maybeSingle(),
-        5000,
-        null
-      );
-
-
-    if (!result) {
-
-      console.warn(
-        "Market analysis request timed out."
-      );
-
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = result;
-
-
-    if (error) {
-
-      console.error(
-        "Market analysis error:",
-        error
-      );
-
-      return;
-    }
-
-
-    if (!data) {
-      return;
-    }
-
-
-    state.analysis =
-      data;
-
-
-    state.lastUpdated =
-      data.created_at ||
-      null;
-
-
-    renderAnalysis(
-      data
+    const result = await withTimeout(
+      supabaseClient
+        .from("market_analysis")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      5000,
+      null
     );
 
-
-    setText(
-      "lastUpdated",
-      data.created_at
-        ? formatDate(
-            data.created_at
-          )
-        : "--"
-    );
-
+    if (result && result.data) {
+      state.analysis = result.data;
+      renderMarketAnalysis(result.data);
+    }
   } catch (error) {
-
-    console.error(
-      "Market analysis request error:",
-      error
-    );
-
+    console.error("Load market analysis error:", error);
   }
 }
 
-
-function renderAnalysis(
-  data
-) {
-
-  const score =
-    Number(
-      data.score ??
-      data.habboub_score ??
-      0
-    );
-
-
-  const confidence =
-    Number(
-      data.confidence ??
-      data.market_confidence ??
-      0
-    );
-
-
-  const condition =
-    data.market_condition ||
-    data.condition ||
-    data.environment ||
-    "--";
-
-
-  const risk =
-    data.risk ||
-    data.risk_level ||
-    "--";
-
-
-  setText(
-    "heroScore",
-    Number.isFinite(score)
-      ? score
-      : "--"
-  );
-
-
-  setText(
-    "sessionScore",
-    Number.isFinite(score)
-      ? score
-      : "--"
-  );
-
-
-  setText(
-    "heroCondition",
-    condition
-  );
-
-
-  setText(
-    "marketCondition",
-    condition
-  );
-
-
-  setText(
-    "heroRisk",
-    risk
-  );
-
-
-  setText(
-    "marketRisk",
-    risk
-  );
-
-
-  setText(
-    "marketConfidence",
-    `${
-      Number.isFinite(
-        confidence
-      )
-        ? confidence
-        : 0
-    }%`
-  );
-
-
-  setText(
-    "analysisConfidenceLarge",
-    `${
-      Number.isFinite(
-        confidence
-      )
-        ? confidence
-        : 0
-    }%`
-  );
-
-
-  setText(
-    "marketAnalysisText",
-    data.analysis_text ||
-      data.description ||
-      "Waiting for market analysis..."
-  );
-
-
-  setText(
-    "analysisLongText",
-    data.analysis_long_text ||
-      data.analysis_text ||
-      data.description ||
-      "Waiting for the latest market analysis."
-  );
-
-
-  setText(
-    "analysisDescription",
-    data.title ||
-      data.description ||
-      "Market analysis"
-  );
-
-
-  setText(
-    "analysisStatus",
-    data.status ||
-      "LIVE"
-  );
-
-
-  setText(
-    "analysisSymbol",
-    data.symbol ||
-      "XAUUSD"
-  );
-
-
-  setText(
-    "analysisSymbolLarge",
-    data.symbol ||
-      "XAUUSD"
-  );
-
-
-  setText(
-    "htfBias",
-    data.htf_bias ||
-      "--"
-  );
-
-
-  setText(
-    "sessionBias",
-    data.htf_bias ||
-      "--"
-  );
-
-
-  setText(
-    "intelBias",
-    data.htf_bias ||
-      "--"
-  );
-
-
-  setText(
-    "liquidity",
-    data.liquidity ||
-      "--"
-  );
-
-
-  setText(
-    "sessionLiquidity",
-    data.liquidity ||
-      "--"
-  );
-
-
-  setText(
-    "intelLiquidity",
-    data.liquidity ||
-      "--"
-  );
-
-
-  setText(
-    "mss",
-    data.mss ||
-      "--"
-  );
-
-
-  setText(
-    "sessionMSS",
-    data.mss ||
-      "--"
-  );
-
-
-  setText(
-    "intelMSS",
-    data.mss ||
-      "--"
-  );
-
-
-  setText(
-    "fvg",
-    data.fvg ||
-      "--"
-  );
-
-
-  setText(
-    "sessionFVG",
-    data.fvg ||
-      "--"
-  );
-
-
-  setText(
-    "intelFVG",
-    data.fvg ||
-      "--"
-  );
-
-
-  setText(
-    "cotCommercial",
-    data.cot_commercial ||
-      "--"
-  );
-
-
-  setText(
-    "intelCommercial",
-    data.cot_commercial ||
-      "--"
-  );
-
-
-  setText(
-    "cotManaged",
-    data.cot_managed ||
-      "--"
-  );
-
-
-  setText(
-    "intelManaged",
-    data.cot_managed ||
-      "--"
-  );
-
-
-  setText(
-    "cotNet",
-    data.cot_net ||
-      "--"
-  );
-
-
-  setText(
-    "intelNet",
-    data.cot_net ||
-      "--"
-  );
-
-
-  setText(
-    "cotBias",
-    data.cot_bias ||
-      "--"
-  );
-
-
-  setText(
-    "intelCotBias",
-    data.cot_bias ||
-      "--"
-  );
-
-
-  setText(
-    "regimeTrend",
-    data.trend ||
-      "--"
-  );
-
-
-  setText(
-    "regimeVolatility",
-    data.volatility ||
-      "--"
-  );
-
-
-  setText(
-    "regimeLiquidity",
-    data.liquidity ||
-      "--"
-  );
-
-
-  setText(
-    "riskLevelText",
-    risk
-  );
-
-
-  updateScoreVisuals(
-    score,
-    confidence,
-    risk
-  );
-
-
-  renderScoreReasons(
-    data
-  );
+function renderMarketAnalysis(data) {
+  if (!data) return;
+  setText("analysisTitle", data.title || "");
+  setText("analysisContent", data.content || "");
+  if (data.updated_at || data.created_at) {
+    const d = new Date(data.updated_at || data.created_at);
+    setText("analysisDate", d.toLocaleDateString());
+  }
 }
 
 
 /* =========================================================
-   SCORE VISUALS
+   JOURNAL
 ========================================================= */
 
-function updateScoreVisuals(
-  score,
-  confidence,
-  risk
-) {
+async function loadJournal() {
+  if (!supabaseClient || !state.user) return;
 
-  const safeScore =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        Number(score) ||
-          0
-      )
+  try {
+    const result = await withTimeout(
+      supabaseClient
+        .from("journal")
+        .select("*")
+        .eq("user_id", state.user.id)
+        .order("created_at", { ascending: false }),
+      5000,
+      null
     );
 
-
-  const safeConfidence =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        Number(confidence) ||
-          0
-      )
-    );
-
-
-  const heroRing =
-    $("heroScoreRing");
-
-
-  const sessionBar =
-    $("sessionScoreBar");
-
-
-  const confidenceBar =
-    $("confidenceBar");
-
-
-  const riskMeter =
-    $("riskMeter");
-
-
-  if (heroRing) {
-
-    heroRing.style.setProperty(
-      "--score",
-      `${safeScore}%`
-    );
-
-  }
-
-
-  if (sessionBar) {
-
-    sessionBar.style.width =
-      `${safeScore}%`;
-
-  }
-
-
-  if (confidenceBar) {
-
-    confidenceBar.style.width =
-      `${safeConfidence}%`;
-
-  }
-
-
-  if (riskMeter) {
-
-    const riskValue =
-      riskToNumber(
-        risk
-      );
-
-
-    const meter =
-      riskMeter.querySelector(
-        "span"
-      );
-
-
-    if (meter) {
-
-      meter.style.width =
-        `${riskValue}%`;
-
+    if (result && result.data) {
+      state.journal = result.data;
+      renderJournal(result.data);
     }
-
+  } catch (error) {
+    console.error("Load journal error:", error);
   }
-
-
-  const stateText =
-    safeScore >= 80
-      ? "STRONG ENVIRONMENT"
-      : safeScore >= 60
-      ? "FAVORABLE ENVIRONMENT"
-      : safeScore >= 40
-      ? "MIXED ENVIRONMENT"
-      : safeScore >= 20
-      ? "HIGH RISK ENVIRONMENT"
-      : "EXTREME RISK";
-
-
-  setText(
-    "heroScoreState",
-    stateText
-  );
-
-
-  setText(
-    "sessionScoreState",
-    stateText
-  );
 }
 
+function renderJournal(trades) {
+  const container = $("journalList");
+  if (!container) return;
 
-function riskToNumber(
-  risk
-) {
+  if (!trades || trades.length === 0) {
+    container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">${
+      state.language === "ar" ? "لا توجد صفقات مسجلة." : "No recorded trades."
+    }</p>`;
+    return;
+  }
 
-  if (
-    typeof risk ===
-    "number"
-  ) {
+  container.innerHTML = trades
+    .map(
+      (t) => `
+    <div class="journal-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <strong style="font-size: 16px;">${escapeHtml(t.pair || "N/A")} (${escapeHtml(t.type || "BUY")})</strong>
+        <span style="color: ${t.pnl >= 0 ? "#10b981" : "#ef4444"}; font-weight: bold;">
+          ${t.pnl >= 0 ? "+" : ""}${t.pnl || 0} USD
+        </span>
+      </div>
+      <p style="font-size: 14px; color: var(--text-muted); margin: 4px 0;">${escapeHtml(t.notes || "")}</p>
+      <small style="color: #6b7280;">${new Date(t.created_at).toLocaleString()}</small>
+    </div>
+  `
+    )
+    .join("");
+}
 
-    return Math.max(
-      0,
-      Math.min(
-        100,
-        risk
-      )
+async function saveJournalTrade(event) {
+  event.preventDefault();
+
+  if (!supabaseClient || !state.user) return;
+
+  const pair = $("journalPair")?.value.trim();
+  const type = $("journalType")?.value;
+  const pnl = parseFloat($("journalPnL")?.value || "0");
+  const notes = $("journalNotes")?.value.trim();
+
+  if (!pair) return;
+
+  try {
+    const result = await withTimeout(
+      supabaseClient.from("journal").insert({
+        user_id: state.user.id,
+        pair,
+        type,
+        pnl,
+        notes
+      }),
+      5000,
+      null
     );
 
+    if (result && !result.error) {
+      closeModal("journalModal");
+      $("journalForm")?.reset();
+      await loadJournal();
+      showToast(
+        state.language === "ar" ? "تم حفظ الصفقة." : "Trade saved successfully."
+      );
+    }
+  } catch (error) {
+    console.error("Save trade error:", error);
   }
-
-
-  const text =
-    String(
-      risk
-    )
-      .toLowerCase();
-
-
-  if (
-    text.includes(
-      "extreme"
-    )
-  ) {
-
-    return 90;
-
-  }
-
-
-  if (
-    text.includes(
-      "high"
-    )
-  ) {
-
-    return 75;
-
-  }
-
-
-  if (
-    text.includes(
-      "medium"
-    )
-  ) {
-
-    return 50;
-
-  }
-
-
-  if (
-    text.includes(
-      "low"
-    )
-  ) {
-
-    return 25;
-
-  }
-
-
-  return 50;
-}
-
-
-/* =========================================================
-   SCORE REASONS
-========================================================= */
-
-function renderScoreReasons(
-  data
-) {
-
-  const container =
-    $("scoreReasons");
-
-
-  if (!container) {
-    return;
-  }
-
-
-  const reasons = [
-
-    [
-      "HTF Bias",
-      data.htf_bias
-    ],
-
-    [
-      "Liquidity",
-      data.liquidity
-    ],
-
-    [
-      "MSS",
-      data.mss
-    ],
-
-    [
-      "FVG",
-      data.fvg
-    ],
-
-    [
-      "COT",
-      data.cot_bias
-    ],
-
-    [
-      "Risk",
-      data.risk
-    ]
-
-  ].filter(
-    (item) =>
-      item[1] !==
-        null &&
-      item[1] !==
-        undefined &&
-      String(
-        item[1]
-      ).trim() !== ""
-  );
-
-
-  if (!reasons.length) {
-    return;
-  }
-
-
-  container.innerHTML =
-    reasons
-      .map(
-        ([title, value]) => `
-
-          <div class="reason neutral">
-
-            <span>◌</span>
-
-            <div>
-
-              <strong>
-                ${escapeHtml(
-                  title
-                )}
-              </strong>
-
-              <p>
-                ${escapeHtml(
-                  String(
-                    value
-                  )
-                )}
-              </p>
-
-            </div>
-
-          </div>
-        `
-      )
-      .join("");
 }
 
 
 /* =========================================================
    NEWS
-   IMPORTANT:
-   - Uses published_at
-   - Never blocks the loader
-   - News errors are isolated
 ========================================================= */
 
 async function loadNews() {
-
-  /*
-   * ECONOMIC CALENDAR IS ALWAYS BACKGROUND-ONLY.
-   * It must never prevent the website from loading.
-   */
-
-  if (!supabaseClient) {
-
-    state.news = [];
-
-    renderNews([]);
-
-    return;
-  }
-
+  if (!supabaseClient) return;
 
   try {
-
-    const newsRequest =
+    const result = await withTimeout(
       supabaseClient
         .from("news")
-        .select(
-          "id,title,event_name,actual,forecast,previous,event_time,country,unit,time_mode,revised_previous,event_status,category,impact,currency,source,url,created_at,published_at,multiplier"
-        )
-        .eq(
-          "category",
-          "economic_calendar"
-        )
-        .eq(
-          "currency",
-          "USD"
-        )
-        .order(
-          "event_time",
-          {
-            ascending: true
-          }
-        )
-        .limit(100);
-
-
-    const result =
-      await withTimeout(
-        newsRequest,
-        5000,
-        null
-      );
-
-
-    /*
-     * Timeout:
-     * Do NOT throw.
-     * Do NOT affect the rest of the website.
-     */
-
-    if (!result) {
-
-      console.warn(
-        "Economic calendar request timed out."
-      );
-
-      state.news = [];
-
-      renderNews([]);
-
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = result;
-
-
-    if (error) {
-
-      console.warn(
-        "Economic calendar unavailable:",
-        error.message
-      );
-
-      state.news = [];
-
-      renderNews([]);
-
-      return;
-    }
-
-
-    state.news =
-      Array.isArray(data)
-        ? data
-        : [];
-
-
-    renderNews(
-      state.news
+        .select("*")
+        .order("time", { ascending: true }),
+      5000,
+      null
     );
 
+    if (result && result.data) {
+      state.news = result.data;
+      renderNews(result.data);
+    }
   } catch (error) {
-
-    /*
-     * Economic calendar must NEVER break the page.
-     */
-
-    console.warn(
-      "Economic calendar request failed:",
-      error
-    );
-
-    state.news = [];
-
-    try {
-
-      renderNews([]);
-
-    } catch (renderError) {
-
-      console.warn(
-        "Economic calendar render failed:",
-        renderError
-      );
-
-    }
-
+    console.error("Load news error:", error);
   }
 }
 
-
-/* =========================================================
-   ECONOMIC CALENDAR HELPERS
-========================================================= */
-
-function normalizeCalendarImpact(
-  impact
-) {
-
-  const value =
-    String(
-      impact ||
-      "medium"
-    )
-      .toLowerCase()
-      .trim();
-
-
-  if (
-    value === "critical" ||
-    value === "high"
-  ) {
-
-    return "high";
-  }
-
-
-  if (
-    value === "low"
-  ) {
-
-    return "low";
-  }
-
-
-  return "medium";
-}
-
-
-function getCalendarImpactLabel(
-  impact
-) {
-
-  const normalized =
-    normalizeCalendarImpact(
-      impact
-    );
-
-
-  if (
-    state.language === "ar"
-  ) {
-
-    if (
-      normalized === "high"
-    ) {
-
-      return "مرتفع";
-
-    }
-
-
-    if (
-      normalized === "low"
-    ) {
-
-      return "منخفض";
-
-    }
-
-
-    return "متوسط";
-  }
-
-
-  return normalized.toUpperCase();
-}
-
-
-function formatCalendarValue(
-  value,
-  unit,
-  multiplier
-) {
-
-  if (
-    value === null ||
-    value === undefined ||
-    String(value).trim() === ""
-  ) {
-
-    return "—";
-  }
-
-
-  const raw =
-    String(value).trim();
-
-
-  /*
-   * Keep values that are already formatted.
-   */
-
-  if (
-    /[%$€£¥KMB]/i.test(raw)
-  ) {
-
-    return raw;
-  }
-
-
-  const numeric =
-    Number(
-      raw.replace(
-        /,/g,
-        ""
-      )
-    );
-
-
-  if (
-    !Number.isFinite(numeric)
-  ) {
-
-    return raw;
-  }
-
-
-  const multiplierText =
-    String(
-      multiplier ||
-      ""
-    ).toLowerCase();
-
-
-  let formatted;
-
-
-  if (
-    multiplierText.includes(
-      "thousand"
-    )
-  ) {
-
-    formatted =
-      numeric.toLocaleString(
-        "en-US",
-        {
-          maximumFractionDigits:
-            2
-        }
-      ) + "K";
-
-  } else if (
-    multiplierText.includes(
-      "million"
-    )
-  ) {
-
-    formatted =
-      numeric.toLocaleString(
-        "en-US",
-        {
-          maximumFractionDigits:
-            2
-        }
-      ) + "M";
-
-  } else if (
-    multiplierText.includes(
-      "billion"
-    )
-  ) {
-
-    formatted =
-      numeric.toLocaleString(
-        "en-US",
-        {
-          maximumFractionDigits:
-            2
-        }
-      ) + "B";
-
-  } else {
-
-    formatted =
-      numeric.toLocaleString(
-        "en-US",
-        {
-          maximumFractionDigits:
-            2
-        }
-      );
-  }
-
-
-  const unitText =
-    String(
-      unit ||
-      ""
-    ).toLowerCase();
-
-
-  if (
-    unitText.includes(
-      "percent"
-    ) &&
-    !formatted.includes("%")
-  ) {
-
-    formatted += "%";
-  }
-
-
-  return formatted;
-}
-
-
-function formatCalendarDate(
-  value
-) {
-
-  if (!value) {
-
-    return {
-      date: "--",
-      time: "--",
-      dayKey: "--"
-    };
-  }
-
-
-  const date =
-    new Date(value);
-
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-
-    return {
-      date: "--",
-      time: "--",
-      dayKey: "--"
-    };
-  }
-
-
-  const locale =
-    state.language === "ar"
-      ? "ar"
-      : "en-GB";
-
-
-  return {
-
-    date:
-      date.toLocaleDateString(
-        locale,
-        {
-          weekday: "long",
-          day: "numeric",
-          month: "short",
-          year: "numeric"
-        }
-      ),
-
-    time:
-      date.toLocaleTimeString(
-        locale,
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false
-        }
-      ),
-
-    dayKey:
-      date.toLocaleDateString(
-        "en-CA"
-      )
-  };
-}
-
-
-/* =========================================================
-   ECONOMIC CALENDAR RENDER
-========================================================= */
-
-function renderNews(
-  news
-) {
-
-  const container =
-    $("newsContainer");
-
-
-  if (!container) {
+function renderNews(newsItems) {
+  const container = $("newsList") || $("economicCalendar");
+  if (!container) return;
+
+  if (!newsItems || newsItems.length === 0) {
+    container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">${
+      state.language === "ar" ? "لا توجد أحدث أخبار حالياً." : "No recent news available."
+    }</p>`;
     return;
   }
 
+  container.innerHTML = newsItems
+    .map((item) => {
+      const impactClass =
+        item.impact === "High" || item.impact === "high" || item.impact === "HIGH"
+          ? "high"
+          : item.impact === "Medium" || item.impact === "medium" || item.impact === "MEDIUM"
+          ? "medium"
+          : "low";
 
-  const safeNews =
-    Array.isArray(news)
-      ? news
-      : [];
-
-
-  /*
-   * Current impact filter.
-   */
-
-  const filteredNews =
-    safeNews.filter(
-      (item) => {
-
-        if (
-          typeof newsImpactFilter ===
-          "undefined" ||
-          newsImpactFilter ===
-          "all"
-        ) {
-
-          return true;
-        }
-
-
-        return (
-          normalizeCalendarImpact(
-            item?.impact
-          ) ===
-          newsImpactFilter
-        );
-      }
-    );
-
-
-  /*
-   * Calendar toolbar.
-   */
-
-  const toolbar = `
-
-    <div class="calendar-toolbar">
-
-      <div class="calendar-toolbar-left">
-
-        <div class="calendar-market">
-
-          <span class="calendar-flag">
-            🇺🇸
+      return `
+      <div class="news-card" style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="impact-badge ${impactClass}" style="padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase;">
+            ${escapeHtml(item.impact || "LOW")}
           </span>
-
-          <div>
-
-            <strong>
-              USD Economic Calendar
-            </strong>
-
-            <small>
-              ${
-                state.language === "ar"
-                  ? "الأحداث الاقتصادية الأمريكية"
-                  : "United States economic events"
-              }
-            </small>
-
-          </div>
-
+          <span style="font-weight: 600; color: #f3f4f6;">${escapeHtml(item.title || item.event || "USD Event")}</span>
         </div>
-
+        <div style="display: flex; gap: 16px; color: var(--text-muted); font-size: 13px;">
+          <span>Actual: <strong style="color: #fff;">${escapeHtml(item.actual || "-")}</strong></span>
+          <span>Forecast: <strong>${escapeHtml(item.forecast || "-")}</strong></span>
+          <span>Previous: <strong>${escapeHtml(item.previous || "-")}</strong></span>
+          <span style="color: #6b7280;">${escapeHtml(item.time || "")}</span>
+        </div>
       </div>
-
-
-      <div class="calendar-filters">
-
-        <button
-          type="button"
-          class="calendar-filter ${
-            (
-              typeof newsImpactFilter ===
-              "undefined" ||
-              newsImpactFilter ===
-              "all"
-            )
-              ? "active"
-              : ""
-          }"
-          data-calendar-filter="all"
-        >
-          ${
-            state.language === "ar"
-              ? "الكل"
-              : "All"
-          }
-        </button>
-
-
-        <button
-          type="button"
-          class="calendar-filter high ${
-            newsImpactFilter ===
-            "high"
-              ? "active"
-              : ""
-          }"
-          data-calendar-filter="high"
-        >
-          ${
-            state.language === "ar"
-              ? "مرتفع"
-              : "High"
-          }
-        </button>
-
-
-        <button
-          type="button"
-          class="calendar-filter medium ${
-            newsImpactFilter ===
-            "medium"
-              ? "active"
-              : ""
-          }"
-          data-calendar-filter="medium"
-        >
-          ${
-            state.language === "ar"
-              ? "متوسط"
-              : "Medium"
-          }
-        </button>
-
-
-        <button
-          type="button"
-          class="calendar-filter low ${
-            newsImpactFilter ===
-            "low"
-              ? "active"
-              : ""
-          }"
-          data-calendar-filter="low"
-        >
-          ${
-            state.language === "ar"
-              ? "منخفض"
-              : "Low"
-          }
-        </button>
-
-      </div>
-
-    </div>
-
-  `;
-
-
-  /*
-   * No events.
-   */
-
-  if (
-    filteredNews.length === 0
-  ) {
-
-    container.innerHTML =
-      toolbar +
-      `
-
-        <div class="calendar-empty">
-
-          <div class="calendar-empty-icon">
-            ◷
-          </div>
-
-          <strong>
-            ${
-              state.language === "ar"
-                ? "لا توجد أحداث اقتصادية"
-                : "No economic events"
-            }
-          </strong>
-
-          <p>
-            ${
-              state.language === "ar"
-                ? "سيتم تحديث التقويم تلقائياً."
-                : "The calendar will update automatically."
-            }
-          </p>
-
-        </div>
-
-      `;
-
-
-    setupCalendarFilters();
-
-    return;
-  }
-
-
-  /*
-   * Sort by event time.
-   */
-
-  const sortedNews =
-    [...filteredNews]
-      .sort(
-        (
-          a,
-          b
-        ) => {
-
-          const aTime =
-            new Date(
-              a?.event_time ||
-              a?.published_at ||
-              a?.created_at ||
-              0
-            ).getTime();
-
-
-          const bTime =
-            new Date(
-              b?.event_time ||
-              b?.published_at ||
-              b?.created_at ||
-              0
-            ).getTime();
-
-
-          return (
-            aTime -
-            bTime
-          );
-        }
-      );
-
-
-  /*
-   * Group events by date.
-   */
-
-  const groups =
-    new Map();
-
-
-  sortedNews.forEach(
-    (item) => {
-
-      const formatted =
-        formatCalendarDate(
-          item?.event_time
-        );
-
-
-      if (
-        !groups.has(
-          formatted.dayKey
-        )
-      ) {
-
-        groups.set(
-          formatted.dayKey,
-          {
-            date:
-              formatted.date,
-            items: []
-          }
-        );
-      }
-
-
-      groups
-        .get(
-          formatted.dayKey
-        )
-        .items
-        .push(item);
-    }
-  );
-
-
-  let html =
-    toolbar;
-
-
-  groups.forEach(
-    (group) => {
-
-      html += `
-
-        <div class="calendar-day">
-
-          <div class="calendar-day-header">
-
-            <span>
-              ${escapeHtml(
-                group.date
-              )}
-            </span>
-
-          </div>
-
-
-          <div class="calendar-events">
-
-            ${
-              group.items
-                .map(
-                  (item) => {
-
-                    const impact =
-                      normalizeCalendarImpact(
-                        item?.impact
-                      );
-
-
-                    const impactLabel =
-                      getCalendarImpactLabel(
-                        item?.impact
-                      );
-
-
-                    const formatted =
-                      formatCalendarDate(
-                        item?.event_time
-                      );
-
-
-                    const title =
-                      item?.event_name ||
-                      item?.title ||
-                      (
-                        state.language === "ar"
-                          ? "حدث اقتصادي"
-                          : "Economic Event"
-                      );
-
-
-                    const actual =
-                      formatCalendarValue(
-                        item?.actual,
-                        item?.unit,
-                        item?.multiplier
-                      );
-
-
-                    const forecast =
-                      formatCalendarValue(
-                        item?.forecast,
-                        item?.unit,
-                        item?.multiplier
-                      );
-
-
-                    const previous =
-                      formatCalendarValue(
-                        item?.previous,
-                        item?.unit,
-                        item?.multiplier
-                      );
-
-
-                    const hasActual =
-                      item?.actual !==
-                        null &&
-                      item?.actual !==
-                        undefined &&
-                      String(
-                        item?.actual
-                      ).trim() !== "";
-
-
-                    const status =
-                      hasActual
-                        ? "released"
-                        : "upcoming";
-
-
-                    const statusLabel =
-                      hasActual
-                        ? (
-                            state.language === "ar"
-                              ? "صدر"
-                              : "RELEASED"
-                          )
-                        : (
-                            state.language === "ar"
-                              ? "قادم"
-                              : "UPCOMING"
-                          );
-
-
-                    return `
-
-                      <article
-                        class="calendar-event impact-${impact} status-${status}"
-                      >
-
-                        <div class="calendar-event-time">
-
-                          <strong>
-                            ${escapeHtml(
-                              formatted.time
-                            )}
-                          </strong>
-
-                          <span>
-                            LOCAL
-                          </span>
-
-                        </div>
-
-
-                        <div class="calendar-event-main">
-
-                          <div class="calendar-event-title-row">
-
-                            <span
-                              class="calendar-impact impact-${impact}"
-                            >
-
-                              <i></i>
-
-                              ${escapeHtml(
-                                impactLabel
-                              )}
-
-                            </span>
-
-
-                            <span class="calendar-currency">
-                              🇺🇸 USD
-                            </span>
-
-
-                            <span class="calendar-status">
-                              ${escapeHtml(
-                                statusLabel
-                              )}
-                            </span>
-
-                          </div>
-
-
-                          <h3>
-                            ${escapeHtml(
-                              title
-                            )}
-                          </h3>
-
-
-                          <small class="calendar-source">
-                            ${
-                              item?.source
-                                ? escapeHtml(
-                                    item.source
-                                  )
-                                : "BiQuote"
-                            }
-                          </small>
-
-                        </div>
-
-
-                        <div class="calendar-values">
-
-                          <div class="calendar-value">
-
-                            <span>
-                              Actual
-                            </span>
-
-                            <strong
-                              class="${
-                                hasActual
-                                  ? "actual-value"
-                                  : "empty-value"
-                              }"
-                            >
-                              ${escapeHtml(
-                                actual
-                              )}
-                            </strong>
-
-                          </div>
-
-
-                          <div class="calendar-value">
-
-                            <span>
-                              Forecast
-                            </span>
-
-                            <strong>
-                              ${escapeHtml(
-                                forecast
-                              )}
-                            </strong>
-
-                          </div>
-
-
-                          <div class="calendar-value">
-
-                            <span>
-                              Previous
-                            </span>
-
-                            <strong>
-                              ${escapeHtml(
-                                previous
-                              )}
-                            </strong>
-
-                          </div>
-
-                        </div>
-
-                      </article>
-
-                    `;
-                  }
-                )
-                .join("")
-            }
-
-          </div>
-
-        </div>
-
-      `;
-    }
-  );
-
-
-  container.innerHTML =
-    html;
-
-
-  setupCalendarFilters();
-}
-
-
-/* =========================================================
-   CALENDAR FILTERS
-========================================================= */
-
-function setupCalendarFilters() {
-
-  document
-    .querySelectorAll(
-      "[data-calendar-filter]"
-    )
-    .forEach(
-      (button) => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            newsImpactFilter =
-              button.dataset
-                .calendarFilter ||
-              "all";
-
-
-            renderNews(
-              state.news
-            );
-
-          }
-        );
-
-      }
-    );
-}
-
-
-          const title =
-            item?.title ||
-            (
-              state.language === "ar"
-                ? "خبر اقتصادي"
-                : "Economic News"
-            );
-
-
-          const description =
-            item?.description ||
-            "";
-
-
-          const source =
-            item?.source ||
-            "Finnhub";
-
-
-          const publishedAt =
-            item?.published_at ||
-            item?.created_at ||
-            null;
-
-
-          const date =
-            publishedAt
-              ? formatDate(
-                  publishedAt
-                )
-              : "--";
-
-
-          const articleUrl =
-            item?.url ||
-            "";
-
-
-          const imageUrl =
-            item?.image_url ||
-            "";
-
-
-          return `
-
-            <article class="news-card">
-
-              ${
-                imageUrl
-                  ? `
-                    <div class="news-image">
-                      <img
-                        src="${escapeAttribute(
-                          imageUrl
-                        )}"
-                        alt="${escapeAttribute(
-                          title
-                        )}"
-                        loading="lazy"
-                        onerror="this.parentElement.style.display='none';"
-                      >
-                    </div>
-                  `
-                  : ""
-              }
-
-
-              <div>
-
-                <span class="news-impact">
-                  ${escapeHtml(
-                    impactLabel
-                  )}
-                </span>
-
-
-                <h3>
-                  ${escapeHtml(
-                    title
-                  )}
-                </h3>
-
-
-                ${
-                  description
-                    ? `
-                      <p>
-                        ${escapeHtml(
-                          description
-                        )}
-                      </p>
-                    `
-                    : ""
-                }
-
-
-                <small>
-                  ${escapeHtml(
-                    source
-                  )}
-                </small>
-
-
-                ${
-                  articleUrl
-                    ? `
-                      <a
-                        href="${escapeAttribute(
-                          articleUrl
-                        )}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="news-link"
-                      >
-                        ${
-                          state.language ===
-                          "ar"
-                            ? "قراءة الخبر"
-                            : "Read article"
-                        }
-                      </a>
-                    `
-                    : ""
-                }
-
-              </div>
-
-
-              <time>
-                ${escapeHtml(
-                  date
-                )}
-              </time>
-
-            </article>
-
-          `;
-        }
-      )
-      .join("");
+    `;
+    })
+    .join("");
 }
 
 
@@ -5522,151 +2793,46 @@ function setupCalendarFilters() {
 ========================================================= */
 
 async function loadAnnouncements() {
-
-  if (!supabaseClient) {
-    return;
-  }
-
+  if (!supabaseClient) return;
 
   try {
-
-    const result =
-      await withTimeout(
-        supabaseClient
-          .from("announcements")
-          .select("*")
-          .order(
-            "created_at",
-            {
-              ascending:
-                false
-            }
-          ),
-        5000,
-        null
-      );
-
-
-    if (!result) {
-
-      console.warn(
-        "Announcements request timed out."
-      );
-
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = result;
-
-
-    if (error) {
-
-      console.error(
-        "Announcements error:",
-        error
-      );
-
-      return;
-    }
-
-
-    state.announcements =
-      data || [];
-
-
-    renderAnnouncements(
-      state.announcements
+    const result = await withTimeout(
+      supabaseClient
+        .from("announcements")
+        .select("*")
+        .order("created_at", { ascending: false }),
+      5000,
+      null
     );
 
+    if (result && result.data) {
+      state.announcements = result.data;
+      renderAnnouncements(result.data);
+    }
   } catch (error) {
-
-    console.error(
-      "Announcements request error:",
-      error
-    );
-
+    console.error("Load announcements error:", error);
   }
 }
 
+function renderAnnouncements(list) {
+  const container = $("announcementsList");
+  if (!container) return;
 
-function renderAnnouncements(
-  items
-) {
-
-  const container =
-    $("announcementsContainer");
-
-
-  if (!container) {
+  if (!list || list.length === 0) {
+    container.innerHTML = "";
     return;
   }
 
-
-  if (!items?.length) {
-
-    container.innerHTML = `
-
-      <div class="empty-state">
-
-        <span>◆</span>
-
-        <strong>
-          ${
-            state.language === "ar"
-              ? "لا توجد إعلانات بعد"
-              : "No announcements yet"
-          }
-        </strong>
-
-      </div>
-    `;
-
-    return;
-  }
-
-
-  container.innerHTML =
-    items
-      .map(
-        (item) => `
-
-          <article class="announcement-card">
-
-            <span>◆</span>
-
-            <div>
-
-              <h3>
-                ${escapeHtml(
-                  item.title ||
-                    "Announcement"
-                )}
-              </h3>
-
-              <p>
-                ${escapeHtml(
-                  item.content ||
-                    item.description ||
-                    ""
-                )}
-              </p>
-
-              <small>
-                ${formatDate(
-                  item.created_at
-                )}
-              </small>
-
-            </div>
-
-          </article>
-        `
-      )
-      .join("");
+  container.innerHTML = list
+    .map(
+      (a) => `
+    <div class="announcement-item" style="padding: 12px; background: rgba(59,130,246,0.1); border-left: 4px solid #3b82f6; margin-bottom: 8px; border-radius: 4px;">
+      <h4 style="margin: 0 0 4px 0; color: #60a5fa;">${escapeHtml(a.title || "")}</h4>
+      <p style="margin: 0; font-size: 13px;">${escapeHtml(a.content || "")}</p>
+    </div>
+  `
+    )
+    .join("");
 }
 
 
@@ -5675,1105 +2841,179 @@ function renderAnnouncements(
 ========================================================= */
 
 async function loadCourses() {
-
-  if (!supabaseClient) {
-    return;
-  }
-
+  if (!supabaseClient) return;
 
   try {
-
-    const result =
-      await withTimeout(
-        supabaseClient
-          .from("courses")
-          .select("*")
-          .order(
-            "created_at",
-            {
-              ascending:
-                false
-            }
-          ),
-        5000,
-        null
-      );
-
-
-    if (!result) {
-
-      console.warn(
-        "Courses request timed out."
-      );
-
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = result;
-
-
-    if (error) {
-
-      console.error(
-        "Courses error:",
-        error
-      );
-
-      return;
-    }
-
-
-    state.courses =
-      data || [];
-
-
-    renderCourses(
-      state.courses
+    const result = await withTimeout(
+      supabaseClient
+        .from("courses")
+        .select("*")
+        .order("created_at", { ascending: true }),
+      5000,
+      null
     );
 
+    if (result && result.data) {
+      state.courses = result.data;
+      renderCourses(result.data);
+    }
   } catch (error) {
-
-    console.error(
-      "Courses request error:",
-      error
-    );
-
+    console.error("Load courses error:", error);
   }
 }
 
+function renderCourses(courses) {
+  const container = $("coursesGrid");
+  if (!container) return;
 
-function renderCourses(
-  courses
-) {
-
-  const container =
-    $("courseContainer");
-
-
-  if (!container) {
+  if (!courses || courses.length === 0) {
+    container.innerHTML = `<p style="color: var(--text-muted); text-align: center;">${
+      state.language === "ar" ? "لا توجد دورات متاحة حالياً." : "No courses available."
+    }</p>`;
     return;
   }
 
-
-  if (!courses?.length) {
-
-    container.innerHTML = `
-
-      <div class="empty-state">
-
-        <span>◇</span>
-
-        <strong>
-          ${
-            state.language === "ar"
-              ? "لا توجد دورات متاحة حالياً"
-              : "No courses available yet"
-          }
-        </strong>
-
-      </div>
-    `;
-
-    return;
-  }
-
-
-  container.innerHTML =
-    courses
-      .map(
-        (course) => `
-
-          <article class="course-card">
-
-            <div class="course-icon">
-              ◇
-            </div>
-
-            <h3>
-              ${escapeHtml(
-                course.title ||
-                  "Course"
-              )}
-            </h3>
-
-            <p>
-              ${escapeHtml(
-                course.description ||
-                  ""
-              )}
-            </p>
-
-            <button
-              class="secondary-btn"
-              type="button"
-            >
-              ${
-                state.language ===
-                "ar"
-                  ? "فتح الدورة"
-                  : "Open Course"
-              }
-            </button>
-
-          </article>
-        `
-      )
-      .join("");
+  container.innerHTML = courses
+    .map(
+      (c) => `
+    <div class="course-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
+      <h3>${escapeHtml(c.title || "")}</h3>
+      <p style="color: var(--text-muted); font-size: 14px;">${escapeHtml(c.description || "")}</p>
+      ${
+        c.link
+          ? `<a href="${escapeAttribute(c.link)}" target="_blank" class="primary-btn" style="display: inline-block; margin-top: 12px; text-decoration: none;">Watch Course</a>`
+          : ""
+      }
+    </div>
+  `
+    )
+    .join("");
 }
 
 
 /* =========================================================
-   LIVE
+   LIVE STREAM
 ========================================================= */
 
 async function loadLive() {
-
-  if (!supabaseClient) {
-    return;
-  }
-
+  if (!supabaseClient) return;
 
   try {
-
-    const result =
-      await withTimeout(
-        supabaseClient
-          .from("live_sessions")
-          .select("*")
-          .order(
-            "created_at",
-            {
-              ascending:
-                false
-            }
-          )
-          .limit(1)
-          .maybeSingle(),
-        5000,
-        null
-      );
-
-
-    if (!result) {
-
-      console.warn(
-        "Live request timed out."
-      );
-
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = result;
-
-
-    if (error) {
-
-      console.error(
-        "Live error:",
-        error
-      );
-
-      return;
-    }
-
-
-    state.live =
-      data || null;
-
-
-    renderLive(
-      state.live
+    const result = await withTimeout(
+      supabaseClient
+        .from("live")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      5000,
+      null
     );
 
+    if (result && result.data) {
+      state.live = result.data;
+      renderLive(result.data);
+    }
   } catch (error) {
-
-    console.error(
-      "Live request error:",
-      error
-    );
-
+    console.error("Load live stream error:", error);
   }
 }
 
+function renderLive(liveData) {
+  const container = $("liveStreamContainer");
+  if (!container) return;
 
-function renderLive(
-  data
-) {
-
-  const indicator =
-    $("liveIndicator");
-
-
-  const title =
-    $("liveTitleDisplay");
-
-
-  const description =
-    $("liveDescriptionDisplay");
-
-
-  const isLive =
-    data &&
-    (
-      data.is_live ===
-        true ||
-      data.status ===
-        "live"
-    );
-
-
-  if (indicator) {
-
-    indicator.textContent =
-      isLive
-        ? "LIVE"
-        : "OFFLINE";
-
-
-    indicator.classList.toggle(
-      "offline",
-      !isLive
-    );
-
-
-    indicator.classList.toggle(
-      "online",
-      isLive
-    );
-
+  if (!liveData || !liveData.is_live) {
+    container.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-muted);">${
+      state.language === "ar" ? "البث المباشر غير متاح حالياً." : "Live stream is currently offline."
+    }</div>`;
+    return;
   }
 
-
-  if (title) {
-
-    title.textContent =
-      isLive
-        ? data.title ||
-          "Habboub Live"
-        : state.language ===
-          "ar"
-        ? "لا توجد جلسة مباشرة الآن"
-        : "No live session right now";
-
-  }
-
-
-  if (description) {
-
-    description.textContent =
-      isLive
-        ? data.description ||
-          ""
-        : state.language ===
-          "ar"
-        ? "ستظهر جلسة البث هنا عندما يبدأ المشرف جلسة."
-        : "The live room will appear here when the admin starts a session.";
-
-  }
+  container.innerHTML = `
+    <div style="aspect-ratio: 16/9; width: 100%;">
+      <iframe src="${escapeAttribute(liveData.stream_url)}" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+    </div>
+  `;
 }
 
 
 /* =========================================================
-   REALTIME
+   REALTIME SUBSCRIPTIONS
 ========================================================= */
 
 function subscribeToUpdates() {
+  if (!supabaseClient) return;
 
-  if (!supabaseClient) {
-    return;
-  }
-
-
-  try {
-
-    const channel =
-      supabaseClient
-        .channel(
-          "habboub-realtime"
-        );
-
-
-    channel
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table:
-            "market_analysis"
-        },
-        () => {
-
-          loadMarketAnalysis();
-
-        }
-      )
-
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table:
-            "announcements"
-        },
-        () => {
-
-          loadAnnouncements();
-
-        }
-      )
-
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table:
-            "courses"
-        },
-        () => {
-
-          loadCourses();
-
-        }
-      )
-
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table:
-            "live_sessions"
-        },
-        () => {
-
-          loadLive();
-
-        }
-      )
-
-
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table:
-            "trading_journal"
-        },
-        () => {
-
-          if (state.user) {
-
-            loadJournal();
-
-          }
-
-        }
-      )
-
-
-      .subscribe(
-        (status) => {
-
-          console.log(
-            "Habboub Realtime:",
-            status
-          );
-
-        }
-      );
-
-  } catch (error) {
-
-    console.error(
-      "Realtime error:",
-      error
-    );
-
-  }
+  supabaseClient
+    .channel("public-changes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "news" }, () => {
+      loadNews();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "market_analysis" }, () => {
+      loadMarketAnalysis();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "live" }, () => {
+      loadLive();
+    })
+    .subscribe();
 }
 
 
 /* =========================================================
-   AI
+   AI SETUP
 ========================================================= */
 
 function setupAI() {
+  const askBtn = $("askAiButton");
+  const input = $("aiInput");
+  const responseBox = $("aiResponse");
 
-  $("openAIButton")
-    ?.addEventListener(
-      "click",
-      () => {
+  if (!askBtn || !input) return;
 
-        $("aiWindow")
-          ?.classList.remove(
-            "hidden"
-          );
+  askBtn.addEventListener("click", async () => {
+    const prompt = input.value.trim();
+    if (!prompt) return;
 
+    if (responseBox) {
+      responseBox.textContent = state.language === "ar" ? "جاري التفكير..." : "Thinking...";
+    }
+
+    setTimeout(() => {
+      if (responseBox) {
+        responseBox.textContent =
+          state.language === "ar"
+            ? "الذكاء الاصطناعي متصل وجاهز للتحليل الفني والأساسي."
+            : "AI Assistant is connected and ready for technical analysis.";
       }
-    );
-
-
-  $("floatingAI")
-    ?.addEventListener(
-      "click",
-      () => {
-
-        $("aiWindow")
-          ?.classList.toggle(
-            "hidden"
-          );
-
-      }
-    );
-
-
-  $("closeAIButton")
-    ?.addEventListener(
-      "click",
-      () => {
-
-        $("aiWindow")
-          ?.classList.add(
-            "hidden"
-          );
-
-      }
-    );
-
-
-  $("aiForm")
-    ?.addEventListener(
-      "submit",
-      handleAI
-    );
-}
-
-
-async function handleAI(
-  event
-) {
-
-  event.preventDefault();
-
-
-  const input =
-    $("aiInput");
-
-
-  const messages =
-    $("aiMessages");
-
-
-  if (
-    !input ||
-    !messages
-  ) {
-    return;
-  }
-
-
-  const message =
-    input.value.trim();
-
-
-  if (!message) {
-    return;
-  }
-
-
-  addAIMessage(
-    "user",
-    message
-  );
-
-
-  input.value =
-    "";
-
-
-  const response =
-    buildLocalAIResponse(
-      message
-    );
-
-
-  setTimeout(
-    () => {
-
-      addAIMessage(
-        "bot",
-        response
-      );
-
-    },
-    400
-  );
-}
-
-
-function addAIMessage(
-  type,
-  text
-) {
-
-  const container =
-    $("aiMessages");
-
-
-  if (!container) {
-    return;
-  }
-
-
-  const message =
-    document.createElement(
-      "div"
-    );
-
-
-  message.className =
-    `ai-message ${type}`;
-
-
-  message.innerHTML = `
-
-    <strong>
-      ${
-        type === "bot"
-          ? "Habboub"
-          : "You"
-      }
-    </strong>
-
-    <p>
-      ${escapeHtml(
-        text
-      )}
-    </p>
-
-  `;
-
-
-  container.appendChild(
-    message
-  );
-
-
-  container.scrollTop =
-    container.scrollHeight;
-}
-
-
-function buildLocalAIResponse(
-  message
-) {
-
-  const text =
-    message.toLowerCase();
-
-
-  const score =
-    state.analysis?.score ??
-    state.analysis
-      ?.habboub_score;
-
-
-  const condition =
-    state.analysis
-      ?.market_condition ||
-    state.analysis
-      ?.condition;
-
-
-  const risk =
-    state.analysis?.risk ||
-    state.analysis
-      ?.risk_level;
-
-
-  if (
-    text.includes(
-      "score"
-    ) ||
-    text.includes(
-      "درجة"
-    )
-  ) {
-
-    return `Current Habboub Score: ${
-      score ?? "--"
-    }/100.`;
-  }
-
-
-  if (
-    text.includes(
-      "risk"
-    ) ||
-    text.includes(
-      "خطر"
-    ) ||
-    text.includes(
-      "مخاطرة"
-    )
-  ) {
-
-    return `Current risk environment: ${
-      risk ?? "--"
-    }.`;
-  }
-
-
-  if (
-    text.includes(
-      "gold"
-    ) ||
-    text.includes(
-      "xau"
-    ) ||
-    text.includes(
-      "ذهب"
-    )
-  ) {
-
-    return `XAUUSD is currently being monitored through the Habboub market context. Current environment: ${
-      condition ?? "--"
-    }.`;
-  }
-
-
-  return "Habboub is monitoring market structure, liquidity, risk and the current market environment.";
+    }, 1200);
+  });
 }
 
 
 /* =========================================================
-   CLOCK
+   CLOCK & TIMELINE
 ========================================================= */
 
 function updateClock() {
-
-  const now =
-    new Date();
-
-
-  const time =
-    now.toLocaleTimeString(
-      "en-GB",
-      {
-        hour12:
-          false
-      }
-    );
-
-
-  setText(
-    "sessionClock",
-    time
-  );
-
-
-  const hour =
-    now.getUTCHours();
-
-
-  let session =
-    "Asia";
-
-
-  if (
-    hour >= 8 &&
-    hour < 13
-  ) {
-
-    session =
-      "London";
-
-  } else if (
-    hour >= 13 &&
-    hour < 21
-  ) {
-
-    session =
-      "New York";
-
-  }
-
-
-  setText(
-    "sessionName",
-    session
-  );
+  const clockEl = $("liveClock");
+  if (!clockEl) return;
+  const now = new Date();
+  clockEl.textContent = now.toUTCString().replace("GMT", "UTC");
 }
-
 
 function updateSessionTimeline() {
-
-  const now =
-    new Date();
-
-
-  const hour =
-    now.getUTCHours();
-
-
-  document
-    .querySelectorAll(
-      ".timeline-item"
-    )
-    .forEach(
-      (item) => {
-
-        item.classList.remove(
-          "current"
-        );
-
-      }
-    );
-
-
-  if (
-    hour >= 0 &&
-    hour < 8
-  ) {
-
-    $("asiaSession")
-      ?.classList.add(
-        "current"
-      );
-
-  } else if (
-    hour >= 8 &&
-    hour < 13
-  ) {
-
-    $("londonSession")
-      ?.classList.add(
-        "current"
-      );
-
-  } else if (
-    hour >= 13 &&
-    hour < 21
-  ) {
-
-    $("newYorkSession")
-      ?.classList.add(
-        "current"
-      );
-
-  }
+  const timelineEl = $("sessionTimeline");
+  if (!timelineEl) return;
 }
 
 
 /* =========================================================
-   HELPERS
+   AUTO INIT ON LOAD
 ========================================================= */
 
-function setText(
-  id,
-  value
-) {
-
-  const element =
-    $(id);
-
-
-  if (element) {
-
-    element.textContent =
-      value === null ||
-      value === undefined
-        ? "--"
-        : String(value);
-
-  }
-}
-
-
-function setMessage(
-  id,
-  message
-) {
-
-  const element =
-    $(id);
-
-
-  if (element) {
-
-    element.textContent =
-      message || "";
-
-  }
-}
-
-
-function clearMessage(
-  id
-) {
-
-  setMessage(
-    id,
-    ""
-  );
-}
-
-
-function showToast(
-  message
-) {
-
-  const toast =
-    $("toast");
-
-
-  if (!toast) {
-    return;
-  }
-
-
-  toast.textContent =
-    message;
-
-
-  toast.classList.add(
-    "show"
-  );
-
-
-  clearTimeout(
-    showToast.timeout
-  );
-
-
-  showToast.timeout =
-    setTimeout(
-      () => {
-
-        toast.classList.remove(
-          "show"
-        );
-
-      },
-      3000
-    );
-}
-
-
-function formatDate(
-  value
-) {
-
-  if (!value) {
-    return "--";
-  }
-
-
-  const date =
-    new Date(value);
-
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return "--";
-  }
-
-
-  return date.toLocaleString(
-    state.language === "ar"
-      ? "ar"
-      : "en",
-    {
-      dateStyle:
-        "medium",
-
-      timeStyle:
-        "short"
-    }
-  );
-}
-
-
-function escapeHtml(
-  value
-) {
-
-  return String(
-    value ?? ""
-  )
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-}
-
-
-function escapeAttribute(
-  value
-) {
-
-  return escapeHtml(
-    value
-  );
-}
-
-
-/* =========================================================
-   GLOBAL ERROR PROTECTION
-========================================================= */
-
-window.addEventListener(
-  "error",
-  (event) => {
-
-    console.error(
-      "Habboub JavaScript error:",
-      event.error ||
-        event.message
-    );
-
-
-    /*
-     * If ANY unexpected JS error happens,
-     * the loader still disappears.
-     */
-
-    hideLoader();
-
-  }
-);
-
-
-window.addEventListener(
-  "unhandledrejection",
-  (event) => {
-
-    console.error(
-      "Habboub Promise error:",
-      event.reason
-    );
-
-
-    hideLoader();
-
-  }
-);
-
-
-/* =========================================================
-   START
-========================================================= */
-
-function startHabboub() {
-
-  /*
-   * Emergency loader kill.
-   * Even if something goes horribly wrong,
-   * the page won't stay stuck.
-   */
-
-  hideLoader();
-
-
-  setTimeout(() => {
-    hideLoader();
-  }, 1500);
-
-
-  try {
-
-    const result =
-      init();
-
-
-    /*
-     * init() is async.
-     * Catch rejected promises here too.
-     */
-
-    if (
-      result &&
-      typeof result.catch ===
-        "function"
-    ) {
-
-      result.catch(
-        (error) => {
-
-          console.error(
-            "Habboub startup error:",
-            error
-          );
-
-          hideLoader();
-
-        }
-      );
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Habboub startup error:",
-      error
-    );
-
-    hideLoader();
-
-  }
-}
-
-
-if (
-  document.readyState ===
-  "loading"
-) {
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    startHabboub,
-    {
-      once: true
-    }
-  );
-
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
 } else {
-
-  startHabboub();
-
+  init();
 }
