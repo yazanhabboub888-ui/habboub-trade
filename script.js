@@ -393,33 +393,13 @@ async function init() {
 
   state.initialized = true;
 
-
-  /*
-   * CRITICAL:
-   *
-   * Hide the loader BEFORE waiting for Supabase.
-   *
-   * The website must NEVER depend on
-   * Supabase to become visible.
-   */
-
   hideLoader();
-
-
-  /*
-   * Extra loader safety.
-   */
 
   setTimeout(() => {
     hideLoader();
   }, 1000);
 
-
   try {
-
-    /* -----------------------------------------
-        FRONTEND
-    ----------------------------------------- */
 
     applyLanguage(
       state.language
@@ -443,11 +423,6 @@ async function init() {
 
     updateSessionTimeline();
 
-
-    /* -----------------------------------------
-        CLOCK
-    ----------------------------------------- */
-
     setInterval(() => {
 
       try {
@@ -467,18 +442,7 @@ async function init() {
 
     }, 1000);
 
-
-    /*
-     * Make absolutely sure loader is gone.
-     */
-
     hideLoader();
-
-
-    /* -----------------------------------------
-        SUPABASE DATA
-        Runs in background.
-    ----------------------------------------- */
 
     if (!supabaseClient) {
 
@@ -488,14 +452,6 @@ async function init() {
 
       return;
     }
-
-
-    /*
-     * Authentication gets a maximum of 5 seconds.
-     *
-     * Even if Supabase hangs,
-     * the website stays usable.
-     */
 
     try {
 
@@ -513,11 +469,6 @@ async function init() {
       );
 
     }
-
-
-    /*
-     * NEVER block the page on database requests.
-     */
 
     Promise.allSettled([
 
@@ -548,11 +499,6 @@ async function init() {
 
     });
 
-
-    /*
-     * Realtime is also background-only.
-     */
-
     try {
 
       subscribeToUpdates();
@@ -574,10 +520,6 @@ async function init() {
     );
 
   } finally {
-
-    /*
-     * Final emergency loader removal.
-     */
 
     hideLoader();
 
@@ -1477,11 +1419,6 @@ function renderAuthUI() {
     return;
   }
 
-
-  /*
-   * LOGGED OUT
-   */
-
   if (!state.user) {
 
     loginButton.classList.remove(
@@ -1515,11 +1452,6 @@ function renderAuthUI() {
 
     return;
   }
-
-
-  /*
-   * LOGGED IN
-   */
 
   loginButton.classList.add(
     "hidden"
@@ -2726,28 +2658,33 @@ async function saveJournalTrade(event) {
 ========================================================= */
 
 async function loadNews() {
-  if (!supabaseClient) return;
+  if (!supabaseClient) {
+    renderNews([]);
+    return;
+  }
 
   try {
-    const result = await withTimeout(
-      supabaseClient
-        .from("news")
-        .select("id, title, description, source, url, image_url, category, impact, currency, published_at, created_at, event_name, actual, forecast, previous, event_time, country, unit, time_mode, revised_previous, event_status")
-        .eq("category", "economic_calendar")
-        .eq("currency", "USD")
-        .order("event_time", { ascending: true }),
-      5000,
-      null
-    );
+    const { data, error } = await supabaseClient
+      .from("news")
+      .select("id, title, description, source, url, image_url, category, impact, currency, published_at, created_at, event_name, actual, forecast, previous, event_time, country, unit, time_mode, revised_previous, event_status")
+      .eq("category", "economic_calendar")
+      .eq("currency", "USD")
+      .order("event_time", { ascending: true });
 
-    if (result && result.data) {
-      state.news = result.data;
-      renderNews(result.data);
+    if (error) {
+      console.error("Supabase news query error:", error);
+      renderNews([]);
+      return;
+    }
+
+    if (data) {
+      state.news = data;
+      renderNews(data);
     } else {
       renderNews([]);
     }
   } catch (error) {
-    console.error("Load news error:", error);
+    console.error("Load news unexpected error:", error);
     renderNews([]);
   }
 }
