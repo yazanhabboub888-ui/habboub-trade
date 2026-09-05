@@ -1,4 +1,4 @@
-/* Habboub News Intelligence — live economic-event intelligence.
+/* Habboub News Intelligence — lightweight live economic-event intelligence.
  * Uses public news + news_probability data only.
  * No synthetic directional percentage is shown when the AI/consensus model has no result.
  */
@@ -17,7 +17,9 @@
   let client = null;
   let events = [];
   let probabilities = [];
+  let probabilityMap = new Map();
   let refreshBusy = false;
+  let started = false;
 
   const esc = (v) => String(v ?? "")
     .replace(/&/g, "&amp;").replace(/</g, "&lt;")
@@ -74,14 +76,32 @@
   }
 
   function probabilityFor(eventId, symbol) {
-    const rows = probabilities.filter(r => Number(r.news_id) === Number(eventId) && r.symbol === symbol);
-    if (!rows.length) return null;
-    rows.sort((a,b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
-    const ai = rows.find(r => r.model_version === "openrouter-gpt-5-nano-v1" && r.ai_score !== null);
-    const best = ai || rows.find(r => r.ai_score !== null) || rows[0];
-    const up = Number(best.up_probability), down = Number(best.down_probability), confidence = Number(best.confidence);
-    if (![up,down].every(Number.isFinite)) return null;
-    return { up: Math.max(0,Math.min(100,Math.round(up))), down: Math.max(0,Math.min(100,Math.round(down))), confidence: Number.isFinite(confidence) ? Math.max(0,Math.min(100,Math.round(confidence))) : null, model: best.model_version || "consensus", ai: best.model_version === "openrouter-gpt-5-nano-v1" };
+    return probabilityMap.get(`${eventId}:${symbol}`) || null;
+  }
+
+  function buildProbabilityMap() {
+    probabilityMap = new Map();
+    const latest = new Map();
+    probabilities.forEach((row) => {
+      const key = `${row.news_id}:${row.symbol}`;
+      const current = latest.get(key);
+      if (!current || new Date(row.updated_at || 0) > new Date(current.updated_at || 0)) latest.set(key, row);
+    });
+    latest.forEach((row, key) => {
+      const ai = probabilities
+        .filter(r => `${r.news_id}:${r.symbol}` === key && r.model_version === "openrouter-gpt-5-nano-v1" && r.ai_score !== null)
+        .sort((a,b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0))[0];
+      const best = ai || row;
+      const up = Number(best.up_probability), down = Number(best.down_probability), confidence = Number(best.confidence);
+      if (![up, down].every(Number.isFinite)) return;
+      probabilityMap.set(key, {
+        up: Math.max(0, Math.min(100, Math.round(up))),
+        down: Math.max(0, Math.min(100, Math.round(down))),
+        confidence: Number.isFinite(confidence) ? Math.max(0, Math.min(100, Math.round(confidence))) : null,
+        model: best.model_version || "consensus",
+        ai: best.model_version === "openrouter-gpt-5-nano-v1"
+      });
+    });
   }
 
   function directionCell(event, asset) {
@@ -92,11 +112,13 @@
   }
 
   function topScore(symbol) {
-    const candidates = probabilities.filter(r => r.symbol === symbol && r.ai_score !== null);
-    if (!candidates.length) return null;
-    candidates.sort((a,b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
-    const score = Number(candidates[0].ai_score);
-    return Number.isFinite(score) ? Math.max(0,Math.min(100,Math.round(score))) : null;
+    let best = null;
+    probabilities.forEach((row) => {
+      if (row.symbol !== symbol || row.ai_score === null) return;
+      if (!best || new Date(row.updated_at || 0) > new Date(best.updated_at || 0)) best = row;
+    });
+    const score = Number(best?.ai_score);
+    return Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : null;
   }
 
   function buildTop() {
@@ -110,19 +132,6 @@
     return `<div class="hni-wrap" id="habboubNewsIntelligence"><div class="hni-command"><div><h3>Habboub News Intelligence</h3><p>Live economic events with model-backed probabilities for Gold, Nasdaq, S&P 500 and USD.</p></div><div class="hni-live"><span class="hni-dot"></span> LIVE · ${events.length} USD EVENTS</div></div><div class="hni-assets">${cards}</div></div>`;
   }
 
-  function normalizeTitle(v) { return String(v || "").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
-
-  function findEventForCard(card) {
-    const title = card.querySelector(".hni-event-title")?.textContent?.trim();
-    const base = card.querySelector(".habboub-event-title")?.textContent?.trim();
-    const target = normalizeTitle(title || base);
-    if (!target) return null;
-    return events.find(e => normalizeTitle(e.event_name || e.title) === target) || events.find(e => {
-      const n = normalizeTitle(e.event_name || e.title);
-      return n && (n.includes(target) || target.includes(n));
-    }) || null;
-  }
-
   function render() {
     const container = document.getElementById("newsContainer");
     if (!container) return;
@@ -131,12 +140,23 @@
 
     [...container.querySelectorAll(".habboub-economic-event")].forEach(card => {
       const title = card.querySelector("div[style*='font-size:15px']")?.textContent?.trim();
-      const event = events.find(e => normalizeTitle(e.event_name || e.title) === normalizeTitle(title)) || events.find(e => normalizeTitle(e.event_name || e.title).includes(normalizeTitle(title || "")));
+      const normalized = normalizeTitle(title || "");
+      const event = events.find(e => normalizeTitle(e.event_name || e.title) === normalized) || events.find(e => normalizeTitle(e.event_name || e.title).includes(normalized));
       if (!event) return;
       card.querySelector(".hni-event")?.remove();
       const sev = severity(event);
-      const html = `<div class="hni-event hni-severity-${sev.key}"><div class="hni-event-head"><div><div class="hni-event-title">${esc(event.event_name || event.title || "Economic Event")}</div><div class="hni-foot">${esc(event.currency || "USD")} · ${statusText(event)}</div></div><div class="hni-badges"><span class="hni-severity-label ${sev.key}">${sev.label}</span></div></div><div class="hni-grid">${ASSETS.map(a => directionCell(event,a)).join("")}</div><div class="hni-foot">${eventStatus(event) === "upcoming" ? "Pre-event: AI may remain pending until the event context is available." : "Decision-support context only. Never a BUY/SELL instruction."}</div></div>`;
+      const html = `<div class="hni-event hni-severity-${sev.key}"><div class="hni-event-head"><div><div class="hni-event-title">${esc(event.event_name || event.title || "Economic Event")}</div><div class="hni-foot" data-hni-status-event="${esc(event.id)}">${esc(event.currency || "USD")} · <span data-hni-countdown="${esc(event.id)}">${statusText(event)}</span></div></div><div class="hni-badges"><span class="hni-severity-label ${sev.key}">${sev.label}</span></div></div><div class="hni-grid">${ASSETS.map(a => directionCell(event,a)).join("")}</div><div class="hni-foot">${eventStatus(event) === "upcoming" ? "Pre-event: AI may remain pending until the event context is available." : "Decision-support context only. Never a BUY/SELL instruction."}</div></div>`;
       card.insertAdjacentHTML("beforeend", html);
+    });
+  }
+
+  function normalizeTitle(v) { return String(v || "").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
+
+  function updateCountdowns() {
+    if (!events.length) return;
+    events.forEach((event) => {
+      const el = document.querySelector(`[data-hni-countdown="${CSS.escape(String(event.id))}"]`);
+      if (el) el.textContent = statusText(event);
     });
   }
 
@@ -150,14 +170,15 @@
       const start = new Date(now.getTime() - 30 * 60000).toISOString();
       const end = new Date(now.getTime() + 7 * 86400000).toISOString();
       const [newsResult, probResult] = await Promise.all([
-        db.from("news").select("id,title,description,source,url,image_url,category,impact,currency,published_at,created_at,event_name,actual,forecast,previous,event_time,country,unit,time_mode,revised_previous,event_status").eq("category","economic_calendar").eq("currency","USD").gte("event_time",start).lte("event_time",end).order("event_time",{ascending:true}).limit(200),
-        db.from("news_probability").select("news_id,symbol,event_name,event_time,up_probability,down_probability,confidence,phase,ai_score,model_version,updated_at").gte("event_time",start).lte("event_time",end).in("symbol",ASSETS.map(a=>a.key)).order("updated_at",{ascending:false}).limit(1000)
+        db.from("news").select("id,title,description,source,url,image_url,category,impact,currency,published_at,created_at,event_name,actual,forecast,previous,event_time,country,unit,time_mode,revised_previous,event_status").eq("category","economic_calendar").eq("currency","USD").gte("event_time",start).lte("event_time",end).order("event_time",{ascending:true}).limit(120),
+        db.from("news_probability").select("news_id,symbol,event_name,event_time,up_probability,down_probability,confidence,phase,ai_score,model_version,updated_at").gte("event_time",start).lte("event_time",end).in("symbol",ASSETS.map(a=>a.key)).order("updated_at",{ascending:false}).limit(500)
       ]);
       if (newsResult.error) throw newsResult.error;
       if (probResult.error) throw probResult.error;
       events = Array.isArray(newsResult.data) ? newsResult.data : [];
       probabilities = Array.isArray(probResult.data) ? probResult.data : [];
-      render();
+      buildProbabilityMap();
+      if (document.getElementById("news")?.classList.contains("active-section")) render();
     } catch (error) {
       console.warn("Habboub News Intelligence sync failed:", error);
     } finally {
@@ -166,12 +187,32 @@
   }
 
   function start() {
+    if (started) return;
+    started = true;
     ensureStyles();
-    sync();
-    setInterval(sync, 30000);
-    setInterval(() => { if (events.length) render(); }, 1000);
+
+    const syncIfVisible = () => {
+      if (!document.hidden && document.getElementById("news")?.classList.contains("active-section")) sync();
+    };
+
+    syncIfVisible();
+    window.addEventListener("habboub:navigate", syncIfVisible);
+    document.addEventListener("click", (event) => {
+      if (event.target.closest('[data-nav="news"]')) setTimeout(syncIfVisible, 50);
+    }, { passive: true });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) syncIfVisible();
+    }, { passive: true });
+
+    window.setInterval(() => {
+      if (!document.hidden && document.getElementById("news")?.classList.contains("active-section")) sync();
+    }, 30000);
+
+    window.setInterval(() => {
+      if (!document.hidden && document.getElementById("news")?.classList.contains("active-section")) updateCountdowns();
+    }, 15000);
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
   else start();
 })();
