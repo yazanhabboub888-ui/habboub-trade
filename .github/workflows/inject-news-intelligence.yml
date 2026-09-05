@@ -1,4 +1,4 @@
-name: Inject Habboub News Intelligence
+name: Inject Habboub UI Enhancements
 
 on:
   push:
@@ -14,19 +14,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject script tag
+      - name: Inject Habboub enhancement assets
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           text = p.read_text(encoding='utf-8')
-          tag = '<script src="news-intelligence.js"></script>'
-          if tag not in text:
+
+          css = '<link rel="stylesheet" href="mobile-polish.css">'
+          if css not in text:
+              marker = '<link rel="stylesheet" href="style.css">'
+              if marker not in text:
+                  raise SystemExit('style.css tag not found in index.html')
+              text = text.replace(marker, marker + '\n  ' + css, 1)
+
+          script = '<script src="news-intelligence.js"></script>'
+          if script not in text:
               marker = '<script src="script.js"></script>'
               if marker not in text:
                   raise SystemExit('script.js tag not found in index.html')
-              text = text.replace(marker, marker + '\n  ' + tag, 1)
-              p.write_text(text, encoding='utf-8')
+              text = text.replace(marker, marker + '\n  ' + script, 1)
+
+          consensus = '<script src="news-consensus.js"></script>'
+          if consensus not in text:
+              marker = '<script src="news-intelligence.js"></script>'
+              if marker not in text:
+                  raise SystemExit('news-intelligence.js tag not found in index.html')
+              text = text.replace(marker, marker + '\n  ' + consensus, 1)
+
+          p.write_text(text, encoding='utf-8')
           PY
 
       - name: Commit integration
@@ -35,5 +51,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "feat: inject news intelligence"
+          git commit -m "feat: wire mobile polish and consensus UI"
           git push
