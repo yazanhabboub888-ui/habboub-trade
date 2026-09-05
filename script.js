@@ -1,7 +1,7 @@
-```javascript
 /* =========================================================
    HABBOUB — MAIN SCRIPT
    Stable frontend + Supabase
+   Loader-safe version
 ========================================================= */
 
 "use strict";
@@ -17,13 +17,12 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
 
-
 let supabaseClient = null;
 
 
-/*
- * Create Supabase safely.
- */
+/* =========================================================
+   SUPABASE INITIALIZATION
+========================================================= */
 
 try {
   if (
@@ -35,8 +34,10 @@ try {
         SUPABASE_URL,
         SUPABASE_KEY
       );
+
+    console.log("Habboub: Supabase initialized.");
   } else {
-    console.error(
+    console.warn(
       "Habboub: Supabase CDN was not loaded."
     );
   }
@@ -82,7 +83,9 @@ const state = {
 
   user: null,
 
-  profile: null
+  profile: null,
+
+  initialized: false
 };
 
 
@@ -260,13 +263,34 @@ const translations = {
 
 
 /* =========================================================
-   LOADER
+   SAFE TIMEOUT HELPER
 ========================================================= */
 
-/*
- * VERY IMPORTANT:
- * The loader is always removed.
- */
+function withTimeout(
+  promise,
+  timeout = 5000,
+  fallback = null
+) {
+
+  return Promise.race([
+
+    Promise.resolve(promise),
+
+    new Promise((resolve) => {
+
+      setTimeout(() => {
+        resolve(fallback);
+      }, timeout);
+
+    })
+
+  ]);
+}
+
+
+/* =========================================================
+   LOADER
+========================================================= */
 
 function hideLoader() {
 
@@ -277,24 +301,21 @@ function hideLoader() {
     return;
   }
 
-  loader.classList.add("hide");
+  loader.classList.add(
+    "hide"
+  );
 
-  /*
-   * Extra safety in case CSS is broken.
-   */
+  loader.style.opacity =
+    "0";
 
-  setTimeout(() => {
+  loader.style.visibility =
+    "hidden";
 
-    if (
-      loader &&
-      document.body.contains(loader)
-    ) {
-      loader.style.opacity = "0";
-      loader.style.visibility = "hidden";
-      loader.style.pointerEvents = "none";
-    }
+  loader.style.pointerEvents =
+    "none";
 
-  }, 800);
+  loader.style.display =
+    "none";
 }
 
 
@@ -304,11 +325,39 @@ function hideLoader() {
 
 async function init() {
 
+  if (state.initialized) {
+    return;
+  }
+
+  state.initialized = true;
+
+
   /*
-   * Always guarantee loader removal.
+   * CRITICAL:
+   *
+   * Hide the loader BEFORE waiting for Supabase.
+   *
+   * The website must NEVER depend on
+   * Supabase to become visible.
    */
 
+  hideLoader();
+
+
+  /*
+   * Extra loader safety.
+   */
+
+  setTimeout(() => {
+    hideLoader();
+  }, 1000);
+
+
   try {
+
+    /* -----------------------------------------
+       FRONTEND
+    ----------------------------------------- */
 
     applyLanguage(
       state.language
@@ -333,34 +382,82 @@ async function init() {
     updateSessionTimeline();
 
 
-    /*
-     * Clock.
-     */
+    /* -----------------------------------------
+       CLOCK
+    ----------------------------------------- */
 
     setInterval(() => {
 
-      updateClock();
+      try {
 
-      updateSessionTimeline();
+        updateClock();
+
+        updateSessionTimeline();
+
+      } catch (error) {
+
+        console.error(
+          "Clock error:",
+          error
+        );
+
+      }
 
     }, 1000);
 
 
     /*
-     * Auth.
+     * Make absolutely sure loader is gone.
      */
 
-    await refreshAuthUI();
+    hideLoader();
+
+
+    /* -----------------------------------------
+       SUPABASE DATA
+       Runs in background.
+    ----------------------------------------- */
+
+    if (!supabaseClient) {
+
+      console.warn(
+        "Habboub: Running without Supabase."
+      );
+
+      return;
+    }
 
 
     /*
-     * Load data independently.
+     * Authentication gets a maximum of 5 seconds.
      *
-     * If one table fails,
-     * the others still load.
+     * Even if Supabase hangs,
+     * the website stays usable.
      */
 
-    await Promise.allSettled([
+    try {
+
+      await withTimeout(
+        refreshAuthUI(),
+        5000,
+        null
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Auth initialization error:",
+        error
+      );
+
+    }
+
+
+    /*
+     * NEVER block the page on database requests.
+     */
+
+    Promise.allSettled([
 
       loadMarketAnalysis(),
 
@@ -374,12 +471,24 @@ async function init() {
 
       loadNews()
 
-    ]);
+    ]).then(() => {
+
+      console.log(
+        "Habboub: Background data loading finished."
+      );
+
+    }).catch((error) => {
+
+      console.error(
+        "Background data loading error:",
+        error
+      );
+
+    });
 
 
     /*
-     * Realtime should NEVER prevent
-     * the page from loading.
+     * Realtime is also background-only.
      */
 
     try {
@@ -397,10 +506,6 @@ async function init() {
 
   } catch (error) {
 
-    /*
-     * Critical safety net.
-     */
-
     console.error(
       "Habboub initialization error:",
       error
@@ -409,7 +514,7 @@ async function init() {
   } finally {
 
     /*
-     * LOADER ALWAYS CLOSES.
+     * Final emergency loader removal.
      */
 
     hideLoader();
@@ -429,6 +534,7 @@ function applyLanguage(
   const lang =
     translations[language] ||
     translations.en;
+
 
   state.language =
     translations[language]
@@ -458,8 +564,10 @@ function applyLanguage(
       if (
         lang[key] !== undefined
       ) {
+
         element.textContent =
           lang[key];
+
       }
 
     });
@@ -478,8 +586,10 @@ function applyLanguage(
       if (
         lang[key] !== undefined
       ) {
+
         element.placeholder =
           lang[key];
+
       }
 
     });
@@ -497,10 +607,20 @@ function applyLanguage(
   );
 
 
-  localStorage.setItem(
-    "habboub_language",
-    state.language
-  );
+  try {
+
+    localStorage.setItem(
+      "habboub_language",
+      state.language
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Language storage unavailable."
+    );
+
+  }
 
 
   if (state.user) {
@@ -540,9 +660,9 @@ function setupLanguage() {
     "click",
     () => {
 
-      state.language = "en";
-
-      applyLanguage("en");
+      applyLanguage(
+        "en"
+      );
 
     }
   );
@@ -552,9 +672,9 @@ function setupLanguage() {
     "click",
     () => {
 
-      state.language = "ar";
-
-      applyLanguage("ar");
+      applyLanguage(
+        "ar"
+      );
 
     }
   );
@@ -584,7 +704,9 @@ function setupNavigation() {
             return;
           }
 
-          navigateTo(target);
+          navigateTo(
+            target
+          );
 
         }
       );
@@ -652,10 +774,21 @@ function navigateTo(
     );
 
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+  try {
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  } catch (error) {
+
+    window.scrollTo(
+      0,
+      0
+    );
+
+  }
 }
 
 
@@ -684,7 +817,9 @@ function setupMobileMenu() {
    MODALS
 ========================================================= */
 
-function openModal(id) {
+function openModal(
+  id
+) {
 
   $(id)
     ?.classList.remove(
@@ -693,7 +828,9 @@ function openModal(id) {
 }
 
 
-function closeModal(id) {
+function closeModal(
+  id
+) {
 
   $(id)
     ?.classList.add(
@@ -709,10 +846,22 @@ function setupModals() {
       "click",
       async () => {
 
+        /*
+         * Do NOT let authentication
+         * freeze the login button.
+         */
+
         const user =
-          await getCurrentUser();
+          await withTimeout(
+            getCurrentUser(),
+            4000,
+            null
+          );
 
         if (user) {
+
+          state.user =
+            user;
 
           renderAuthUI();
 
@@ -777,7 +926,11 @@ function setupModals() {
       async () => {
 
         const user =
-          await getCurrentUser();
+          await withTimeout(
+            getCurrentUser(),
+            4000,
+            null
+          );
 
         if (!user) {
 
@@ -793,6 +946,9 @@ function setupModals() {
 
           return;
         }
+
+        state.user =
+          user;
 
         openModal(
           "journalModal"
@@ -879,9 +1035,7 @@ function setupModals() {
 
 function setupAuthUI() {
 
-  if (
-    !supabaseClient
-  ) {
+  if (!supabaseClient) {
     return;
   }
 
@@ -890,7 +1044,7 @@ function setupAuthUI() {
 
     supabaseClient.auth
       .onAuthStateChange(
-        async (
+        (
           event,
           session
         ) => {
@@ -902,12 +1056,9 @@ function setupAuthUI() {
 
 
           if (
-            event ===
-              "SIGNED_IN" ||
-            event ===
-              "SIGNED_OUT" ||
-            event ===
-              "USER_UPDATED"
+            event === "SIGNED_IN" ||
+            event === "SIGNED_OUT" ||
+            event === "USER_UPDATED"
           ) {
 
             setTimeout(
@@ -915,13 +1066,36 @@ function setupAuthUI() {
 
                 try {
 
-                  await refreshAuthUI();
+                  state.user =
+                    session?.user ||
+                    (
+                      event ===
+                        "SIGNED_OUT"
+                        ? null
+                        : state.user
+                    );
 
-                  await loadJournal();
 
-                } catch (
-                  error
-                ) {
+                  await withTimeout(
+                    refreshAuthUI(),
+                    5000,
+                    null
+                  );
+
+
+                  if (
+                    state.user
+                  ) {
+
+                    await withTimeout(
+                      loadJournal(),
+                      5000,
+                      null
+                    );
+
+                  }
+
+                } catch (error) {
 
                   console.error(
                     "Auth refresh error:",
@@ -953,7 +1127,11 @@ function setupAuthUI() {
 async function refreshAuthUI() {
 
   const user =
-    await getCurrentUser();
+    await withTimeout(
+      getCurrentUser(),
+      4500,
+      null
+    );
 
 
   state.user =
@@ -967,8 +1145,12 @@ async function refreshAuthUI() {
   if (user) {
 
     state.profile =
-      await getProfile(
-        user.id
+      await withTimeout(
+        getProfile(
+          user.id
+        ),
+        4500,
+        null
       );
 
 
@@ -977,8 +1159,12 @@ async function refreshAuthUI() {
     ) {
 
       state.profile =
-        await ensureProfile(
-          user
+        await withTimeout(
+          ensureProfile(
+            user
+          ),
+          4500,
+          null
         );
 
     }
@@ -992,25 +1178,41 @@ async function refreshAuthUI() {
 
 async function getCurrentUser() {
 
-  if (
-    !supabaseClient
-  ) {
+  if (!supabaseClient) {
     return null;
   }
 
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .auth
+          .getUser(),
+        4000,
+        null
+      );
+
+
+    if (!result) {
+      return null;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .auth
-        .getUser();
+    } = result;
 
 
     if (error) {
+
+      console.warn(
+        "Get current user:",
+        error.message
+      );
+
       return null;
     }
 
@@ -1050,15 +1252,30 @@ async function getProfile(
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("profiles")
+          .select("*")
+          .eq(
+            "id",
+            userId
+          )
+          .maybeSingle(),
+        4500,
+        null
+      );
+
+
+    if (!result) {
+      return null;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .maybeSingle();
+    } = result;
 
 
     if (error) {
@@ -1125,23 +1342,40 @@ async function ensureProfile(
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("profiles")
+          .insert({
+            id:
+              user.id,
+
+            full_name:
+              fullName,
+
+            email:
+              user.email ||
+              null,
+
+            avatar_url:
+              avatarUrl
+          })
+          .select("*")
+          .maybeSingle(),
+        4500,
+        null
+      );
+
+
+    if (!result) {
+      return null;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from("profiles")
-        .insert({
-          id: user.id,
-          full_name: fullName,
-          email:
-            user.email ||
-            null,
-          avatar_url:
-            avatarUrl
-        })
-        .select("*")
-        .maybeSingle();
+    } = result;
 
 
     if (error) {
@@ -1328,15 +1562,9 @@ function updateAvatarElement(
     "U";
 
 
-  element.innerHTML = "";
+  element.innerHTML =
+    "";
 
-
-  /*
-   * DO NOT overwrite container
-   * width / height from CSS.
-   *
-   * Only force image safety.
-   */
 
   element.style.borderRadius =
     "50%";
@@ -1364,38 +1592,29 @@ function updateAvatarElement(
     img.style.width =
       "100%";
 
-
     img.style.height =
       "100%";
-
 
     img.style.maxWidth =
       "100%";
 
-
     img.style.maxHeight =
       "100%";
-
 
     img.style.minWidth =
       "0";
 
-
     img.style.minHeight =
       "0";
-
 
     img.style.display =
       "block";
 
-
     img.style.objectFit =
       "cover";
 
-
     img.style.objectPosition =
       "center";
-
 
     img.style.borderRadius =
       "50%";
@@ -1580,26 +1799,43 @@ async function logoutUser() {
 
   try {
 
-    const {
-      error
-    } =
-      await supabaseClient
-        .auth
-        .signOut();
+    const result =
+      await withTimeout(
+        supabaseClient
+          .auth
+          .signOut(),
+        5000,
+        null
+      );
 
 
-    if (error) {
+    if (!result) {
 
-      console.error(
-        "Logout error:",
+      console.warn(
+        "Logout timed out."
+      );
+
+    } else {
+
+      const {
         error
-      );
+      } = result;
 
-      showToast(
-        error.message
-      );
 
-      return;
+      if (error) {
+
+        console.error(
+          "Logout error:",
+          error
+        );
+
+        showToast(
+          error.message
+        );
+
+        return;
+      }
+
     }
 
 
@@ -1649,10 +1885,6 @@ async function logoutUser() {
 ========================================================= */
 
 function showProfileModal() {
-
-  /*
-   * Remove old profile modals.
-   */
 
   document
     .querySelectorAll(
@@ -1715,10 +1947,6 @@ function showProfileModal() {
     "modal";
 
 
-  /*
-   * Hard safety dimensions.
-   */
-
   modal.style.position =
     "fixed";
 
@@ -1750,7 +1978,6 @@ function showProfileModal() {
       class="modal-overlay"
       data-profile-close
     ></div>
-
 
     <div
       class="modal-box profile-modal-box"
@@ -2040,32 +2267,52 @@ async function updateProfile(
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("profiles")
+          .upsert(
+            {
+              id:
+                state.user.id,
+
+              full_name:
+                fullName,
+
+              email:
+                state.user.email ||
+                null,
+
+              avatar_url:
+                avatarUrl ||
+                null
+            },
+            {
+              onConflict:
+                "id"
+            }
+          ),
+        5000,
+        null
+      );
+
+
+    if (!result) {
+
+      setMessage(
+        "profileMessage",
+        state.language === "ar"
+          ? "انتهت مهلة الاتصال."
+          : "Connection timed out."
+      );
+
+      return;
+    }
+
+
     const {
       error
-    } =
-      await supabaseClient
-        .from("profiles")
-        .upsert(
-          {
-            id:
-              state.user.id,
-
-            full_name:
-              fullName,
-
-            email:
-              state.user.email ||
-              null,
-
-            avatar_url:
-              avatarUrl ||
-              null
-          },
-          {
-            onConflict:
-              "id"
-          }
-        );
+    } = result;
 
 
     if (error) {
@@ -2086,18 +2333,22 @@ async function updateProfile(
 
     try {
 
-      await supabaseClient
-        .auth
-        .updateUser({
-          data: {
-            full_name:
-              fullName,
+      await withTimeout(
+        supabaseClient
+          .auth
+          .updateUser({
+            data: {
+              full_name:
+                fullName,
 
-            avatar_url:
-              avatarUrl ||
-              null
-          }
-        });
+              avatar_url:
+                avatarUrl ||
+                null
+            }
+          }),
+        5000,
+        null
+      );
 
     } catch (error) {
 
@@ -2204,16 +2455,36 @@ async function loginUser(
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .auth
+          .signInWithPassword({
+            email,
+            password
+          }),
+        8000,
+        null
+      );
+
+
+    if (!result) {
+
+      setMessage(
+        "loginMessage",
+        state.language === "ar"
+          ? "انتهت مهلة الاتصال. حاول مرة أخرى."
+          : "Connection timed out. Please try again."
+      );
+
+      return;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .auth
-        .signInWithPassword({
-          email,
-          password
-        });
+    } = result;
 
 
     if (error) {
@@ -2313,13 +2584,6 @@ async function registerUser(
     return;
   }
 
-
-  /*
-   * Supports BOTH IDs:
-   *
-   * registerFullName
-   * registerName
-   */
 
   const fullName =
     (
@@ -2421,27 +2685,47 @@ async function registerUser(
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .auth
+          .signUp({
+            email,
+            password,
+
+            options: {
+
+              data: {
+                full_name:
+                  fullName
+              },
+
+              emailRedirectTo:
+                "https://yazanhabboub888-ui.github.io/habboub-trade/"
+            }
+          }),
+        10000,
+        null
+      );
+
+
+    if (!result) {
+
+      setMessage(
+        "registerMessage",
+        state.language === "ar"
+          ? "انتهت مهلة الاتصال. حاول مرة أخرى."
+          : "Connection timed out. Please try again."
+      );
+
+      return;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .auth
-        .signUp({
-          email,
-          password,
-
-          options: {
-
-            data: {
-              full_name:
-                fullName
-            },
-
-            emailRedirectTo:
-              "https://yazanhabboub888-ui.github.io/habboub-trade/"
-          }
-        });
+    } = result;
 
 
     if (error) {
@@ -2459,10 +2743,6 @@ async function registerUser(
       return;
     }
 
-
-    /*
-     * Email confirmation disabled.
-     */
 
     if (
       data?.session &&
@@ -2501,10 +2781,6 @@ async function registerUser(
     }
 
 
-    /*
-     * Email confirmation enabled.
-     */
-
     setMessage(
       "registerMessage",
       state.language === "ar"
@@ -2534,6 +2810,11 @@ async function registerUser(
 
 async function loadJournal() {
 
+  if (!supabaseClient) {
+    return;
+  }
+
+
   const user =
     await getCurrentUser();
 
@@ -2551,31 +2832,43 @@ async function loadJournal() {
   }
 
 
-  if (!supabaseClient) {
-    return;
-  }
-
-
   try {
+
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("trading_journal")
+          .select("*")
+          .eq(
+            "user_id",
+            user.id
+          )
+          .order(
+            "created_at",
+            {
+              ascending:
+                false
+            }
+          ),
+        5000,
+        null
+      );
+
+
+    if (!result) {
+
+      console.warn(
+        "Journal request timed out."
+      );
+
+      return;
+    }
+
 
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from("trading_journal")
-        .select("*")
-        .eq(
-          "user_id",
-          user.id
-        )
-        .order(
-          "created_at",
-          {
-            ascending:
-              false
-          }
-        );
+    } = result;
 
 
     if (error) {
@@ -2706,40 +2999,60 @@ async function saveJournalTrade(
 
   try {
 
+    const resultResponse =
+      await withTimeout(
+        supabaseClient
+          .from("trading_journal")
+          .insert({
+            user_id:
+              user.id,
+
+            journal_type:
+              "manual",
+
+            symbol,
+
+            direction:
+              result === "win"
+                ? "WIN"
+                : result === "loss"
+                ? "LOSS"
+                : "BREAKEVEN",
+
+            setup,
+
+            result,
+
+            r_result:
+              rResult,
+
+            notes
+
+          })
+          .select("*")
+          .maybeSingle(),
+        7000,
+        null
+      );
+
+
+    if (!resultResponse) {
+
+      setMessage(
+        "journalMessage",
+        state.language === "ar"
+          ? "انتهت مهلة الاتصال."
+          : "Connection timed out."
+      );
+
+      return;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from("trading_journal")
-        .insert({
-          user_id:
-            user.id,
-
-          journal_type:
-            "manual",
-
-          symbol,
-
-          direction:
-            result === "win"
-              ? "WIN"
-              : result === "loss"
-              ? "LOSS"
-              : "BREAKEVEN",
-
-          setup,
-
-          result,
-
-          r_result:
-            rResult,
-
-          notes
-
-        })
-        .select("*")
-        .maybeSingle();
+    } = resultResponse;
 
 
     if (error) {
@@ -2865,20 +3178,39 @@ async function deleteJournalTrade(
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("trading_journal")
+          .delete()
+          .eq(
+            "id",
+            tradeId
+          )
+          .eq(
+            "user_id",
+            user.id
+          ),
+        6000,
+        null
+      );
+
+
+    if (!result) {
+
+      showToast(
+        state.language === "ar"
+          ? "انتهت مهلة الاتصال."
+          : "Connection timed out."
+      );
+
+      return;
+    }
+
+
     const {
       error
-    } =
-      await supabaseClient
-        .from("trading_journal")
-        .delete()
-        .eq(
-          "id",
-          tradeId
-        )
-        .eq(
-          "user_id",
-          user.id
-        );
+    } = result;
 
 
     if (error) {
@@ -2911,6 +3243,7 @@ async function deleteJournalTrade(
       "Journal delete request error:",
       error
     );
+
   }
 }
 
@@ -2965,25 +3298,30 @@ function renderJournal(
       "--"
     );
 
+
     setText(
       "journalProfitFactor",
       "--"
     );
+
 
     setText(
       "journalAverageR",
       "--"
     );
 
+
     setText(
       "journalDrawdown",
       "--"
     );
 
+
     setText(
       "journalTrades",
       "0"
     );
+
 
     return;
   }
@@ -3087,8 +3425,10 @@ function renderJournal(
   let cumulative =
     0;
 
+
   let peak =
     0;
+
 
   let maxDrawdown =
     0;
@@ -3311,24 +3651,39 @@ async function loadMarketAnalysis() {
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("market_analysis")
+          .select("*")
+          .order(
+            "created_at",
+            {
+              ascending:
+                false
+            }
+          )
+          .limit(1)
+          .maybeSingle(),
+        5000,
+        null
+      );
+
+
+    if (!result) {
+
+      console.warn(
+        "Market analysis request timed out."
+      );
+
+      return;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from(
-          "market_analysis"
-        )
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending:
-              false
-          }
-        )
-        .limit(1)
-        .maybeSingle();
+    } = result;
 
 
     if (error) {
@@ -3388,16 +3743,16 @@ function renderAnalysis(
   const score =
     Number(
       data.score ??
-        data.habboub_score ??
-        0
+      data.habboub_score ??
+      0
     );
 
 
   const confidence =
     Number(
       data.confidence ??
-        data.market_confidence ??
-        0
+      data.market_confidence ??
+      0
     );
 
 
@@ -4015,28 +4370,40 @@ async function loadNews() {
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("news")
+          .select("*")
+          .order(
+            "event_time",
+            {
+              ascending:
+                true
+            }
+          ),
+        5000,
+        null
+      );
+
+
+    if (!result) {
+
+      console.warn(
+        "News request timed out."
+      );
+
+      return;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from("news")
-        .select("*")
-        .order(
-          "event_time",
-          {
-            ascending:
-              true
-          }
-        );
+    } = result;
 
 
     if (error) {
-
-      /*
-       * News table may not exist yet.
-       * DO NOT BREAK THE WEBSITE.
-       */
 
       console.warn(
         "News unavailable:",
@@ -4167,22 +4534,37 @@ async function loadAnnouncements() {
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("announcements")
+          .select("*")
+          .order(
+            "created_at",
+            {
+              ascending:
+                false
+            }
+          ),
+        5000,
+        null
+      );
+
+
+    if (!result) {
+
+      console.warn(
+        "Announcements request timed out."
+      );
+
+      return;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from(
-          "announcements"
-        )
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending:
-              false
-          }
-        );
+    } = result;
 
 
     if (error) {
@@ -4305,20 +4687,37 @@ async function loadCourses() {
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("courses")
+          .select("*")
+          .order(
+            "created_at",
+            {
+              ascending:
+                false
+            }
+          ),
+        5000,
+        null
+      );
+
+
+    if (!result) {
+
+      console.warn(
+        "Courses request timed out."
+      );
+
+      return;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from("courses")
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending:
-              false
-          }
-        );
+    } = result;
 
 
     if (error) {
@@ -4444,24 +4843,39 @@ async function loadLive() {
 
   try {
 
+    const result =
+      await withTimeout(
+        supabaseClient
+          .from("live_sessions")
+          .select("*")
+          .order(
+            "created_at",
+            {
+              ascending:
+                false
+            }
+          )
+          .limit(1)
+          .maybeSingle(),
+        5000,
+        null
+      );
+
+
+    if (!result) {
+
+      console.warn(
+        "Live request timed out."
+      );
+
+      return;
+    }
+
+
     const {
       data,
       error
-    } =
-      await supabaseClient
-        .from(
-          "live_sessions"
-        )
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending:
-              false
-          }
-        )
-        .limit(1)
-        .maybeSingle();
+    } = result;
 
 
     if (error) {
@@ -4584,12 +4998,14 @@ function subscribeToUpdates() {
 
   try {
 
-    supabaseClient
-      .channel(
-        "habboub-realtime"
-      )
+    const channel =
+      supabaseClient
+        .channel(
+          "habboub-realtime"
+        );
 
 
+    channel
       .on(
         "postgres_changes",
         {
@@ -4662,11 +5078,11 @@ function subscribeToUpdates() {
           table:
             "trading_journal"
         },
-        async () => {
+        () => {
 
           if (state.user) {
 
-            await loadJournal();
+            loadJournal();
 
           }
 
@@ -4674,7 +5090,16 @@ function subscribeToUpdates() {
       )
 
 
-      .subscribe();
+      .subscribe(
+        (status) => {
+
+          console.log(
+            "Habboub Realtime:",
+            status
+          );
+
+        }
+      );
 
   } catch (error) {
 
@@ -5232,8 +5657,111 @@ function escapeAttribute(
 
 
 /* =========================================================
+   GLOBAL ERROR PROTECTION
+========================================================= */
+
+window.addEventListener(
+  "error",
+  (event) => {
+
+    console.error(
+      "Habboub JavaScript error:",
+      event.error ||
+        event.message
+    );
+
+
+    /*
+     * If ANY unexpected JS error happens,
+     * the loader still disappears.
+     */
+
+    hideLoader();
+
+  }
+);
+
+
+window.addEventListener(
+  "unhandledrejection",
+  (event) => {
+
+    console.error(
+      "Habboub Promise error:",
+      event.reason
+    );
+
+
+    hideLoader();
+
+  }
+);
+
+
+/* =========================================================
    START
 ========================================================= */
+
+function startHabboub() {
+
+  /*
+   * Emergency loader kill.
+   * Even if something goes horribly wrong,
+   * the page won't stay stuck.
+   */
+
+  hideLoader();
+
+
+  setTimeout(() => {
+    hideLoader();
+  }, 1500);
+
+
+  try {
+
+    const result =
+      init();
+
+
+    /*
+     * init() is async.
+     * Catch rejected promises here too.
+     */
+
+    if (
+      result &&
+      typeof result.catch ===
+        "function"
+    ) {
+
+      result.catch(
+        (error) => {
+
+          console.error(
+            "Habboub startup error:",
+            error
+          );
+
+          hideLoader();
+
+        }
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Habboub startup error:",
+      error
+    );
+
+    hideLoader();
+
+  }
+}
+
 
 if (
   document.readyState ===
@@ -5242,7 +5770,7 @@ if (
 
   document.addEventListener(
     "DOMContentLoaded",
-    init,
+    startHabboub,
     {
       once: true
     }
@@ -5250,7 +5778,6 @@ if (
 
 } else {
 
-  init();
+  startHabboub();
 
 }
-```
