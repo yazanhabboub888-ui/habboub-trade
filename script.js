@@ -2568,7 +2568,7 @@ async function loadJournal() {
   try {
     const result = await withTimeout(
       supabaseClient
-        .from("journal")
+        .from("trading_journal")
         .select("*")
         .eq("user_id", state.user.id)
         .order("created_at", { ascending: false }),
@@ -2628,7 +2628,7 @@ async function saveJournalTrade(event) {
 
   try {
     const result = await withTimeout(
-      supabaseClient.from("journal").insert({
+      supabaseClient.from("trading_journal").insert({
         user_id: state.user.id,
         pair,
         type,
@@ -2690,7 +2690,10 @@ async function loadNews() {
 }
 
 function renderNews(newsItems) {
-  const container = $("newsList") || $("economicCalendar");
+  const container =
+  $("newsList") ||
+  $("newsContainer") ||
+  $("economicCalendar");
   if (!container) return;
 
   if (!newsItems || newsItems.length === 0) {
@@ -2846,7 +2849,7 @@ async function loadLive() {
   try {
     const result = await withTimeout(
       supabaseClient
-        .from("live")
+        .from("live_sessions")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(1)
@@ -2909,7 +2912,7 @@ function subscribeToUpdates() {
     )
     .on(
       "postgres_changes",
-      { event: "*", schema: "public", table: "live" },
+      { event: "*", schema: "public", table: "live_sessions" },
       () => {
         loadLive();
       }
