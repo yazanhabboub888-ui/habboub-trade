@@ -1,27 +1,35 @@
-/* HABBOUB — language switch + isolated RTL text layout */
-.language-switch{display:flex!important;align-items:center!important;gap:2px!important;padding:3px!important;border:1px solid rgba(54,217,255,.20)!important;border-radius:11px!important;background:rgba(7,12,18,.92)!important;box-shadow:0 8px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04)!important;z-index:9999!important;flex-shrink:0!important}
+/* HABBOUB — language switch + stable bilingual layout */
+.language-switch{display:flex!important;align-items:center!important;gap:2px!important;padding:3px!important;border:1px solid rgba(54,217,255,.20)!important;border-radius:11px!important;background:rgba(7,12,18,.92)!important;box-shadow:0 8px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04)!important;z-index:9999!important;flex:0 0 auto!important}
 .lang-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:43px!important;height:30px!important;padding:0 9px!important;border:0!important;border-radius:8px!important;background:transparent!important;color:#7f8a98!important;font:800 11px/1 Inter,system-ui,sans-serif!important;cursor:pointer!important;white-space:nowrap!important;-webkit-tap-highlight-color:transparent!important}
 .lang-btn.active{background:rgba(54,217,255,.14)!important;color:#36d9ff!important;box-shadow:inset 0 0 0 1px rgba(54,217,255,.16)!important}
 .lang-btn:active{transform:scale(.96)!important}
 
-/* IMPORTANT: never change direction on layout/grid/flex parents. */
-html[dir="rtl"],html[dir="rtl"] body{direction:ltr!important;overflow-x:hidden!important}
-html[dir="rtl"] main,html[dir="rtl"] .topbar,html[dir="rtl"] .mobile-nav,html[dir="rtl"] .page-section,html[dir="rtl"] .panel,html[dir="rtl"] .hero-content,html[dir="rtl"] .section-heading,html[dir="rtl"] .section-heading>div,html[dir="rtl"] .large-market-card,html[dir="rtl"] .market-card,html[dir="rtl"] .modal-box{direction:ltr!important}
-html[dir="rtl"] .top-actions,html[dir="rtl"] .language-switch,html[dir="rtl"] .desktop-nav{direction:ltr!important}
+/* Arabic must change text direction, not the geometry of the app. */
+html[dir="rtl"] body{overflow-x:hidden!important}
+html[dir="rtl"] main,html[dir="rtl"] .topbar,html[dir="rtl"] .mobile-nav,html[dir="rtl"] .page-section,html[dir="rtl"] .panel,html[dir="rtl"] .hero-content,html[dir="rtl"] .section-heading,html[dir="rtl"] .section-heading>div,html[dir="rtl"] .large-market-card,html[dir="rtl"] .market-card,html[dir="rtl"] .modal-box{direction:ltr!important;min-width:0!important}
+html[dir="rtl"] .top-actions,html[dir="rtl"] .language-switch,html[dir="rtl"] .desktop-nav{direction:ltr!important;flex-shrink:0!important}
 
-/* Translate only the actual text nodes/elements. This prevents Arabic from changing flex/grid geometry. */
-html[dir="rtl"] [data-i18n],html[dir="rtl"] [data-i18n-placeholder]{direction:rtl!important;text-align:right!important;unicode-bidi:plaintext!important;line-height:1.45!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:normal!important}
-html[dir="rtl"] h1[data-i18n],html[dir="rtl"] h2[data-i18n],html[dir="rtl"] h3[data-i18n],html[dir="rtl"] h4[data-i18n],html[dir="rtl"] p[data-i18n],html[dir="rtl"] span[data-i18n],html[dir="rtl"] strong[data-i18n],html[dir="rtl"] small[data-i18n],html[dir="rtl"] button[data-i18n]{direction:rtl!important;text-align:right!important}
+/* Navigation: keep icon + Arabic label on one line. */
+html[dir="rtl"] .desktop-nav .nav-link,html[dir="rtl"] .mobile-nav button{direction:ltr!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;white-space:nowrap!important;flex:0 0 auto!important}
+html[dir="rtl"] .desktop-nav .nav-link>span[data-i18n],html[dir="rtl"] .mobile-nav button>span[data-i18n]{direction:rtl!important;text-align:right!important;unicode-bidi:isolate!important;white-space:nowrap!important;display:inline-block!important;line-height:1.35!important}
 
-/* Legacy text translated by the observer: keep common text elements readable in Arabic. */
-html[dir="rtl"] .page-section h1,html[dir="rtl"] .page-section h2,html[dir="rtl"] .page-section h3,html[dir="rtl"] .page-section h4,html[dir="rtl"] .page-section p,html[dir="rtl"] .page-section label,html[dir="rtl"] .page-section .section-title,html[dir="rtl"] .page-section .subtitle,html[dir="rtl"] .panel h1,html[dir="rtl"] .panel h2,html[dir="rtl"] .panel h3,html[dir="rtl"] .panel h4,html[dir="rtl"] .panel p,html[dir="rtl"] .panel label{direction:rtl;text-align:right;unicode-bidi:plaintext;line-height:1.45;overflow-wrap:anywhere;max-width:100%}
+/* Only translated text gets RTL. Use isolation rather than plaintext so it cannot reorder nearby siblings. */
+html[dir="rtl"] [data-i18n]{direction:rtl!important;text-align:right!important;unicode-bidi:isolate!important;line-height:1.45!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:normal!important;min-width:0!important}
+html[dir="rtl"] [data-i18n-placeholder]{direction:rtl!important;text-align:right!important;unicode-bidi:isolate!important}
 
-/* Preserve Latin trading symbols and numbers exactly as written. */
+/* Legacy text that is translated by the compatibility observer. */
+html[dir="rtl"] .page-section h1,html[dir="rtl"] .page-section h2,html[dir="rtl"] .page-section h3,html[dir="rtl"] .page-section h4,html[dir="rtl"] .page-section p,html[dir="rtl"] .page-section label,html[dir="rtl"] .page-section .section-title,html[dir="rtl"] .page-section .subtitle,html[dir="rtl"] .panel h1,html[dir="rtl"] .panel h2,html[dir="rtl"] .panel h3,html[dir="rtl"] .panel h4,html[dir="rtl"] .panel p,html[dir="rtl"] .panel label{direction:rtl;text-align:right;unicode-bidi:isolate;line-height:1.45;overflow-wrap:anywhere;max-width:100%;min-width:0}
+
+/* Trading symbols and numbers stay LTR and never wrap into each other. */
 html[dir="rtl"] .market-symbol,html[dir="rtl"] .price-row strong,html[dir="rtl"] .market-change,html[dir="rtl"] #heroGold,html[dir="rtl"] #heroNasdaq,html[dir="rtl"] #heroSPX,html[dir="rtl"] #goldPrice,html[dir="rtl"] #nasdaqPrice,html[dir="rtl"] #spxPrice{direction:ltr!important;text-align:left!important;unicode-bidi:isolate!important;white-space:nowrap!important}
 html[dir="rtl"] .price-row{direction:ltr!important;display:flex!important;flex-wrap:wrap!important;align-items:baseline!important;gap:8px!important}
 html[dir="rtl"] input,html[dir="rtl"] textarea,html[dir="rtl"] select{direction:rtl!important;text-align:right!important}
 html[dir="rtl"] button{line-height:1.35!important}
 
+/* Prevent flex/grid children from becoming narrower than their text. */
+html[dir="rtl"] .topbar>*,html[dir="rtl"] .top-actions>*,html[dir="rtl"] .hero>*,html[dir="rtl"] .hero-content>*,html[dir="rtl"] .section-heading>*,html[dir="rtl"] .market-grid>*,html[dir="rtl"] .session-layout>*,html[dir="rtl"] .panel-header>*,html[dir="rtl"] .score-meta>*{min-width:0!important}
+
 @media(max-width:900px){.top-actions .language-switch{display:flex!important}.top-actions{gap:7px!important}.lang-btn{min-width:38px!important;height:30px!important;padding:0 7px!important;font-size:10px!important}.login-btn{display:none!important}}
+@media(max-width:700px){html[dir="rtl"] .desktop-nav{display:none!important}}
 @media(max-width:520px){html[dir="rtl"] .section-heading{align-items:flex-start;gap:12px;flex-wrap:wrap}html[dir="rtl"] .hero-actions{flex-wrap:wrap}html[dir="rtl"] .hero-actions>*{max-width:100%;white-space:normal!important}}
 @media(max-width:380px){.lang-btn{min-width:34px!important;padding:0 5px!important}.language-switch{gap:1px!important}.top-actions{gap:4px!important}}
