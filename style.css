@@ -269,6 +269,251 @@ a {
   font-size: 20px;
 }
 
+/* =========================================================
+   PROFILE / AVATAR
+========================================================= */
+
+.profile-area {
+  position: relative !important;
+  display: flex !important;
+  align-items: center;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: none !important;
+  height: auto !important;
+}
+
+.profile-button {
+  position: relative !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 9px;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 190px !important;
+
+  height: auto !important;
+  min-height: 44px;
+
+  padding: 6px 10px 6px 7px !important;
+
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+
+  cursor: pointer;
+}
+
+.profile-button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(54, 217, 255, 0.22);
+}
+
+.profile-button-name {
+  display: block !important;
+
+  width: auto !important;
+  max-width: 130px !important;
+
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.profile-avatar {
+  position: relative !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  width: 32px !important;
+  height: 32px !important;
+
+  min-width: 32px !important;
+  min-height: 32px !important;
+
+  max-width: 32px !important;
+  max-height: 32px !important;
+
+  flex: 0 0 32px !important;
+
+  border-radius: 50% !important;
+
+  overflow: hidden !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #8c9aaa
+    );
+
+  color: #080b12;
+
+  font-weight: 800;
+  font-size: 13px;
+
+  background-size: cover !important;
+  background-position: center !important;
+
+  object-fit: cover !important;
+}
+
+.profile-avatar.has-image {
+  color: transparent !important;
+}
+
+.profile-avatar img {
+  display: block !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  min-width: 100% !important;
+  min-height: 100% !important;
+
+  max-width: 100% !important;
+  max-height: 100% !important;
+
+  object-fit: cover !important;
+
+  border-radius: 50% !important;
+}
+
+.profile-avatar.large {
+  width: 42px !important;
+  height: 42px !important;
+
+  min-width: 42px !important;
+  min-height: 42px !important;
+
+  max-width: 42px !important;
+  max-height: 42px !important;
+
+  flex: 0 0 42px !important;
+}
+
+.profile-menu {
+  position: absolute !important;
+
+  top: calc(100% + 10px) !important;
+  right: 0 !important;
+  left: auto !important;
+
+  width: 280px !important;
+  max-width: calc(100vw - 30px) !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  display: block;
+
+  padding: 12px !important;
+
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+
+  background: #0b1016;
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+
+  z-index: 9500 !important;
+
+  overflow: visible !important;
+}
+
+.profile-menu.hidden {
+  display: none !important;
+}
+
+.profile-menu-head {
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 12px;
+
+  width: 100% !important;
+  height: auto !important;
+
+  padding: 8px 8px 12px;
+
+  border-bottom: 1px solid var(--border-strong);
+
+  margin-bottom: 8px;
+}
+
+.profile-menu-head strong,
+.profile-menu-head small {
+  display: block !important;
+}
+
+.profile-menu-head strong {
+  margin-bottom: 3px;
+  font-size: 14px;
+}
+
+.profile-menu-head small {
+  color: #8c9aaa;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  max-width: 190px;
+  font-size: 11px;
+}
+
+.profile-menu-item {
+  display: block !important;
+
+  width: 100% !important;
+  height: auto !important;
+  min-height: 40px;
+
+  text-align: left;
+
+  border: 0;
+  background: transparent;
+
+  color: inherit;
+
+  padding: 11px 10px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font: inherit;
+}
+
+.profile-menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.profile-menu-item.danger {
+  color: #ff8d8d;
+}
+
+/* منع أي صورة داخل منطقة البروفايل من التمدد */
+.profile-area img {
+  max-width: 100%;
+}
+
+.profile-button img,
+.profile-menu img {
+  display: block;
+  object-fit: cover;
+}
+
 /* =========================
    MOBILE NAV
 ========================= */
@@ -1154,7 +1399,12 @@ main {
 .risk-meter > * {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--green), var(--yellow), var(--red));
+  background: linear-gradient(
+    90deg,
+    var(--green),
+    var(--yellow),
+    var(--red)
+  );
 }
 
 /* =========================
@@ -1399,7 +1649,6 @@ main {
   display: none !important;
 }
 
-/* الخلفية السوداء */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1411,7 +1660,6 @@ main {
   pointer-events: auto;
 }
 
-/* صندوق النافذة */
 .modal-content,
 .modal-box {
   position: relative;
@@ -1448,7 +1696,6 @@ main {
   font-size: 13px;
 }
 
-/* كل عناصر الفورم داخل النافذة */
 .modal-content input,
 .modal-content textarea,
 .modal-content select,
@@ -1469,7 +1716,6 @@ main {
   cursor: text;
 }
 
-/* الأزرار */
 .modal-content button,
 .modal-box button {
   position: relative;
@@ -1481,7 +1727,6 @@ main {
   cursor: pointer;
 }
 
-/* التركيز */
 .modal-content input:focus,
 .modal-content textarea:focus,
 .modal-content select:focus,
@@ -1497,7 +1742,6 @@ main {
     0 0 20px rgba(54, 217, 255, 0.05);
 }
 
-/* لا تسمح لأي pseudo-element داخل الصندوق بمنع الضغط */
 .modal-content::before,
 .modal-content::after,
 .modal-box::before,
@@ -1606,6 +1850,10 @@ html[dir="rtl"] .hero h1 {
 html[dir="rtl"] .major-alert::before {
   left: auto;
   right: 0;
+}
+
+html[dir="rtl"] .profile-menu-item {
+  text-align: right;
 }
 
 /* =========================
@@ -1763,7 +2011,22 @@ html[dir="rtl"] .major-alert::before {
     margin-right: auto;
   }
 
-  /* Modal على الموبايل */
+  /* PROFILE MOBILE */
+  .profile-button-name {
+    display: none !important;
+  }
+
+  .profile-button {
+    max-width: 50px !important;
+    padding: 6px !important;
+  }
+
+  .profile-menu {
+    right: -45px !important;
+    width: 260px !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+
   .modal {
     padding: 12px;
   }
@@ -1829,6 +2092,10 @@ html[dir="rtl"] .major-alert::before {
   .modal-content,
   .modal-box {
     padding: 17px;
+  }
+
+  .profile-menu {
+    right: -35px !important;
   }
 }
 
