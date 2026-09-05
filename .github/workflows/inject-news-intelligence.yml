@@ -1,0 +1,40 @@
+name: Inject Habboub News Intelligence
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  inject:
+    if: ${{ !contains(github.event.head_commit.message, 'feat: inject news intelligence') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject script tag and remove one-time workflow
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          tag = '<script src="news-intelligence.js"></script>'
+          if tag not in text:
+              text = text.replace('<script src="script.js"></script>', '<script src="script.js"></script>\n  ' + tag)
+              p.write_text(text, encoding='utf-8')
+          w = Path('.github/workflows/inject-news-intelligence.yml')
+          if w.exists():
+              w.unlink()
+          PY
+
+      - name: Commit integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/inject-news-intelligence.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "feat: inject news intelligence"
+          git push
