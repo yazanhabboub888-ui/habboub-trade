@@ -1,13 +1,14 @@
 /* =========================================================
    HABBOUB — MARKET WATCH LIVE FEEDS
    Core markets only: Gold, Nasdaq 100, S&P 500
+   Browser-safe Vercel proxy + 5s refresh
 ========================================================= */
 
 "use strict";
 
 (function () {
   const REFRESH_MS = 5000;
-  const YAHOO_BASE = "https://query1.finance.yahoo.com/v8/finance/chart/";
+  const YAHOO_PROXY = "/api/market/";
 
   const MARKETS = [
     { symbol: "XAUUSD", yahoo: "XAUUSD=X", priceId: "goldPrice", changeId: "goldChange", heroPriceId: "heroGold", heroChangeId: "heroGoldChange", decimals: 2 },
@@ -22,6 +23,14 @@
     if (el) el.textContent = value;
   }
 
+  function setStatus(market, text, state) {
+    document.querySelectorAll(`#markets .large-market-card[data-symbol="${market.symbol}"] .market-live-status`).forEach((el) => {
+      el.textContent = text;
+      el.classList.remove("live", "closed", "error");
+      el.classList.add(state);
+    });
+  }
+
   function removeUnwantedCards() {
     document.querySelectorAll("#markets .large-market-card").forEach((card) => {
       const symbol = card.dataset.symbol || card.querySelector(".market-symbol")?.textContent?.trim().toUpperCase();
@@ -29,88 +38,13 @@
     });
   }
 
-  function ensureLiveStyles() {
-    if (document.getElementById("habboub-market-live-styles")) return;
-
-    const style = document.createElement("style");
-    style.id = "habboub-market-live-styles";
-    style.textContent = `
-      .market-live-status {
-        display:inline-flex;
-        align-items:center;
-        gap:7px;
-        width:max-content;
-        margin-top:16px;
-        padding:6px 10px;
-        border:1px solid rgba(53,255,180,.25);
-        border-radius:999px;
-        background:rgba(53,255,180,.07);
-        color:#65f5bc;
-        font-size:10px;
-        font-weight:800;
-        letter-spacing:.11em;
-        text-transform:uppercase;
-      }
-      .market-live-status .market-live-dot {
-        width:7px;
-        height:7px;
-        border-radius:50%;
-        background:currentColor;
-        box-shadow:0 0 10px currentColor;
-        animation:habboubLivePulse 1.2s ease-in-out infinite;
-      }
-      .market-live-status.closed {
-        color:#9aa5b1;
-        border-color:rgba(154,165,177,.2);
-        background:rgba(154,165,177,.06);
-      }
-      .market-live-status.closed .market-live-dot { animation:none; box-shadow:none; }
-      .market-live-status.error {
-        color:#ffb45e;
-        border-color:rgba(255,180,94,.22);
-        background:rgba(255,180,94,.06);
-      }
-      @keyframes habboubLivePulse {
-        0%,100% { opacity:.45; transform:scale(.85); }
-        50% { opacity:1; transform:scale(1); }
-      }
-      @media (max-width:700px) {
-        .market-live-status { margin-top:12px; }
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  function ensureStatus(card) {
-    if (!card) return null;
-    let status = card.querySelector(".market-live-status");
-    if (!status) {
-      status = document.createElement("div");
-      status.className = "market-live-status";
-      status.innerHTML = '<span class="market-live-dot"></span><span class="market-live-label">LIVE FEED</span>';
-      const priceRow = card.querySelector(".price-row");
-      if (priceRow) priceRow.insertAdjacentElement("afterend", status);
-      else card.appendChild(status);
-    }
-    return status;
-  }
-
-  function setStatus(market, state, error = false) {
+  function ensureStatus(market) {
     const card = document.querySelector(`#markets .large-market-card[data-symbol="${market.symbol}"]`);
-    const status = ensureStatus(card);
-    if (!status) return;
-
-    const label = status.querySelector(".market-live-label");
-    status.classList.toggle("closed", state === "CLOSED");
-    status.classList.toggle("error", error);
-
-    if (label) {
-      label.textContent = error
-        ? "FEED ERROR"
-        : state === "CLOSED"
-          ? "MARKET CLOSED"
-          : "LIVE FEED";
-    }
+    if (!card || card.querySelector(".market-live-status")) return;
+    const status = document.createElement("div");
+    status.className = "market-live-status error";
+    status.textContent = "CONNECTING...";
+    card.appendChild(status);
   }
 
   function formatPrice(value, decimals) {
@@ -126,7 +60,7 @@
   }
 
   async function fetchQuote(market) {
-    const url = `${YAHOO_BASE}${encodeURIComponent(market.yahoo)}?range=1d&interval=1m&_=${Date.now()}`;
+    const url = `${YAHOO_PROXY}${encodeURIComponent(market.yahoo)}?range=1d&interval=1m`;
     const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) throw new Error(`${market.symbol} HTTP ${response.status}`);
 
@@ -142,11 +76,7 @@
       ? ((price - previous) / previous) * 100
       : NaN;
 
-    return {
-      price,
-      change,
-      marketState: String(meta.marketState || "").toUpperCase()
-    };
+    return { price, change, marketState: meta.marketState || "REGULAR" };
   }
 
   function render(market, quote) {
@@ -165,13 +95,15 @@
       el.classList.toggle("negative", quote.change < 0);
     });
 
-    setStatus(market, quote.marketState);
+    const live = ["REGULAR", "PRE", "POST"].includes(String(quote.marketState).toUpperCase());
+    setStatus(market, live ? "● LIVE FEED" : "● MARKET CLOSED", live ? "live" : "closed");
   }
 
   async function refresh() {
     if (busy) return;
     busy = true;
     removeUnwantedCards();
+    MARKETS.forEach(ensureStatus);
 
     try {
       await Promise.all(MARKETS.map(async (market) => {
@@ -179,7 +111,7 @@
           const quote = await fetchQuote(market);
           render(market, quote);
         } catch (error) {
-          setStatus(market, "", true);
+          setStatus(market, "● FEED ERROR", "error");
           console.warn(`Habboub ${market.symbol} feed unavailable:`, error);
         }
       }));
@@ -189,22 +121,14 @@
   }
 
   function start() {
-    ensureLiveStyles();
     removeUnwantedCards();
-    MARKETS.forEach((market) => {
-      const card = document.querySelector(`#markets .large-market-card[data-symbol="${market.symbol}"]`);
-      ensureStatus(card);
-    });
-
+    MARKETS.forEach(ensureStatus);
     refresh();
     window.setInterval(refresh, REFRESH_MS);
 
     const observer = new MutationObserver(() => {
       removeUnwantedCards();
-      MARKETS.forEach((market) => {
-        const card = document.querySelector(`#markets .large-market-card[data-symbol="${market.symbol}"]`);
-        ensureStatus(card);
-      });
+      MARKETS.forEach(ensureStatus);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
