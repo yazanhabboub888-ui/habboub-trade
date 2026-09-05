@@ -38,6 +38,11 @@
     });
   }
 
+  // Keep the Market Watch cards clean: the large cards do not need Au/NQ/SP badges.
+  function removeMarketWatchBadges() {
+    document.querySelectorAll("#markets .large-market-card .market-icon").forEach((icon) => icon.remove());
+  }
+
   function ensureStatus(market) {
     const card = document.querySelector(`#markets .large-market-card[data-symbol="${market.symbol}"]`);
     if (!card || card.querySelector(".market-live-status")) return;
@@ -106,6 +111,7 @@
     if (busy) return;
     busy = true;
     removeUnwantedCards();
+    removeMarketWatchBadges();
     MARKETS.forEach(ensureStatus);
 
     await Promise.all(MARKETS.map(async (market) => {
@@ -122,12 +128,14 @@
 
   function start() {
     removeUnwantedCards();
+    removeMarketWatchBadges();
     MARKETS.forEach(ensureStatus);
     refresh();
     window.setInterval(refresh, REFRESH_MS);
 
     new MutationObserver(() => {
       removeUnwantedCards();
+      removeMarketWatchBadges();
       MARKETS.forEach(ensureStatus);
     }).observe(document.body, { childList: true, subtree: true });
   }
