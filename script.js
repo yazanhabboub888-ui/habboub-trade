@@ -3221,7 +3221,7 @@ function renderNews(newsItems) {
     });
 }
 
-  container.innerHTML = newsItems
+   container.innerHTML = newsItems
     .map((item) => {
       const impactClass =
         item.impact === "High" || item.impact === "high" || item.impact === "HIGH"
@@ -3252,7 +3252,6 @@ function renderNews(newsItems) {
     })
     .join("");
 }
-
 
 /* =========================================================
    ANNOUNCEMENTS
