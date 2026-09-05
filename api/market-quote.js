@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   const symbol = String(req.query.symbol || "").trim();
-  const allowed = new Set(["XAUUSD=X", "NQ=F", "ES=F"]);
+  const allowed = new Set(["GC=F", "NQ=F", "ES=F"]);
 
   if (!allowed.has(symbol)) {
     return res.status(400).json({ error: "Unsupported market" });
