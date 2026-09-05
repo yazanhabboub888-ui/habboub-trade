@@ -1,14 +1,14 @@
 /* =========================================================
    HABBOUB — MARKET WATCH LIVE FEEDS
    Core markets only: Gold, Nasdaq 100, S&P 500
-   Browser-safe Vercel proxy + 5s refresh
+   Stable Vercel proxy + 5s refresh
 ========================================================= */
 
 "use strict";
 
 (function () {
   const REFRESH_MS = 5000;
-  const YAHOO_PROXY = "/api/market/";
+  const QUOTE_PROXY = "/api/market-quote?symbol=";
 
   const MARKETS = [
     { symbol: "XAUUSD", yahoo: "XAUUSD=X", priceId: "goldPrice", changeId: "goldChange", heroPriceId: "heroGold", heroChangeId: "heroGoldChange", decimals: 2 },
@@ -26,8 +26,7 @@
   function setStatus(market, text, state) {
     document.querySelectorAll(`#markets .large-market-card[data-symbol="${market.symbol}"] .market-live-status`).forEach((el) => {
       el.textContent = text;
-      el.classList.remove("live", "closed", "error");
-      el.classList.add(state);
+      el.className = `market-live-status ${state}`;
     });
   }
 
@@ -42,7 +41,7 @@
     const card = document.querySelector(`#markets .large-market-card[data-symbol="${market.symbol}"]`);
     if (!card || card.querySelector(".market-live-status")) return;
     const status = document.createElement("div");
-    status.className = "market-live-status error";
+    status.className = "market-live-status connecting";
     status.textContent = "CONNECTING...";
     card.appendChild(status);
   }
@@ -60,8 +59,10 @@
   }
 
   async function fetchQuote(market) {
-    const url = `${YAHOO_PROXY}${encodeURIComponent(market.yahoo)}?range=1d&interval=1m`;
-    const response = await fetch(url, { cache: "no-store" });
+    const response = await fetch(`${QUOTE_PROXY}${encodeURIComponent(market.yahoo)}&t=${Date.now()}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" }
+    });
     if (!response.ok) throw new Error(`${market.symbol} HTTP ${response.status}`);
 
     const payload = await response.json();
@@ -76,7 +77,7 @@
       ? ((price - previous) / previous) * 100
       : NaN;
 
-    return { price, change, marketState: meta.marketState || "REGULAR" };
+    return { price, change, marketState: String(meta.marketState || "CLOSED").toUpperCase() };
   }
 
   function render(market, quote) {
@@ -95,7 +96,8 @@
       el.classList.toggle("negative", quote.change < 0);
     });
 
-    const live = ["REGULAR", "PRE", "POST"].includes(String(quote.marketState).toUpperCase());
+    const liveStates = ["REGULAR", "PRE", "POST"];
+    const live = liveStates.includes(quote.marketState);
     setStatus(market, live ? "● LIVE FEED" : "● MARKET CLOSED", live ? "live" : "closed");
   }
 
@@ -105,19 +107,16 @@
     removeUnwantedCards();
     MARKETS.forEach(ensureStatus);
 
-    try {
-      await Promise.all(MARKETS.map(async (market) => {
-        try {
-          const quote = await fetchQuote(market);
-          render(market, quote);
-        } catch (error) {
-          setStatus(market, "● FEED ERROR", "error");
-          console.warn(`Habboub ${market.symbol} feed unavailable:`, error);
-        }
-      }));
-    } finally {
-      busy = false;
-    }
+    await Promise.all(MARKETS.map(async (market) => {
+      try {
+        render(market, await fetchQuote(market));
+      } catch (error) {
+        setStatus(market, "● FEED ERROR", "error");
+        console.warn(`Habboub ${market.symbol} feed unavailable:`, error);
+      }
+    }));
+
+    busy = false;
   }
 
   function start() {
@@ -126,11 +125,10 @@
     refresh();
     window.setInterval(refresh, REFRESH_MS);
 
-    const observer = new MutationObserver(() => {
+    new MutationObserver(() => {
       removeUnwantedCards();
       MARKETS.forEach(ensureStatus);
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    }).observe(document.body, { childList: true, subtree: true });
   }
 
   if (document.readyState === "loading") {
