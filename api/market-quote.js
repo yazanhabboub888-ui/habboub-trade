@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   const symbol = String(req.query.symbol || "").trim();
-  const allowed = new Set(["GC=F", "NQ=F", "ES=F", "XAUUSD=X", "^NDX", "^GSPC"]);
+  const allowed = new Set(["GC=F", "NQ=F", "ES=F", "XAUUSD=X", "^NDX", "^GSPC", "USTEC", "US500_X100"]);
 
   if (!allowed.has(symbol)) {
     return res.status(400).json({ error: "Unsupported market" });
@@ -11,65 +11,102 @@ export default async function handler(req, res) {
   res.setHeader("Expires", "0");
   res.setHeader("Content-Type", "application/json; charset=utf-8");
 
-  try {
-    // Yahoo's XAUUSD=X endpoint is not reliably available for the live FX/CFD quote.
-    // Use BiQuote's public MT5 XAUUSD CFD feed instead, then normalize it to the
-    // same small Yahoo-compatible envelope consumed by market-live.js.
-    if (symbol === "XAUUSD=X") {
-      const response = await fetch("https://biquote.io/api/XAUUSD", {
-        headers: {
-          Accept: "application/json",
-          "User-Agent": "Mozilla/5.0 (compatible; HabboubMarketFeed/1.0)"
-        },
-        cache: "no-store"
-      });
+  function normalizeCfdTick(tick, source) {
+    const price = Number(tick?.mid ?? tick?.bid ?? tick?.ask);
+    const dayChange = Number(tick?.dayDiffPercent);
+    if (!Number.isFinite(price)) return null;
 
-      if (!response.ok) {
-        return res.status(502).json({ error: "CFD gold provider unavailable" });
+    const previous = Number.isFinite(dayChange) && dayChange !== -100
+      ? price / (1 + dayChange / 100)
+      : price;
+
+    return {
+      chart: {
+        result: [{
+          meta: {
+            regularMarketPrice: price,
+            previousClose: previous,
+            chartPreviousClose: previous,
+            marketState: String(tick?.marketState || "open").toUpperCase() === "OPEN" ? "REGULAR" : "CLOSED",
+            source: tick?.source || source
+          }
+        }],
+        error: null
       }
+    };
+  }
 
-      const tick = await response.json();
-      const price = Number(tick.mid ?? tick.bid ?? tick.ask);
-      const dayChange = Number(tick.dayDiffPercent);
-
-      if (!Number.isFinite(price)) {
-        return res.status(502).json({ error: "CFD gold provider returned invalid price" });
-      }
-
-      const previous = Number.isFinite(dayChange) && dayChange !== -100
-        ? price / (1 + dayChange / 100)
-        : price;
-
-      return res.status(200).json({
-        chart: {
-          result: [{
-            meta: {
-              regularMarketPrice: price,
-              previousClose: previous,
-              chartPreviousClose: previous,
-              marketState: String(tick.marketState || "open").toUpperCase() === "OPEN" ? "REGULAR" : "CLOSED",
-              source: tick.source || "BiQuote MT5 CFD"
-            }
-          }],
-          error: null
-        }
-      });
-    }
-
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1m&includePrePost=true&events=div%2Csplits`;
-
-    const response = await fetch(url, {
+  async function fetchBiquote(name) {
+    const response = await fetch(`https://biquote.io/api/${encodeURIComponent(name)}`, {
       headers: {
         Accept: "application/json",
         "User-Agent": "Mozilla/5.0 (compatible; HabboubMarketFeed/1.0)"
       },
       cache: "no-store"
     });
+    if (!response.ok) throw new Error(`BiQuote ${name} HTTP ${response.status}`);
+    const tick = await response.json();
+    const normalized = normalizeCfdTick(tick, "BiQuote MT5 CFD");
+    if (!normalized) throw new Error(`BiQuote ${name} returned invalid price`);
+    return normalized;
+  }
 
-    const text = await response.text();
-    return res.status(response.status).send(text);
+  async function fetchYahoo(name) {
+    const hosts = ["query1.finance.yahoo.com", "query2.finance.yahoo.com"];
+    let lastError = null;
+
+    for (const host of hosts) {
+      try {
+        const url = `https://${host}/v8/finance/chart/${encodeURIComponent(name)}?range=1d&interval=1m&includePrePost=true&events=div%2Csplits`;
+        const response = await fetch(url, {
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "Mozilla/5.0 (compatible; HabboubMarketFeed/1.0)"
+          },
+          cache: "no-store"
+        });
+
+        const text = await response.text();
+        if (!response.ok) {
+          lastError = new Error(`Yahoo ${host} HTTP ${response.status}`);
+          continue;
+        }
+
+        let payload;
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          lastError = new Error(`Yahoo ${host} returned invalid JSON`);
+          continue;
+        }
+
+        const result = payload?.chart?.result?.[0];
+        const meta = result?.meta;
+        const price = Number(meta?.regularMarketPrice ?? meta?.previousClose);
+        if (!meta || !Number.isFinite(price)) {
+          lastError = new Error(`Yahoo ${name} returned no quote data`);
+          continue;
+        }
+
+        return payload;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error(`No market data for ${name}`);
+  }
+
+  try {
+    // CFD feeds: use BiQuote's MT5 index/metal feed instead of Yahoo cash-index proxies.
+    if (symbol === "XAUUSD=X") return res.status(200).json(await fetchBiquote("XAUUSD"));
+    if (symbol === "USTEC") return res.status(200).json(await fetchBiquote("USTEC"));
+    if (symbol === "US500_X100") return res.status(200).json(await fetchBiquote("US500_X100"));
+
+    // Futures: Yahoo is used for GC, NQ and ES, with query2 as an automatic fallback.
+    return res.status(200).json(await fetchYahoo(symbol));
   } catch (error) {
-    console.error("Habboub market proxy error:", error);
-    return res.status(502).json({ error: "Market provider unavailable" });
+    console.error("Habboub market proxy error:", symbol, error);
+    return res.status(502).json({ error: "Market provider unavailable", symbol });
   }
 }
