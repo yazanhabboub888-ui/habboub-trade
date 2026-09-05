@@ -1,24 +1,254 @@
-/* Habboub Journal — Journal + Backtest workspace */
-(function(){'use strict';
-const $=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-const n=v=>{const x=parseFloat(v);return Number.isFinite(x)?x:null};
-function current(){return document.documentElement.lang==='ar'}
-function stateObj(){return window.state||{}}
-function client(){return window.supabaseClient}
-function mode(){return $('journalMode')?.value||'journal'}
-function fields(){return [
- ['symbol','رمز الزوج / Symbol','text'],['setup','السيت أب / Setup','text'],['result','النتيجة / Result','select'],['r_result','R / RR','number'],['pnl','النتيجة المالية / Money','number'],['notes','ملاحظات وسبب الدخول / Entry reason & notes','textarea']
-]}
-function inject(){const sec=$('journal');if(!sec)return;const old=sec.querySelector('.journal-workspace');if(old)return;
- const h=document.createElement('div');h.className='journal-workspace';h.innerHTML=`<div class="jw-balance"><span>JOURNAL BALANCE</span><strong id="journalBalanceDisplay">$0.00</strong><small id="journalBalanceSub">Starting balance</small></div><div class="jw-switch"><button type="button" data-jmode="journal" class="active">Journal</button><button type="button" data-jmode="backtest">Backtest</button></div><div class="jw-stats"><div><span>Win Rate</span><b id="jwWin">0%</b></div><div><span>Loss Rate</span><b id="jwLoss">0%</b></div><div><span>Break Even</span><b id="jwBE">0%</b></div><div><span>Total R</span><b id="jwR">0.00R</b></div><div><span>Total PnL</span><b id="jwPnL">$0.00</b></div><div><span>Trades</span><b id="jwTrades">0</b></div></div><div class="jw-form" id="jwForm"><div><label>Starting Balance<input id="jwStartBalance" type="number" step="0.01" placeholder="10000"></label><label>Symbol<input id="jwSymbol" placeholder="XAUUSD"></label><label>Setup<input id="jwSetup" placeholder="ICT / AMT / Breakout..."></label><label>Result<select id="jwResult"><option value="win">WIN</option><option value="loss">LOSS</option><option value="break_even">BREAK EVEN</option></select></label><label>R Result<input id="jwRInput" type="number" step="0.01" placeholder="2"></label><label>Money ($)<input id="jwPnlInput" type="number" step="0.01" placeholder="200"></label></div><label>Entry reason / Notes<textarea id="jwNotes" rows="3" placeholder="Why did you enter this trade?"></textarea></label><button type="button" id="jwSave" class="primary-btn">Save Trade</button></div><div class="jw-list" id="jwList"></div></div>`;
- const stats=sec.querySelector('.journal-stats');if(stats)stats.parentNode.insertBefore(h,stats);else sec.prepend(h);
- h.querySelectorAll('[data-jmode]').forEach(b=>b.onclick=()=>{h.querySelectorAll('[data-jmode]').forEach(x=>x.classList.toggle('active',x===b));h.dataset.mode=b.dataset.jmode;render();});
- $('jwSave').onclick=save;
-}
-async function load(){const c=client(),s=stateObj();if(!c||!s.user)return [];const r=await c.from('trading_journal').select('*').eq('user_id',s.user.id).order('created_at',{ascending:false});if(r.error){console.error(r.error);return []}return r.data||[]}
-async function save(){const c=client(),s=stateObj();if(!c||!s.user){alert(current()?'سجّل دخول أولاً':'Please login first');return}const symbol=$('jwSymbol')?.value.trim(),setup=$('jwSetup')?.value.trim(),result=$('jwResult')?.value||'win',rr=n($('jwRInput')?.value)||0,pnl=n($('jwPnlInput')?.value)||0,notes=$('jwNotes')?.value.trim()||'',start=n($('jwStartBalance')?.value);if(!symbol){alert(current()?'اكتب رمز الزوج':'Enter symbol');return}if(start!==null)localStorage.setItem('habboub_journal_start_balance',String(start));const payload={user_id:s.user.id,journal_type:mode(),symbol,setup,result,r_result:rr,pnl,notes,account_balance:start};const r=await c.from('trading_journal').insert(payload);if(r.error){console.error(r.error);alert(current()?'فشل حفظ الصفقة: '+r.error.message:'Save failed: '+r.error.message);return}['jwSymbol','jwSetup','jwRInput','jwPnlInput','jwNotes'].forEach(id=>{if($(id))$(id).value=''});await render();if(typeof window.showToast==='function')window.showToast(current()?'تم حفظ الصفقة':'Trade saved');}
-async function render(){inject();const rows=await load();const m=mode();const list=rows.filter(x=>(x.journal_type||'journal')===m);const start=n(localStorage.getItem('habboub_journal_start_balance'))||list.map(x=>n(x.account_balance)).find(x=>x!==null)||0;let bal=start,win=0,loss=0,be=0,totalR=0,totalP=0;list.slice().reverse().forEach(x=>{const p=n(x.pnl)||0;bal+=p;totalP+=p;totalR+=n(x.r_result)||0;if(x.result==='win')win++;else if(x.result==='loss')loss++;else be++});const count=list.length||0;$('journalBalanceDisplay').textContent='$'+bal.toFixed(2);$('journalBalanceSub').textContent=(m==='backtest'?'Backtest':'Journal')+' • '+count+' trades';$('jwWin').textContent=(count?win/count*100:0).toFixed(1)+'%';$('jwLoss').textContent=(count?loss/count*100:0).toFixed(1)+'%';$('jwBE').textContent=(count?be/count*100:0).toFixed(1)+'%';$('jwR').textContent=totalR.toFixed(2)+'R';$('jwPnL').textContent=(totalP>=0?'+':'')+'$'+totalP.toFixed(2);$('jwTrades').textContent=count;const el=$('jwList');if(!el)return;el.innerHTML=list.length?list.map(x=>`<article class="jw-trade"><div><b>${esc(x.symbol||'--')}</b><span>${esc(x.setup||'--')}</span><i class="${esc(x.result||'')} ">${esc(String(x.result||'').replace('_',' ').toUpperCase())}</i></div><div><strong>${(n(x.r_result)||0).toFixed(2)}R</strong><strong class="${(n(x.pnl)||0)>=0?'profit':'loss'}">${(n(x.pnl)||0)>=0?'+':''}$${(n(x.pnl)||0).toFixed(2)}</strong></div><p>${esc(x.notes||'')}</p><small>${x.created_at?new Date(x.created_at).toLocaleString():''}</small></article>`).join(''):`<div class="empty-state">No ${m==='backtest'?'backtest':'journal'} trades yet.</div>`}
-function css(){if($('journal-trade-ui-css'))return;const s=document.createElement('style');s.id='journal-trade-ui-css';s.textContent=`.journal-workspace{display:grid;gap:16px;margin:0 0 22px}.jw-balance{padding:24px;border:1px solid rgba(70,210,255,.18);border-radius:20px;background:linear-gradient(145deg,rgba(8,18,29,.98),rgba(8,12,18,.98));display:flex;align-items:end;justify-content:space-between;gap:15px}.jw-balance span{display:block;font-size:11px;letter-spacing:.18em;color:#8b9aaa}.jw-balance strong{font-size:34px}.jw-balance small{color:#718092}.jw-switch{display:flex;gap:8px}.jw-switch button{flex:1;padding:12px;border:1px solid #26313d;border-radius:12px;background:#0d141c;color:inherit;cursor:pointer}.jw-switch button.active{border-color:#36d8ff;background:rgba(54,216,255,.1);color:#36d8ff}.jw-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.jw-stats div{padding:16px;border:1px solid #202b36;border-radius:14px;background:#0b1118}.jw-stats span{display:block;color:#7e8c9d;font-size:12px}.jw-stats b{display:block;margin-top:7px;font-size:18px}.jw-form{padding:18px;border:1px solid #202b36;border-radius:18px;background:#0a1017}.jw-form>div{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.jw-form label{display:grid;gap:7px;color:#8997a8;font-size:12px}.jw-form input,.jw-form select,.jw-form textarea{width:100%;box-sizing:border-box;background:#080d13;border:1px solid #273442;color:inherit;border-radius:10px;padding:11px;outline:none}.jw-form>label{margin-top:10px}.jw-form .primary-btn{margin-top:12px}.jw-list{display:grid;gap:10px}.jw-trade{padding:16px;border:1px solid #202b36;border-radius:16px;background:#0b1118}.jw-trade>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.jw-trade>div:first-child b{font-size:17px}.jw-trade span{color:#8a98a8}.jw-trade i{font-style:normal;font-size:10px;padding:4px 7px;border-radius:7px;background:#17212b}.jw-trade i.win{color:#5ee6a7}.jw-trade i.loss{color:#ff7777}.jw-trade i.break_even{color:#ffd66b}.jw-trade>div:nth-child(2){margin-top:10px;justify-content:space-between}.jw-trade .profit{color:#5ee6a7}.jw-trade .loss{color:#ff7777}.jw-trade p{margin:10px 0;color:#9ba7b5}.jw-trade small{color:#627183}@media(max-width:800px){.jw-stats{grid-template-columns:repeat(2,1fr)}.jw-form>div{grid-template-columns:repeat(2,1fr)}.jw-balance{display:grid}.jw-balance strong{font-size:30px}}`;document.head.appendChild(s)}
-function boot(){css();inject();render();setInterval(render,10000)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+/* Habboub — Simple Journal / Backtest */
+(function () {
+  'use strict';
+
+  const SUPABASE_URL = 'https://feoyjasuvrqxzhskqzye.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0';
+  let client = null;
+  let activeMode = 'journal';
+
+  const $ = id => document.getElementById(id);
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+
+  function getClient() {
+    if (client) return client;
+    if (window.supabase?.createClient) {
+      client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+    return client;
+  }
+
+  async function getUser() {
+    const c = getClient();
+    if (!c) return null;
+    const { data } = await c.auth.getUser();
+    return data?.user || null;
+  }
+
+  function balanceKey() {
+    return activeMode === 'backtest' ? 'habboub_backtest_start_balance' : 'habboub_journal_start_balance';
+  }
+
+  function inject() {
+    const section = $('journal');
+    if (!section || section.querySelector('.simple-journal')) return;
+
+    const box = document.createElement('div');
+    box.className = 'simple-journal';
+    box.innerHTML = `
+      <div class="sj-balance">
+        <span>CURRENT BALANCE</span>
+        <strong id="sjBalance">$0.00</strong>
+      </div>
+
+      <div class="sj-tabs">
+        <button type="button" data-mode="journal" class="active">Journal</button>
+        <button type="button" data-mode="backtest">Backtest</button>
+      </div>
+
+      <form id="sjForm" class="sj-form">
+        <div class="sj-fields">
+          <label>Starting Balance
+            <input id="sjStart" type="number" step="0.01" placeholder="10000">
+          </label>
+          <label>Symbol
+            <input id="sjSymbol" type="text" placeholder="XAUUSD">
+          </label>
+          <label>Setup
+            <input id="sjSetup" type="text" placeholder="ICT / AMT / Breakout">
+          </label>
+          <label>Result
+            <select id="sjResult">
+              <option value="win">WIN</option>
+              <option value="loss">LOSS</option>
+              <option value="break_even">BREAK EVEN</option>
+            </select>
+          </label>
+          <label>R Result
+            <input id="sjR" type="number" step="0.01" placeholder="2.00">
+          </label>
+          <label>Money ($)
+            <input id="sjPnl" type="number" step="0.01" placeholder="200">
+          </label>
+        </div>
+
+        <label class="sj-notes">Entry reason / Notes
+          <textarea id="sjNotes" rows="3" placeholder="سبب الدخول وملاحظات الصفقة"></textarea>
+        </label>
+
+        <button id="sjSave" type="submit" class="primary-btn">Save Trade</button>
+      </form>
+
+      <div id="sjTrades" class="sj-trades"></div>
+    `;
+
+    section.prepend(box);
+
+    box.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeMode = btn.dataset.mode;
+        box.querySelectorAll('[data-mode]').forEach(x => x.classList.toggle('active', x === btn));
+        loadAndRender();
+      });
+    });
+
+    $('sjForm').addEventListener('submit', saveTrade);
+    $('sjStart').value = localStorage.getItem(balanceKey()) || '';
+  }
+
+  async function saveTrade(e) {
+    e.preventDefault();
+    const c = getClient();
+    const user = await getUser();
+    if (!c || !user) {
+      alert('Please login first.');
+      return;
+    }
+
+    const symbol = $('sjSymbol').value.trim();
+    const setup = $('sjSetup').value.trim();
+    const result = $('sjResult').value;
+    const rr = num($('sjR').value);
+    let pnl = num($('sjPnl').value);
+    const notes = $('sjNotes').value.trim();
+    const start = num($('sjStart').value);
+
+    if (!symbol) return alert('Enter the symbol.');
+    if (!start && !localStorage.getItem(balanceKey())) return alert('Enter the starting balance.');
+
+    if (result === 'loss') pnl = -Math.abs(pnl);
+    else if (result === 'win') pnl = Math.abs(pnl);
+    else pnl = 0;
+
+    const oldStart = num(localStorage.getItem(balanceKey()));
+    const startingBalance = start || oldStart;
+
+    if (start) localStorage.setItem(balanceKey(), String(start));
+
+    const { data: previous } = await c
+      .from('trading_journal')
+      .select('pnl')
+      .eq('user_id', user.id)
+      .eq('journal_type', activeMode)
+      .order('created_at', { ascending: true });
+
+    const balanceAfter = startingBalance + (previous || []).reduce((sum, row) => sum + num(row.pnl), 0) + pnl;
+
+    const { error } = await c.from('trading_journal').insert({
+      user_id: user.id,
+      journal_type: activeMode,
+      symbol,
+      setup,
+      result,
+      r_result: rr,
+      pnl,
+      notes,
+      account_balance: balanceAfter
+    });
+
+    if (error) {
+      console.error(error);
+      alert('Save failed: ' + error.message);
+      return;
+    }
+
+    $('sjSymbol').value = '';
+    $('sjSetup').value = '';
+    $('sjR').value = '';
+    $('sjPnl').value = '';
+    $('sjNotes').value = '';
+    $('sjStart').value = startingBalance;
+
+    await loadAndRender();
+    if (typeof window.showToast === 'function') window.showToast('Trade saved');
+  }
+
+  async function loadAndRender() {
+    const c = getClient();
+    const user = await getUser();
+    if (!c || !user) return;
+
+    const { data, error } = await c
+      .from('trading_journal')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('journal_type', activeMode)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const rows = data || [];
+    let start = num(localStorage.getItem(balanceKey()));
+    if (!start && rows.length) start = num(rows[0].account_balance) - num(rows[0].pnl);
+
+    let balance = start;
+    rows.forEach(row => { balance += num(row.pnl); });
+    $('sjBalance').textContent = '$' + balance.toFixed(2);
+    $('sjStart').value = start || '';
+
+    const list = $('sjTrades');
+    list.innerHTML = rows.length ? rows.slice().reverse().map(row => `
+      <article class="sj-trade">
+        <div class="sj-trade-top">
+          <strong>${esc(row.symbol)}</strong>
+          <span class="sj-result ${esc(row.result)}">${esc(String(row.result || '').replace('_', ' ').toUpperCase())}</span>
+        </div>
+        <div class="sj-trade-meta">
+          <span>${esc(row.setup || 'No setup')}</span>
+          <b>${num(row.r_result).toFixed(2)}R</b>
+          <b class="${num(row.pnl) >= 0 ? 'profit' : 'loss'}">${num(row.pnl) >= 0 ? '+' : ''}$${num(row.pnl).toFixed(2)}</b>
+        </div>
+        ${row.notes ? `<p>${esc(row.notes)}</p>` : ''}
+      </article>
+    `).join('') : '';
+  }
+
+  function styles() {
+    if ($('simple-journal-css')) return;
+    const style = document.createElement('style');
+    style.id = 'simple-journal-css';
+    style.textContent = `
+      .simple-journal{display:grid;gap:14px;margin:0 0 22px}
+      .sj-balance{padding:20px 22px;border:1px solid rgba(54,216,255,.18);border-radius:16px;background:#0a1118}
+      .sj-balance span{display:block;font-size:11px;letter-spacing:.14em;color:#8190a0;margin-bottom:6px}
+      .sj-balance strong{font-size:32px;line-height:1}
+      .sj-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .sj-tabs button{border:1px solid #26313d;background:#0b1118;color:inherit;border-radius:10px;padding:11px;cursor:pointer}
+      .sj-tabs button.active{border-color:#36d8ff;color:#36d8ff;background:rgba(54,216,255,.08)}
+      .sj-form{padding:16px;border:1px solid #202b36;border-radius:16px;background:#0a1017}
+      .sj-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+      .sj-form label{display:grid;gap:6px;color:#8997a8;font-size:12px}
+      .sj-form input,.sj-form select,.sj-form textarea{width:100%;box-sizing:border-box;background:#080d13;border:1px solid #273442;color:inherit;border-radius:9px;padding:10px;outline:none}
+      .sj-notes{margin-top:10px}
+      .sj-form .primary-btn{margin-top:10px;width:100%}
+      .sj-trades{display:grid;gap:8px}
+      .sj-trade{padding:14px 15px;border:1px solid #202b36;border-radius:13px;background:#0b1118}
+      .sj-trade-top,.sj-trade-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+      .sj-trade-top strong{font-size:16px}
+      .sj-result{font-size:10px;padding:4px 7px;border-radius:6px}
+      .sj-result.win{color:#63e6aa;background:rgba(99,230,170,.08)}
+      .sj-result.loss{color:#ff7777;background:rgba(255,119,119,.08)}
+      .sj-result.break_even{color:#ffd66b;background:rgba(255,214,107,.08)}
+      .sj-trade-meta{margin-top:8px;color:#8795a5;font-size:12px}
+      .sj-trade-meta b{color:#dce5ed}
+      .sj-trade-meta .profit{color:#63e6aa}.sj-trade-meta .loss{color:#ff7777}
+      .sj-trade p{margin:9px 0 0;color:#9aa7b5;font-size:12px}
+      @media(max-width:700px){.sj-fields{grid-template-columns:1fr 1fr}.sj-balance strong{font-size:28px}}
+      @media(max-width:430px){.sj-fields{grid-template-columns:1fr}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function boot() {
+    styles();
+    inject();
+    loadAndRender();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();
