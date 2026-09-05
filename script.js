@@ -2722,7 +2722,7 @@ async function saveJournalTrade(event) {
 
 
 /* =========================================================
-   NEWS
+   NEWS (ECONOMIC CALENDAR - USD)
 ========================================================= */
 
 async function loadNews() {
@@ -2732,8 +2732,10 @@ async function loadNews() {
     const result = await withTimeout(
       supabaseClient
         .from("news")
-        .select("*")
-        .order("time", { ascending: true }),
+        .select("id, title, description, source, url, image_url, category, impact, currency, published_at, created_at, event_name, actual, forecast, previous, event_time, country, unit, time_mode, revised_previous, event_status")
+        .eq("category", "economic_calendar")
+        .eq("currency", "USD")
+        .order("event_time", { ascending: true }),
       5000,
       null
     );
@@ -2741,9 +2743,12 @@ async function loadNews() {
     if (result && result.data) {
       state.news = result.data;
       renderNews(result.data);
+    } else {
+      renderNews([]);
     }
   } catch (error) {
     console.error("Load news error:", error);
+    renderNews([]);
   }
 }
 
@@ -2753,7 +2758,7 @@ function renderNews(newsItems) {
 
   if (!newsItems || newsItems.length === 0) {
     container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">${
-      state.language === "ar" ? "لا توجد أحدث أخبار حالياً." : "No recent news available."
+      state.language === "ar" ? "لا توجد أحداث اقتصادية متاحة حالياً" : "No economic events available"
     }</p>`;
     return;
   }
@@ -2767,19 +2772,22 @@ function renderNews(newsItems) {
           ? "medium"
           : "low";
 
+      const eventTitle = item.event_name || item.title || "USD Event";
+      const displayTime = item.event_time ? new Date(item.event_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+
       return `
       <div class="news-card" style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
         <div style="display: flex; align-items: center; gap: 12px;">
           <span class="impact-badge ${impactClass}" style="padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase;">
             ${escapeHtml(item.impact || "LOW")}
           </span>
-          <span style="font-weight: 600; color: #f3f4f6;">${escapeHtml(item.title || item.event || "USD Event")}</span>
+          <span style="font-weight: 600; color: #f3f4f6;">${escapeHtml(eventTitle)}</span>
         </div>
         <div style="display: flex; gap: 16px; color: var(--text-muted); font-size: 13px;">
           <span>Actual: <strong style="color: #fff;">${escapeHtml(item.actual || "-")}</strong></span>
           <span>Forecast: <strong>${escapeHtml(item.forecast || "-")}</strong></span>
           <span>Previous: <strong>${escapeHtml(item.previous || "-")}</strong></span>
-          <span style="color: #6b7280;">${escapeHtml(item.time || "")}</span>
+          <span style="color: #6b7280;">${escapeHtml(displayTime)}</span>
         </div>
       </div>
     `;
