@@ -1,6 +1,6 @@
 /* =========================================================
    HABBOUB — MARKET WATCH LIVE FEEDS
-   Gold + Nasdaq 100 + S&P 500
+   CFD / Futures selector
    5s polling through the Vercel server proxy
 ========================================================= */
 
@@ -9,16 +9,41 @@
 (function () {
   const REFRESH_MS = 5000;
   const QUOTE_PROXY = "/api/market-quote?symbol=";
+  const SOURCE_KEY = "habboub_market_source";
+  const DEFAULT_SOURCE = "cfd";
+
+  const SOURCES = {
+    cfd: {
+      label: "CFD",
+      // Yahoo's spot/cash references are used as the closest public CFD-style feed.
+      XAUUSD: "XAUUSD=X",
+      NAS100: "^NDX",
+      SPX: "^GSPC"
+    },
+    futures: {
+      label: "FUTURES",
+      XAUUSD: "GC=F",
+      NAS100: "NQ=F",
+      SPX: "ES=F"
+    }
+  };
 
   const MARKETS = [
-    // Yahoo's COMEX gold futures feed is stable for the live gold card.
-    { symbol: "XAUUSD", yahoo: "GC=F", priceId: "goldPrice", changeId: "goldChange", heroPriceId: "heroGold", heroChangeId: "heroGoldChange", decimals: 2 },
-    // Futures keep NAS100/SPX moving outside the cash-index session as well.
-    { symbol: "NAS100", yahoo: "NQ=F", priceId: "nasdaqPrice", changeId: "nasdaqChange", heroPriceId: "heroNasdaq", heroChangeId: "heroNasdaqChange", decimals: 2 },
-    { symbol: "SPX", yahoo: "ES=F", priceId: "spxPrice", changeId: "spxChange", heroPriceId: "heroSPX", heroChangeId: "heroSPXChange", decimals: 2 }
+    { symbol: "XAUUSD", priceId: "goldPrice", changeId: "goldChange", heroPriceId: "heroGold", heroChangeId: "heroGoldChange", decimals: 2 },
+    { symbol: "NAS100", priceId: "nasdaqPrice", changeId: "nasdaqChange", heroPriceId: "heroNasdaq", heroChangeId: "heroNasdaqChange", decimals: 2 },
+    { symbol: "SPX", priceId: "spxPrice", changeId: "spxChange", heroPriceId: "heroSPX", heroChangeId: "heroSPXChange", decimals: 2 }
   ];
 
   let busy = false;
+  let refreshTimer = null;
+
+  function getSource() {
+    return localStorage.getItem(SOURCE_KEY) === "futures" ? "futures" : DEFAULT_SOURCE;
+  }
+
+  function currentYahooSymbol(market) {
+    return SOURCES[getSource()][market.symbol];
+  }
 
   function setText(id, value) {
     const el = document.getElementById(id);
@@ -52,6 +77,59 @@
     card.appendChild(status);
   }
 
+  function ensureSourceStyles() {
+    if (document.getElementById("habboubMarketSourceStyles")) return;
+    const style = document.createElement("style");
+    style.id = "habboubMarketSourceStyles";
+    style.textContent = `
+      #markets .market-source-switch{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:8px}
+      #markets .market-source-label{font-size:10px;font-weight:800;letter-spacing:.08em;color:#7f8a98}
+      #markets .market-source-buttons{display:flex;align-items:center;gap:4px;padding:3px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(255,255,255,.025)}
+      #markets .market-source-btn{border:0;border-radius:9px;padding:7px 11px;background:transparent;color:#7f8a98;font:800 10px/1 Inter,sans-serif;letter-spacing:.04em;cursor:pointer;transition:.18s ease;direction:ltr;unicode-bidi:isolate}
+      #markets .market-source-btn:hover{color:#fff;background:rgba(255,255,255,.05)}
+      #markets .market-source-btn.active{color:#080b12;background:#36d9ff;box-shadow:0 0 18px rgba(54,217,255,.15)}
+      html[lang="ar"] #markets .market-source-switch{direction:rtl}
+      @media(max-width:700px){#markets .market-source-switch{justify-content:flex-start;margin-top:12px}#markets .market-source-btn{padding:7px 10px}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function updateSourceButtons(source) {
+    document.querySelectorAll("#markets [data-market-source]").forEach((button) => {
+      const active = button.dataset.marketSource === source;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  function ensureSourceSwitch() {
+    const heading = document.querySelector("#markets .section-heading");
+    if (!heading || heading.querySelector(".market-source-switch")) return;
+    ensureSourceStyles();
+
+    const wrap = document.createElement("div");
+    wrap.className = "market-source-switch";
+    wrap.innerHTML = `
+      <div class="market-source-label">PRICE SOURCE</div>
+      <div class="market-source-buttons" role="group" aria-label="Market price source">
+        <button type="button" class="market-source-btn" data-market-source="cfd" aria-pressed="false">CFD</button>
+        <button type="button" class="market-source-btn" data-market-source="futures" aria-pressed="false">FUTURES</button>
+      </div>
+    `;
+
+    heading.appendChild(wrap);
+    wrap.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-market-source]");
+      if (!button) return;
+      const source = button.dataset.marketSource === "futures" ? "futures" : "cfd";
+      localStorage.setItem(SOURCE_KEY, source);
+      updateSourceButtons(source);
+      refresh(true);
+    });
+
+    updateSourceButtons(getSource());
+  }
+
   function formatPrice(value, decimals) {
     return Number(value).toLocaleString("en-US", {
       minimumFractionDigits: decimals,
@@ -65,7 +143,8 @@
   }
 
   async function fetchQuote(market) {
-    const response = await fetch(`${QUOTE_PROXY}${encodeURIComponent(market.yahoo)}&t=${Date.now()}`, {
+    const yahoo = currentYahooSymbol(market);
+    const response = await fetch(`${QUOTE_PROXY}${encodeURIComponent(yahoo)}&t=${Date.now()}`, {
       cache: "no-store",
       headers: { Accept: "application/json" }
     });
@@ -104,22 +183,24 @@
 
     const liveStates = ["REGULAR", "PRE", "POST"];
     const live = liveStates.includes(quote.marketState);
-    setStatus(market, live ? "● LIVE FEED" : "● MARKET CLOSED", live ? "live" : "closed");
+    setStatus(market, live ? `● LIVE ${SOURCES[getSource()].label}` : "● MARKET CLOSED", live ? "live" : "closed");
   }
 
-  async function refresh() {
-    if (busy) return;
+  async function refresh(force = false) {
+    if (busy && !force) return;
     busy = true;
     removeUnwantedCards();
     removeMarketWatchBadges();
+    ensureSourceSwitch();
     MARKETS.forEach(ensureStatus);
 
+    const sourceAtStart = getSource();
     await Promise.all(MARKETS.map(async (market) => {
       try {
         render(market, await fetchQuote(market));
       } catch (error) {
-        setStatus(market, "● FEED ERROR", "error");
-        console.warn(`Habboub ${market.symbol} feed unavailable:`, error);
+        setStatus(market, `● ${SOURCES[sourceAtStart].label} FEED ERROR`, "error");
+        console.warn(`Habboub ${market.symbol} ${sourceAtStart} feed unavailable:`, error);
       }
     }));
 
@@ -129,14 +210,17 @@
   function start() {
     removeUnwantedCards();
     removeMarketWatchBadges();
+    ensureSourceSwitch();
     MARKETS.forEach(ensureStatus);
     refresh();
-    window.setInterval(refresh, REFRESH_MS);
+    refreshTimer = window.setInterval(() => refresh(), REFRESH_MS);
 
     new MutationObserver(() => {
       removeUnwantedCards();
       removeMarketWatchBadges();
+      ensureSourceSwitch();
       MARKETS.forEach(ensureStatus);
+      updateSourceButtons(getSource());
     }).observe(document.body, { childList: true, subtree: true });
   }
 
