@@ -4363,7 +4363,7 @@ function renderScoreReasons(
 async function loadNews() {
 
   /*
-   * NEWS IS ALWAYS BACKGROUND-ONLY.
+   * ECONOMIC CALENDAR IS ALWAYS BACKGROUND-ONLY.
    * It must never prevent the website from loading.
    */
 
@@ -4383,20 +4383,23 @@ async function loadNews() {
       supabaseClient
         .from("news")
         .select(
-          "id,title,description,source,url,image_url,category,impact,currency,published_at,created_at"
-    )
-    .eq(
-      "currency",
-      "USD"
-    )
-    .order(
-      "published_at",
-      {
-        ascending:
-          false
-      }
-    )
-    .limit(30);
+          "id,title,event_name,actual,forecast,previous,event_time,country,unit,time_mode,revised_previous,event_status,category,impact,currency,source,url,created_at,published_at,multiplier"
+        )
+        .eq(
+          "category",
+          "economic_calendar"
+        )
+        .eq(
+          "currency",
+          "USD"
+        )
+        .order(
+          "event_time",
+          {
+            ascending: true
+          }
+        )
+        .limit(100);
 
 
     const result =
@@ -4416,7 +4419,7 @@ async function loadNews() {
     if (!result) {
 
       console.warn(
-        "News request timed out."
+        "Economic calendar request timed out."
       );
 
       state.news = [];
@@ -4436,7 +4439,7 @@ async function loadNews() {
     if (error) {
 
       console.warn(
-        "News unavailable:",
+        "Economic calendar unavailable:",
         error.message
       );
 
@@ -4461,11 +4464,11 @@ async function loadNews() {
   } catch (error) {
 
     /*
-     * News must NEVER break the page.
+     * Economic calendar must NEVER break the page.
      */
 
     console.warn(
-      "News request failed:",
+      "Economic calendar request failed:",
       error
     );
 
@@ -4478,7 +4481,7 @@ async function loadNews() {
     } catch (renderError) {
 
       console.warn(
-        "News render failed:",
+        "Economic calendar render failed:",
         renderError
       );
 
@@ -4487,6 +4490,296 @@ async function loadNews() {
   }
 }
 
+
+/* =========================================================
+   ECONOMIC CALENDAR HELPERS
+========================================================= */
+
+function normalizeCalendarImpact(
+  impact
+) {
+
+  const value =
+    String(
+      impact ||
+      "medium"
+    )
+      .toLowerCase()
+      .trim();
+
+
+  if (
+    value === "critical" ||
+    value === "high"
+  ) {
+
+    return "high";
+  }
+
+
+  if (
+    value === "low"
+  ) {
+
+    return "low";
+  }
+
+
+  return "medium";
+}
+
+
+function getCalendarImpactLabel(
+  impact
+) {
+
+  const normalized =
+    normalizeCalendarImpact(
+      impact
+    );
+
+
+  if (
+    state.language === "ar"
+  ) {
+
+    if (
+      normalized === "high"
+    ) {
+
+      return "مرتفع";
+
+    }
+
+
+    if (
+      normalized === "low"
+    ) {
+
+      return "منخفض";
+
+    }
+
+
+    return "متوسط";
+  }
+
+
+  return normalized.toUpperCase();
+}
+
+
+function formatCalendarValue(
+  value,
+  unit,
+  multiplier
+) {
+
+  if (
+    value === null ||
+    value === undefined ||
+    String(value).trim() === ""
+  ) {
+
+    return "—";
+  }
+
+
+  const raw =
+    String(value).trim();
+
+
+  /*
+   * Keep values that are already formatted.
+   */
+
+  if (
+    /[%$€£¥KMB]/i.test(raw)
+  ) {
+
+    return raw;
+  }
+
+
+  const numeric =
+    Number(
+      raw.replace(
+        /,/g,
+        ""
+      )
+    );
+
+
+  if (
+    !Number.isFinite(numeric)
+  ) {
+
+    return raw;
+  }
+
+
+  const multiplierText =
+    String(
+      multiplier ||
+      ""
+    ).toLowerCase();
+
+
+  let formatted;
+
+
+  if (
+    multiplierText.includes(
+      "thousand"
+    )
+  ) {
+
+    formatted =
+      numeric.toLocaleString(
+        "en-US",
+        {
+          maximumFractionDigits:
+            2
+        }
+      ) + "K";
+
+  } else if (
+    multiplierText.includes(
+      "million"
+    )
+  ) {
+
+    formatted =
+      numeric.toLocaleString(
+        "en-US",
+        {
+          maximumFractionDigits:
+            2
+        }
+      ) + "M";
+
+  } else if (
+    multiplierText.includes(
+      "billion"
+    )
+  ) {
+
+    formatted =
+      numeric.toLocaleString(
+        "en-US",
+        {
+          maximumFractionDigits:
+            2
+        }
+      ) + "B";
+
+  } else {
+
+    formatted =
+      numeric.toLocaleString(
+        "en-US",
+        {
+          maximumFractionDigits:
+            2
+        }
+      );
+  }
+
+
+  const unitText =
+    String(
+      unit ||
+      ""
+    ).toLowerCase();
+
+
+  if (
+    unitText.includes(
+      "percent"
+    ) &&
+    !formatted.includes("%")
+  ) {
+
+    formatted += "%";
+  }
+
+
+  return formatted;
+}
+
+
+function formatCalendarDate(
+  value
+) {
+
+  if (!value) {
+
+    return {
+      date: "--",
+      time: "--",
+      dayKey: "--"
+    };
+  }
+
+
+  const date =
+    new Date(value);
+
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    return {
+      date: "--",
+      time: "--",
+      dayKey: "--"
+    };
+  }
+
+
+  const locale =
+    state.language === "ar"
+      ? "ar"
+      : "en-GB";
+
+
+  return {
+
+    date:
+      date.toLocaleDateString(
+        locale,
+        {
+          weekday: "long",
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        }
+      ),
+
+    time:
+      date.toLocaleTimeString(
+        locale,
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false
+        }
+      ),
+
+    dayKey:
+      date.toLocaleDateString(
+        "en-CA"
+      )
+  };
+}
+
+
+/* =========================================================
+   ECONOMIC CALENDAR RENDER
+========================================================= */
 
 function renderNews(
   news
@@ -4501,85 +4794,584 @@ function renderNews(
   }
 
 
-  if (
-    !Array.isArray(news) ||
-    news.length === 0
-  ) {
+  const safeNews =
+    Array.isArray(news)
+      ? news
+      : [];
 
-    container.innerHTML = `
 
-      <div class="empty-state">
+  /*
+   * Current impact filter.
+   */
 
-        <span>◌</span>
+  const filteredNews =
+    safeNews.filter(
+      (item) => {
 
-        <strong>
-          ${
-            state.language === "ar"
-              ? "لا توجد أخبار حالياً"
-              : "No news available"
-          }
-        </strong>
+        if (
+          typeof newsImpactFilter ===
+          "undefined" ||
+          newsImpactFilter ===
+          "all"
+        ) {
 
-        <p>
-          ${
-            state.language === "ar"
-              ? "سيتم تحديث الأخبار تلقائياً."
-              : "News will be updated automatically."
-          }
-        </p>
+          return true;
+        }
+
+
+        return (
+          normalizeCalendarImpact(
+            item?.impact
+          ) ===
+          newsImpactFilter
+        );
+      }
+    );
+
+
+  /*
+   * Calendar toolbar.
+   */
+
+  const toolbar = `
+
+    <div class="calendar-toolbar">
+
+      <div class="calendar-toolbar-left">
+
+        <div class="calendar-market">
+
+          <span class="calendar-flag">
+            🇺🇸
+          </span>
+
+          <div>
+
+            <strong>
+              USD Economic Calendar
+            </strong>
+
+            <small>
+              ${
+                state.language === "ar"
+                  ? "الأحداث الاقتصادية الأمريكية"
+                  : "United States economic events"
+              }
+            </small>
+
+          </div>
+
+        </div>
 
       </div>
 
-    `;
+
+      <div class="calendar-filters">
+
+        <button
+          type="button"
+          class="calendar-filter ${
+            (
+              typeof newsImpactFilter ===
+              "undefined" ||
+              newsImpactFilter ===
+              "all"
+            )
+              ? "active"
+              : ""
+          }"
+          data-calendar-filter="all"
+        >
+          ${
+            state.language === "ar"
+              ? "الكل"
+              : "All"
+          }
+        </button>
+
+
+        <button
+          type="button"
+          class="calendar-filter high ${
+            newsImpactFilter ===
+            "high"
+              ? "active"
+              : ""
+          }"
+          data-calendar-filter="high"
+        >
+          ${
+            state.language === "ar"
+              ? "مرتفع"
+              : "High"
+          }
+        </button>
+
+
+        <button
+          type="button"
+          class="calendar-filter medium ${
+            newsImpactFilter ===
+            "medium"
+              ? "active"
+              : ""
+          }"
+          data-calendar-filter="medium"
+        >
+          ${
+            state.language === "ar"
+              ? "متوسط"
+              : "Medium"
+          }
+        </button>
+
+
+        <button
+          type="button"
+          class="calendar-filter low ${
+            newsImpactFilter ===
+            "low"
+              ? "active"
+              : ""
+          }"
+          data-calendar-filter="low"
+        >
+          ${
+            state.language === "ar"
+              ? "منخفض"
+              : "Low"
+          }
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  /*
+   * No events.
+   */
+
+  if (
+    filteredNews.length === 0
+  ) {
+
+    container.innerHTML =
+      toolbar +
+      `
+
+        <div class="calendar-empty">
+
+          <div class="calendar-empty-icon">
+            ◷
+          </div>
+
+          <strong>
+            ${
+              state.language === "ar"
+                ? "لا توجد أحداث اقتصادية"
+                : "No economic events"
+            }
+          </strong>
+
+          <p>
+            ${
+              state.language === "ar"
+                ? "سيتم تحديث التقويم تلقائياً."
+                : "The calendar will update automatically."
+            }
+          </p>
+
+        </div>
+
+      `;
+
+
+    setupCalendarFilters();
 
     return;
   }
 
 
+  /*
+   * Sort by event time.
+   */
+
+  const sortedNews =
+    [...filteredNews]
+      .sort(
+        (
+          a,
+          b
+        ) => {
+
+          const aTime =
+            new Date(
+              a?.event_time ||
+              a?.published_at ||
+              a?.created_at ||
+              0
+            ).getTime();
+
+
+          const bTime =
+            new Date(
+              b?.event_time ||
+              b?.published_at ||
+              b?.created_at ||
+              0
+            ).getTime();
+
+
+          return (
+            aTime -
+            bTime
+          );
+        }
+      );
+
+
+  /*
+   * Group events by date.
+   */
+
+  const groups =
+    new Map();
+
+
+  sortedNews.forEach(
+    (item) => {
+
+      const formatted =
+        formatCalendarDate(
+          item?.event_time
+        );
+
+
+      if (
+        !groups.has(
+          formatted.dayKey
+        )
+      ) {
+
+        groups.set(
+          formatted.dayKey,
+          {
+            date:
+              formatted.date,
+            items: []
+          }
+        );
+      }
+
+
+      groups
+        .get(
+          formatted.dayKey
+        )
+        .items
+        .push(item);
+    }
+  );
+
+
+  let html =
+    toolbar;
+
+
+  groups.forEach(
+    (group) => {
+
+      html += `
+
+        <div class="calendar-day">
+
+          <div class="calendar-day-header">
+
+            <span>
+              ${escapeHtml(
+                group.date
+              )}
+            </span>
+
+          </div>
+
+
+          <div class="calendar-events">
+
+            ${
+              group.items
+                .map(
+                  (item) => {
+
+                    const impact =
+                      normalizeCalendarImpact(
+                        item?.impact
+                      );
+
+
+                    const impactLabel =
+                      getCalendarImpactLabel(
+                        item?.impact
+                      );
+
+
+                    const formatted =
+                      formatCalendarDate(
+                        item?.event_time
+                      );
+
+
+                    const title =
+                      item?.event_name ||
+                      item?.title ||
+                      (
+                        state.language === "ar"
+                          ? "حدث اقتصادي"
+                          : "Economic Event"
+                      );
+
+
+                    const actual =
+                      formatCalendarValue(
+                        item?.actual,
+                        item?.unit,
+                        item?.multiplier
+                      );
+
+
+                    const forecast =
+                      formatCalendarValue(
+                        item?.forecast,
+                        item?.unit,
+                        item?.multiplier
+                      );
+
+
+                    const previous =
+                      formatCalendarValue(
+                        item?.previous,
+                        item?.unit,
+                        item?.multiplier
+                      );
+
+
+                    const hasActual =
+                      item?.actual !==
+                        null &&
+                      item?.actual !==
+                        undefined &&
+                      String(
+                        item?.actual
+                      ).trim() !== "";
+
+
+                    const status =
+                      hasActual
+                        ? "released"
+                        : "upcoming";
+
+
+                    const statusLabel =
+                      hasActual
+                        ? (
+                            state.language === "ar"
+                              ? "صدر"
+                              : "RELEASED"
+                          )
+                        : (
+                            state.language === "ar"
+                              ? "قادم"
+                              : "UPCOMING"
+                          );
+
+
+                    return `
+
+                      <article
+                        class="calendar-event impact-${impact} status-${status}"
+                      >
+
+                        <div class="calendar-event-time">
+
+                          <strong>
+                            ${escapeHtml(
+                              formatted.time
+                            )}
+                          </strong>
+
+                          <span>
+                            LOCAL
+                          </span>
+
+                        </div>
+
+
+                        <div class="calendar-event-main">
+
+                          <div class="calendar-event-title-row">
+
+                            <span
+                              class="calendar-impact impact-${impact}"
+                            >
+
+                              <i></i>
+
+                              ${escapeHtml(
+                                impactLabel
+                              )}
+
+                            </span>
+
+
+                            <span class="calendar-currency">
+                              🇺🇸 USD
+                            </span>
+
+
+                            <span class="calendar-status">
+                              ${escapeHtml(
+                                statusLabel
+                              )}
+                            </span>
+
+                          </div>
+
+
+                          <h3>
+                            ${escapeHtml(
+                              title
+                            )}
+                          </h3>
+
+
+                          <small class="calendar-source">
+                            ${
+                              item?.source
+                                ? escapeHtml(
+                                    item.source
+                                  )
+                                : "BiQuote"
+                            }
+                          </small>
+
+                        </div>
+
+
+                        <div class="calendar-values">
+
+                          <div class="calendar-value">
+
+                            <span>
+                              Actual
+                            </span>
+
+                            <strong
+                              class="${
+                                hasActual
+                                  ? "actual-value"
+                                  : "empty-value"
+                              }"
+                            >
+                              ${escapeHtml(
+                                actual
+                              )}
+                            </strong>
+
+                          </div>
+
+
+                          <div class="calendar-value">
+
+                            <span>
+                              Forecast
+                            </span>
+
+                            <strong>
+                              ${escapeHtml(
+                                forecast
+                              )}
+                            </strong>
+
+                          </div>
+
+
+                          <div class="calendar-value">
+
+                            <span>
+                              Previous
+                            </span>
+
+                            <strong>
+                              ${escapeHtml(
+                                previous
+                              )}
+                            </strong>
+
+                          </div>
+
+                        </div>
+
+                      </article>
+
+                    `;
+                  }
+                )
+                .join("")
+            }
+
+          </div>
+
+        </div>
+
+      `;
+    }
+  );
+
+
   container.innerHTML =
-    news
-      .map(
-        (item) => {
-
-          const impact =
-            String(
-              item?.impact ||
-              "medium"
-            ).toLowerCase();
+    html;
 
 
-          let impactLabel =
-            "MEDIUM";
+  setupCalendarFilters();
+}
 
 
-          if (
-            impact ===
-            "critical"
-          ) {
+/* =========================================================
+   CALENDAR FILTERS
+========================================================= */
 
-            impactLabel =
-              state.language === "ar"
-                ? "حرج"
-                : "CRITICAL";
+function setupCalendarFilters() {
 
-          } else if (
-            impact ===
-            "high"
-          ) {
+  document
+    .querySelectorAll(
+      "[data-calendar-filter]"
+    )
+    .forEach(
+      (button) => {
 
-            impactLabel =
-              state.language === "ar"
-                ? "مرتفع"
-                : "HIGH";
+        button.addEventListener(
+          "click",
+          () => {
 
-          } else {
+            newsImpactFilter =
+              button.dataset
+                .calendarFilter ||
+              "all";
 
-            impactLabel =
-              state.language === "ar"
-                ? "متوسط"
-                : "MEDIUM";
+
+            renderNews(
+              state.news
+            );
 
           }
+        );
+
+      }
+    );
+}
 
 
           const title =
