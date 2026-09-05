@@ -1,20 +1,28 @@
-/* Habboub live consensus bridge.
-   Uses public read-only Supabase data already exposed to the frontend.
-   It replaces the Gold prototype estimate with the latest analyst-consensus score
-   when an upcoming economic event has a stored probability. */
+/* Habboub live consensus bridge. */
 (function () {
   "use strict";
+  const SUPABASE_URL = "https://feoyjasuvrqxzhskqzye.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
+  let client = null;
 
   const escapeHtml = (v) => String(v ?? "")
     .replace(/&/g, "&amp;").replace(/</g, "&lt;")
     .replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#039;");
 
+  function getClient() {
+    if (client) return client;
+    if (!window.supabase || typeof window.supabase.createClient !== "function") return null;
+    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return client;
+  }
+
   async function loadConsensus() {
-    if (!window.supabaseClient) return;
+    const db = getClient();
+    if (!db) return;
     const now = new Date().toISOString();
-    const { data, error } = await window.supabaseClient
+    const { data, error } = await db
       .from("news_probability")
-      .select("news_id,event_name,event_time,up_probability,down_probability,confidence,phase,model_version,updated_at")
+      .select("news_id,event_name,event_time,up_probability,down_probability,confidence,phase,model_version,updated_at,metadata")
       .eq("symbol", "XAUUSD")
       .gte("event_time", now)
       .order("event_time", { ascending: true })
@@ -23,7 +31,6 @@
 
     const best = data.find(row => Number(row.up_probability) !== 50) || data[0];
     if (!best) return;
-
     const up = Math.round(Number(best.up_probability));
     const down = Math.round(Number(best.down_probability));
     const confidence = Math.round(Number(best.confidence));
@@ -34,7 +41,7 @@
     const command = root.querySelector(".hni-command");
     if (command) {
       const p = command.querySelector("p");
-      if (p) p.textContent = "Analyst consensus is connected to the live economic calendar. Gold probability updates automatically as new public analyst views are captured.";
+      if (p) p.textContent = "Analyst consensus is connected to the economic calendar. Gold baseline updates automatically as new public analyst views are captured.";
       const live = command.querySelector(".hni-live");
       if (live) live.innerHTML = '<span class="hni-dot"></span> LIVE CONSENSUS';
     }
@@ -63,7 +70,7 @@
         }
       }
       const foot = eventCard.querySelector(".hni-foot:last-child");
-      if (foot) foot.innerHTML = `<strong>Analyst consensus:</strong> Gold ${up}% up / ${down}% down · confidence ${confidence}%. This is decision support, not a BUY/SELL command.`;
+      if (foot) foot.innerHTML = `<strong>Analyst baseline:</strong> Gold ${up}% up / ${down}% down · confidence ${confidence}%. Decision support only; not a BUY/SELL command.`;
     });
 
     let badge = document.getElementById("habboubConsensusBadge");
@@ -73,7 +80,7 @@
       badge.className = "hni-consensus-badge";
       root.appendChild(badge);
     }
-    badge.innerHTML = `<span>GOLD CONSENSUS</span><strong>${up}% UP</strong><strong>${down}% DOWN</strong><em>Confidence ${confidence}%</em><small>Next: ${escapeHtml(best.event_name || "Economic event")}</small>`;
+    badge.innerHTML = `<span>GOLD ANALYST BASELINE</span><strong>${up}% UP</strong><strong>${down}% DOWN</strong><em>Confidence ${confidence}%</em><small>Next: ${escapeHtml(best.event_name || "Economic event")}</small>`;
   }
 
   function boot() {
@@ -81,7 +88,7 @@
     const timer = setInterval(() => {
       attempts += 1;
       const ready = document.getElementById("habboubNewsIntelligence");
-      if (ready && window.supabaseClient) {
+      if (ready && getClient()) {
         clearInterval(timer);
         loadConsensus();
         setInterval(loadConsensus, 60 * 1000);
