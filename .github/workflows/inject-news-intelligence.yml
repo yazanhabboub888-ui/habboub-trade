@@ -49,6 +49,13 @@ jobs:
                   raise SystemExit('news-consensus.js tag not found in index.html')
               text = text.replace(marker, marker + '\n  ' + market_session, 1)
 
+          session_persistence = '<script src="session-persistence.js"></script>'
+          if session_persistence not in text:
+              marker = '<script src="trading-session-market.js"></script>'
+              if marker not in text:
+                  raise SystemExit('trading-session-market.js tag not found in index.html')
+              text = text.replace(marker, marker + '\n  ' + session_persistence, 1)
+
           p.write_text(text, encoding='utf-8')
           PY
 
@@ -58,5 +65,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "feat: wire trading session market selector"
+          git commit -m "feat: persist last app section"
           git push
