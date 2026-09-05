@@ -1,117 +1,12 @@
 /* HABBOUB JOURNAL PRO — Trade Capture */
-(function () {
-  "use strict";
-
-  const $ = (id) => document.getElementById(id);
-  const n = (id) => {
-    const v = parseFloat($(id)?.value ?? "");
-    return Number.isFinite(v) ? v : null;
-  };
-  const esc = (v) => String(v ?? "").replace(/[&<>\"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
-
-  function field(id, label, type = "number", step = "any", placeholder = "") {
-    return `<label class="jtp-field"><span>${label}</span><input id="${id}" type="${type}" ${type === "number" ? `step="${step}"` : ""} placeholder="${placeholder}" autocomplete="off"></label>`;
-  }
-
-  function injectFields() {
-    const form = $("journalForm");
-    if (!form || $("journalAccountBalance")) return;
-    const notes = $("journalNotes")?.closest("label") || $("journalNotes")?.parentElement;
-    const wrap = document.createElement("div");
-    wrap.className = "journal-trade-pro-fields";
-    wrap.innerHTML = `
-      <div class="jtp-section-title">TRADE FINANCIALS</div>
-      <div class="jtp-grid">
-        ${field("journalAccountBalance", "Account Balance", "number", "0.01", "10000")}
-        ${field("journalRiskAmount", "Risk Amount ($)", "number", "0.01", "100")}
-        ${field("journalPositionSize", "Position Size", "number", "0.001", "0.10")}
-        ${field("journalEntryPrice", "Entry Price", "number", "0.00001", "")}
-        ${field("journalStopLoss", "Stop Loss", "number", "0.00001", "")}
-        ${field("journalTakeProfit", "Take Profit", "number", "0.00001", "")}
-        ${field("journalExitPrice", "Exit Price", "number", "0.00001", "")}
-        ${field("journalRR", "Risk / Reward", "number", "0.01", "2.00")}
-      </div>
-      <div class="jtp-live-calc"><span>Calculated R</span><strong id="journalCalculatedR">--</strong><span>Potential $</span><strong id="journalPotentialMoney">--</strong></div>`;
-    if (notes?.parentNode) notes.parentNode.insertBefore(wrap, notes);
-    else form.appendChild(wrap);
-    ["journalAccountBalance","journalRiskAmount","journalPositionSize","journalEntryPrice","journalStopLoss","journalTakeProfit","journalExitPrice","journalRR"].forEach(id => $(id)?.addEventListener("input", calculate));
-  }
-
-  function calculate() {
-    const risk = n("journalRiskAmount");
-    const rr = n("journalRR");
-    const r = n("journalPnL");
-    const pnl = r !== null ? r : null;
-    $("journalCalculatedR") && ($("journalCalculatedR").textContent = risk && pnl !== null ? `${(pnl / risk).toFixed(2)}R` : "--");
-    $("journalPotentialMoney") && ($("journalPotentialMoney").textContent = risk && rr ? `$${(risk * rr).toFixed(2)}` : "--");
-  }
-
-  async function save(e) {
-    const form = $("journalForm");
-    if (!form || !window.supabaseClient || !window.state?.user) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    const symbol = $("journalPair")?.value.trim();
-    const direction = $("journalType")?.value || "BUY";
-    const pnl = n("journalPnL") ?? 0;
-    if (!symbol) {
-      window.showToast?.(window.state.language === "ar" ? "اكتب رمز السوق أولاً." : "Enter a market symbol first.");
-      return;
-    }
-    const entry = n("journalEntryPrice"), sl = n("journalStopLoss"), tp = n("journalTakeProfit"), exit = n("journalExitPrice");
-    let rr = n("journalRR");
-    if (rr === null && entry !== null && sl !== null && tp !== null && Math.abs(entry - sl) > 0) rr = Math.abs(tp - entry) / Math.abs(entry - sl);
-    const account = n("journalAccountBalance"), risk = n("journalRiskAmount");
-    const rResult = risk && risk > 0 ? pnl / risk : null;
-    const scoreText = $("sessionScore")?.textContent?.replace(/[^0-9.-]/g, "");
-    const marketScore = Number.isFinite(parseFloat(scoreText)) ? parseFloat(scoreText) : null;
-    const payload = {
-      user_id: window.state.user.id,
-      journal_type: "trade",
-      symbol,
-      direction: String(direction).toUpperCase(),
-      entry_price: entry,
-      stop_loss: sl,
-      take_profit: tp,
-      exit_price: exit,
-      risk_reward: rr,
-      result: pnl > 0 ? "WIN" : pnl < 0 ? "LOSS" : "BREAKEVEN",
-      notes: $("journalNotes")?.value.trim() || null,
-      setup: $("journalSetup")?.value?.trim() || null,
-      r_result: rResult,
-      account_balance: account,
-      risk_amount: risk,
-      position_size: n("journalPositionSize"),
-      pnl,
-      alignment_score: null,
-      market_score: marketScore,
-      market_risk: $("marketRisk")?.textContent?.trim() || null,
-      market_bias: $("sessionBias")?.textContent?.trim() || null
-    };
-    try {
-      const result = await window.supabaseClient.from("trading_journal").insert(payload);
-      if (result.error) throw result.error;
-      window.closeModal?.("journalModal");
-      form.reset();
-      await window.loadJournal?.();
-      window.showToast?.(window.state.language === "ar" ? "تم حفظ الصفقة بنجاح." : "Trade saved successfully.");
-    } catch (err) {
-      console.error("Journal Pro save error:", err);
-      window.showToast?.(window.state.language === "ar" ? `فشل حفظ الصفقة: ${err.message || "خطأ غير معروف"}` : `Could not save trade: ${err.message || "Unknown error"}`);
-    }
-  }
-
-  function style() {
-    if ($("journalTradeProStyle")) return;
-    const s = document.createElement("style"); s.id = "journalTradeProStyle";
-    s.textContent = `.journal-trade-pro-fields{margin:16px 0;padding:16px;border:1px solid rgba(0,220,255,.14);border-radius:16px;background:rgba(255,255,255,.025)}.jtp-section-title{font-size:11px;font-weight:800;letter-spacing:.14em;color:#72e9ff;margin-bottom:12px}.jtp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.jtp-field{display:flex;flex-direction:column;gap:6px}.jtp-field span{font-size:11px;color:#8b99a8}.jtp-field input{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:10px;border:1px solid #26313d;background:#0b1016;color:inherit;outline:none}.jtp-field input:focus{border-color:#3bdcff;box-shadow:0 0 0 3px rgba(59,220,255,.1)}.jtp-live-calc{display:flex;gap:10px;align-items:center;margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(0,220,255,.04);font-size:11px;color:#8b99a8}.jtp-live-calc strong{color:#fff;margin-right:10px}@media(max-width:600px){.jtp-grid{grid-template-columns:1fr}.jtp-live-calc{flex-wrap:wrap}}`;
-    document.head.appendChild(s);
-  }
-
-  function boot() {
-    style(); injectFields();
-    document.addEventListener("submit", (e) => { if (e.target?.id === "journalForm") save(e); }, true);
-    new MutationObserver(injectFields).observe(document.body, { childList: true, subtree: true });
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
-})();
+(function(){"use strict";
+const URL="https://feoyjasuvrqxzhskqzye.supabase.co",KEY="sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";let db=null;
+const $=id=>document.getElementById(id),n=id=>{const v=parseFloat($(id)?.value??"");return Number.isFinite(v)?v:null};
+function toast(m){let x=$("habboubToast");if(x){x.textContent=m;x.style.opacity="1";setTimeout(()=>x.style.opacity="0",3000)}}
+function field(id,label,ph=""){return `<label class="jtp-field"><span>${label}</span><input id="${id}" type="number" step="any" placeholder="${ph}" autocomplete="off"></label>`}
+function inject(){const f=$("journalForm");if(!f||$("journalAccountBalance"))return;const box=document.createElement("div");box.className="journal-trade-pro-fields";box.innerHTML=`<div class="jtp-section-title">TRADE FINANCIALS</div><div class="jtp-grid">${field("journalAccountBalance","Account Balance ($)","10000")}${field("journalRiskAmount","Risk Amount ($)","100")}${field("journalPositionSize","Position Size","0.10")}${field("journalEntryPrice","Entry Price")}${field("journalStopLoss","Stop Loss")}${field("journalTakeProfit","Take Profit")}${field("journalExitPrice","Exit Price")}${field("journalRR","Risk / Reward","2.00")}</div><div class="jtp-live-calc"><span>R Result</span><strong id="journalCalculatedR">--</strong><span>Potential</span><strong id="journalPotentialMoney">--</strong></div>`;const notes=$("journalNotes")?.closest("label")||$("journalNotes")?.parentElement;if(notes?.parentNode)notes.parentNode.insertBefore(box,notes);else f.appendChild(box);["journalRiskAmount","journalRR","journalPnL"].forEach(id=>$(id)?.addEventListener("input",calc))}
+function calc(){const r=n("journalRiskAmount"),p=n("journalPnL"),rr=n("journalRR");if($("journalCalculatedR"))$("journalCalculatedR").textContent=r&&p!==null?(p/r).toFixed(2)+"R":"--";if($("journalPotentialMoney"))$("journalPotentialMoney").textContent=r&&rr?"$"+(r*rr).toFixed(2):"--"}
+async function save(e){if(e.target?.id!=="journalForm")return;e.preventDefault();e.stopImmediatePropagation();const {data:{user}}=await db.auth.getUser();if(!user){toast("Please log in first.");return}const symbol=$("journalPair")?.value.trim();if(!symbol){toast("Enter a market symbol first.");return}const direction=String($("journalType")?.value||"BUY").toUpperCase(),pnl=n("journalPnL")??0,entry=n("journalEntryPrice"),sl=n("journalStopLoss"),tp=n("journalTakeProfit"),exit=n("journalExitPrice");let rr=n("journalRR");if(rr===null&&entry!==null&&sl!==null&&tp!==null&&Math.abs(entry-sl)>0)rr=Math.abs(tp-entry)/Math.abs(entry-sl);const risk=n("journalRiskAmount"),score=parseFloat($("sessionScore")?.textContent?.replace(/[^0-9.-]/g,""));const payload={user_id:user.id,journal_type:"trade",symbol,direction,entry_price:entry,stop_loss:sl,take_profit:tp,exit_price:exit,risk_reward:rr,result:pnl>0?"WIN":pnl<0?"LOSS":"BREAKEVEN",notes:$("journalNotes")?.value.trim()||null,setup:$("journalSetup")?.value?.trim()||null,r_result:risk&&risk>0?pnl/risk:null,account_balance:n("journalAccountBalance"),risk_amount:risk,position_size:n("journalPositionSize"),pnl,alignment_score:null,market_score:Number.isFinite(score)?score:null,market_risk:$("marketRisk")?.textContent?.trim()||null,market_bias:$("sessionBias")?.textContent?.trim()||null};const res=await db.from("trading_journal").insert(payload);if(res.error){console.error(res.error);toast("Could not save trade: "+res.error.message);return}$("journalModal")?.classList.add("hidden");$("journalForm")?.reset();toast("Trade saved successfully.");render()}
+async function render(){const {data:{user}}=await db.auth.getUser();if(!user)return;const res=await db.from("trading_journal").select("*").eq("user_id",user.id).order("created_at",{ascending:false}).limit(100);if(res.error)return;const rows=res.data||[],c=$("journalTable");if(c)c.innerHTML=rows.length?`<div class="jtp-table"><div class="jtp-row jtp-headrow"><span>Market</span><span>Direction</span><span>PnL</span><span>R</span><span>Balance</span></div>${rows.map(t=>`<div class="jtp-row"><span><b>${t.symbol||"--"}</b><small>${t.created_at?new Date(t.created_at).toLocaleString():""}</small></span><span>${t.direction||"--"}</span><span>${t.pnl>=0?"+":""}$${Number(t.pnl||0).toFixed(2)}</span><span>${t.r_result==null?"--":Number(t.r_result).toFixed(2)+"R"}</span><span>${t.account_balance==null?"--":"$"+Number(t.account_balance).toFixed(2)}</span></div>`).join("")}</div>`:`<div class="empty-state"><strong>No trades yet</strong><p>Add your first trade to start building your journal.</p></div>`;const wins=rows.filter(t=>Number(t.pnl)>0).length,total=rows.length;$("journalTrades")&&($("journalTrades").textContent=total);$("journalWinRate")&&($("journalWinRate").textContent=total?(wins/total*100).toFixed(1)+"%":"--");const profits=rows.filter(t=>Number(t.pnl)>0).reduce((a,t)=>a+Number(t.pnl),0),losses=Math.abs(rows.filter(t=>Number(t.pnl)<0).reduce((a,t)=>a+Number(t.pnl),0));$("journalProfitFactor")&&($("journalProfitFactor").textContent=losses?(profits/losses).toFixed(2):profits?"∞":"--");const rs=rows.map(t=>Number(t.r_result)).filter(Number.isFinite);$("journalAverageR")&&($("journalAverageR").textContent=rs.length?(rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(2)+"R":"--")}
+function css(){if($("jtpStyle"))return;const s=document.createElement("style");s.id="jtpStyle";s.textContent=`.journal-trade-pro-fields{margin:14px 0;padding:15px;border:1px solid rgba(59,220,255,.16);border-radius:15px;background:rgba(255,255,255,.025)}.jtp-section-title{font-size:11px;font-weight:800;letter-spacing:.14em;color:#72e9ff;margin-bottom:12px}.jtp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.jtp-field{display:flex;flex-direction:column;gap:6px}.jtp-field span{font-size:11px;color:#8b99a8}.jtp-field input{box-sizing:border-box;width:100%;padding:11px;border-radius:10px;border:1px solid #26313d;background:#0b1016;color:inherit}.jtp-live-calc{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px;padding:10px;border-radius:10px;background:rgba(59,220,255,.05);font-size:11px;color:#8b99a8}.jtp-live-calc strong{color:#fff}.jtp-table{overflow:auto}.jtp-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.3fr;gap:10px;align-items:center;padding:12px;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}.jtp-row small{display:block;color:#718092;margin-top:3px}.jtp-headrow{color:#718092;font-size:10px;text-transform:uppercase;letter-spacing:.08em}@media(max-width:650px){.jtp-grid{grid-template-columns:1fr}.jtp-row{min-width:600px}}`;document.head.appendChild(s)}
+function boot(){if(window.supabase?.createClient)db=window.supabase.createClient(URL,KEY);if(!db)return;css();inject();document.addEventListener("submit",save,true);new MutationObserver(inject).observe(document.body,{childList:true,subtree:true});db.auth.onAuthStateChange(()=>setTimeout(render,200));setTimeout(render,800)}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot();})();
