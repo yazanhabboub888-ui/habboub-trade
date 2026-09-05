@@ -1,7 +1,7 @@
 /* =========================================================
    HABBOUB — MARKET WATCH LIVE FEEDS
-   Core markets only: Gold, Nasdaq 100, S&P 500
-   Stable Vercel proxy + 5s refresh
+   Gold + Nasdaq 100 + S&P 500
+   5s polling through the Vercel server proxy
 ========================================================= */
 
 "use strict";
@@ -12,8 +12,9 @@
 
   const MARKETS = [
     { symbol: "XAUUSD", yahoo: "XAUUSD=X", priceId: "goldPrice", changeId: "goldChange", heroPriceId: "heroGold", heroChangeId: "heroGoldChange", decimals: 2 },
-    { symbol: "NAS100", yahoo: "^NDX", priceId: "nasdaqPrice", changeId: "nasdaqChange", heroPriceId: "heroNasdaq", heroChangeId: "heroNasdaqChange", decimals: 2 },
-    { symbol: "SPX", yahoo: "^GSPC", priceId: "spxPrice", changeId: "spxChange", heroPriceId: "heroSPX", heroChangeId: "heroSPXChange", decimals: 2 }
+    // Futures keep NAS100/SPX moving outside the cash-index session as well.
+    { symbol: "NAS100", yahoo: "NQ=F", priceId: "nasdaqPrice", changeId: "nasdaqChange", heroPriceId: "heroNasdaq", heroChangeId: "heroNasdaqChange", decimals: 2 },
+    { symbol: "SPX", yahoo: "ES=F", priceId: "spxPrice", changeId: "spxChange", heroPriceId: "heroSPX", heroChangeId: "heroSPXChange", decimals: 2 }
   ];
 
   let busy = false;
