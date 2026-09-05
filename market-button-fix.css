@@ -1,0 +1,46 @@
+/* Habboub — Market Watch session buttons */
+
+.large-market-card {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.large-market-card .market-open-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  margin-top: auto !important;
+  padding: 0 16px !important;
+  border: 1px solid rgba(54, 217, 255, .22) !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, rgba(54, 217, 255, .14), rgba(71, 125, 255, .10)) !important;
+  color: #f5f7fa !important;
+  font-size: 13px !important;
+  font-weight: 750 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 8px 24px rgba(0,0,0,.18) !important;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease !important;
+}
+
+.large-market-card .market-open-btn:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(54, 217, 255, .45) !important;
+  background: linear-gradient(135deg, rgba(54, 217, 255, .20), rgba(71, 125, 255, .15)) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.24), 0 0 20px rgba(54,217,255,.06) !important;
+}
+
+.large-market-card .market-open-btn:active {
+  transform: translateY(0) scale(.99) !important;
+}
+
+@media (max-width: 600px) {
+  .large-market-card .market-open-btn {
+    min-height: 46px !important;
+    padding: 0 14px !important;
+    font-size: 12px !important;
+  }
+}
