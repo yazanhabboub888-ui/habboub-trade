@@ -11,7 +11,8 @@
   const QUOTE_PROXY = "/api/market-quote?symbol=";
 
   const MARKETS = [
-    { symbol: "XAUUSD", yahoo: "XAUUSD=X", priceId: "goldPrice", changeId: "goldChange", heroPriceId: "heroGold", heroChangeId: "heroGoldChange", decimals: 2 },
+    // Yahoo's COMEX gold futures feed is stable for the live gold card.
+    { symbol: "XAUUSD", yahoo: "GC=F", priceId: "goldPrice", changeId: "goldChange", heroPriceId: "heroGold", heroChangeId: "heroGoldChange", decimals: 2 },
     // Futures keep NAS100/SPX moving outside the cash-index session as well.
     { symbol: "NAS100", yahoo: "NQ=F", priceId: "nasdaqPrice", changeId: "nasdaqChange", heroPriceId: "heroNasdaq", heroChangeId: "heroNasdaqChange", decimals: 2 },
     { symbol: "SPX", yahoo: "ES=F", priceId: "spxPrice", changeId: "spxChange", heroPriceId: "heroSPX", heroChangeId: "heroSPXChange", decimals: 2 }
@@ -38,7 +39,6 @@
     });
   }
 
-  // Keep the Market Watch cards clean: the large cards do not need Au/NQ/SP badges.
   function removeMarketWatchBadges() {
     document.querySelectorAll("#markets .large-market-card .market-icon").forEach((icon) => icon.remove());
   }
