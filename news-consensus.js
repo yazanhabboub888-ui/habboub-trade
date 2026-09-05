@@ -4,10 +4,10 @@
   const SUPABASE_URL = "https://feoyjasuvrqxzhskqzye.supabase.co";
   const SUPABASE_KEY = "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
   const ASSETS = [
-    { key: "XAUUSD", label: "GOLD", match: /gold|xau/i },
-    { key: "NAS100", label: "NASDAQ", match: /nasdaq|nas100|nq/i },
-    { key: "SPX", label: "S&P 500", match: /s&p|spx|sp500/i },
-    { key: "DXY", label: "USD", match: /usd|dxy|dollar/i }
+    { key: "XAUUSD", label: "GOLD" },
+    { key: "NAS100", label: "NASDAQ" },
+    { key: "SPX", label: "S&P 500" },
+    { key: "DXY", label: "USD" }
   ];
   let client = null;
 
@@ -48,10 +48,16 @@
     document.head.appendChild(style);
   }
 
+  function parseNumber(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const n = Number(String(value).replace(/,/g, "").replace(/%/g, "").trim());
+    return Number.isFinite(n) ? n : null;
+  }
+
   function directionFromEvent(event, asset) {
-    const actual = Number(String(event.actual ?? "").replace(/,/g, ""));
-    const forecast = Number(String(event.forecast ?? "").replace(/,/g, ""));
-    if (!Number.isFinite(actual) || !Number.isFinite(forecast)) return null;
+    const actual = parseNumber(event.actual);
+    const forecast = parseNumber(event.forecast);
+    if (actual === null || forecast === null) return null;
     const surprise = actual - forecast;
     if (Math.abs(surprise) < 0.000001) return { up: 50, down: 50, confidence: 50, source: "No surprise" };
     const name = String(event.event_name || event.title || "").toLowerCase();
@@ -64,26 +70,41 @@
     else if (asset === "XAUUSD") bullish = surprise > 0 ? (inflation ? -1 : -0.6) : (inflation ? 1 : 0.6);
     else bullish = surprise > 0 ? -0.7 : 0.7;
     if (!relevant) bullish *= 0.45;
-    const magnitude = Math.min(0.46, Math.max(.08, Math.abs(surprise) / Math.max(Math.abs(forecast), Math.abs(Number(event.previous) || 0), 1) * .7));
+    const magnitude = Math.min(0.46, Math.max(.08, Math.abs(surprise) / Math.max(Math.abs(forecast), Math.abs(parseNumber(event.previous) || 0), 1) * .7));
     const up = Math.round(50 + (bullish > 0 ? magnitude : -magnitude) * 100);
     return { up, down: 100 - up, confidence: Math.round(50 + magnitude * 75), source: "Actual vs forecast" };
   }
 
   function rowFor(rows, symbol, event) {
-    const exact = rows.find(r => r.symbol === symbol && r.news_id === event.id);
-    if (exact) return { up: Math.round(Number(exact.up_probability)), down: Math.round(Number(exact.down_probability)), confidence: Math.round(Number(exact.confidence)), source: exact.model_version || "consensus" };
+    const exact = rows.find(r => r.symbol === symbol && Number(r.news_id) === Number(event.id));
+    if (exact) return {
+      up: Math.round(Number(exact.up_probability)),
+      down: Math.round(Number(exact.down_probability)),
+      confidence: Math.round(Number(exact.confidence)),
+      source: exact.model_version || "consensus",
+      phase: exact.phase
+    };
     return directionFromEvent(event, symbol);
   }
 
-  function eventNameMatch(card, name) {
-    return name && card.textContent && card.textContent.toLowerCase().includes(String(name).toLowerCase());
+  function findNewsEvent(card, newsRows) {
+    const title = card.querySelector(".hni-event-title")?.textContent?.trim();
+    if (!title) return null;
+    const normalized = title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    let exact = newsRows.find(n => String(n.event_name || n.title || "").toLowerCase().trim() === title.toLowerCase().trim());
+    if (exact) return exact;
+    return newsRows.find(n => {
+      const name = String(n.event_name || n.title || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      return name === normalized || name.includes(normalized) || normalized.includes(name);
+    }) || null;
   }
 
   function renderImpact(eventCard, event, rows) {
-    if (eventCard.querySelector(".hni-impact-panel")) return;
+    const old = eventCard.querySelector(".hni-impact-panel");
+    if (old) old.remove();
     const values = ASSETS.map(asset => ({ asset, value: rowFor(rows, asset.key, event) }));
     const cells = values.map(({ asset, value }) => {
-      if (!value) return `<div class="hni-impact-asset"><span class="hni-impact-name">${asset.label}</span><div class="hni-impact-dir pending">PENDING</div><div class="hni-impact-conf">Awaiting release</div></div>`;
+      if (!value) return `<div class="hni-impact-asset"><span class="hni-impact-name">${asset.label}</span><div class="hni-impact-dir pending">PENDING</div><div class="hni-impact-conf">Awaiting model/release</div></div>`;
       const dir = value.up > value.down ? "up" : value.down > value.up ? "down" : "neutral";
       const arrow = dir === "up" ? "↑" : dir === "down" ? "↓" : "→";
       const side = dir === "up" ? value.up : dir === "down" ? value.down : 50;
@@ -91,7 +112,9 @@
     }).join("");
     const panel = document.createElement("div");
     panel.className = "hni-impact-panel";
-    panel.innerHTML = `<div class="hni-impact-head"><span class="hni-impact-title">NEWS IMPACT · ALL MARKETS</span><span class="hni-impact-phase">${escapeHtml(String(event.phase || "PRE-EVENT").toUpperCase())}</span></div><div class="hni-impact-grid">${cells}</div><div class="hni-impact-source">Direction is event-specific. Probability data takes priority when available; otherwise the UI uses the existing event surprise baseline.</div>`;
+    const phase = values.find(x => x.value?.phase)?.value?.phase || (event.actual !== null ? "LIVE" : "PRE-EVENT");
+    const model = values.find(x => x.value?.source)?.value?.source || "event baseline";
+    panel.innerHTML = `<div class="hni-impact-head"><span class="hni-impact-title">NEWS IMPACT · ALL MARKETS</span><span class="hni-impact-phase">${escapeHtml(String(phase).toUpperCase())}</span></div><div class="hni-impact-grid">${cells}</div><div class="hni-impact-source">Model: ${escapeHtml(model)} · Probability is event-specific and shown separately for each market.</div>`;
     eventCard.appendChild(panel);
   }
 
@@ -100,26 +123,36 @@
     if (!db) return;
     ensureStyles();
     const now = new Date().toISOString();
-    const { data: rows } = await db.from("news_probability")
-      .select("news_id,symbol,event_name,event_time,up_probability,down_probability,confidence,phase,model_version,updated_at")
-      .gte("event_time", now)
-      .order("event_time", { ascending: true })
-      .limit(60);
+    const [{ data: probabilityRows }, { data: newsRows }] = await Promise.all([
+      db.from("news_probability")
+        .select("news_id,symbol,event_name,event_time,up_probability,down_probability,confidence,phase,model_version,updated_at")
+        .gte("event_time", now)
+        .order("event_time", { ascending: true })
+        .limit(400),
+      db.from("news")
+        .select("id,title,event_name,actual,forecast,previous,event_time,impact,currency,event_status")
+        .eq("category", "economic_calendar")
+        .eq("currency", "USD")
+        .gte("event_time", now)
+        .order("event_time", { ascending: true })
+        .limit(100)
+    ]);
 
     const root = document.getElementById("habboubNewsIntelligence");
     if (!root) return;
-    const probabilityRows = rows || [];
+    const rows = probabilityRows || [];
+    const events = newsRows || [];
     const eventCards = [...root.querySelectorAll(".hni-event")];
 
     eventCards.forEach(card => {
-      const event = stateEventFromCard(card);
+      const event = findNewsEvent(card, events);
       if (!event) return;
-      const matchingRows = probabilityRows.filter(r => event.id && r.news_id === event.id);
+      const matchingRows = rows.filter(r => Number(r.news_id) === Number(event.id));
       renderImpact(card, event, matchingRows);
     });
 
-    const upcoming = probabilityRows.find(r => r.symbol === "XAUUSD" && Number(r.up_probability) !== 50) || probabilityRows.find(r => r.symbol === "XAUUSD");
-    const fallbackEvent = upcoming ? eventCards.find(card => eventNameMatch(card, upcoming.event_name)) : null;
+    const upcoming = rows.find(r => r.symbol === "XAUUSD" && Number(r.up_probability) !== 50) || rows.find(r => r.symbol === "XAUUSD");
+    const sourceEvent = upcoming ? events.find(e => Number(e.id) === Number(upcoming.news_id)) : events[0];
 
     root.classList.add("hni-live-consensus");
     const command = root.querySelector(".hni-command");
@@ -137,21 +170,18 @@
       badge.className = "hni-consensus-badge multi";
       root.appendChild(badge);
     }
-    const sourceEvent = fallbackEvent ? stateEventFromCard(fallbackEvent) : null;
     const minis = ASSETS.map(asset => {
-      const value = upcoming && upcoming.symbol === asset.key ? { up: Math.round(Number(upcoming.up_probability)), down: Math.round(Number(upcoming.down_probability)), confidence: Math.round(Number(upcoming.confidence)) } : sourceEvent ? directionFromEvent(sourceEvent, asset.key) : null;
+      const exact = sourceEvent ? rows.find(r => Number(r.news_id) === Number(sourceEvent.id) && r.symbol === asset.key) : null;
+      const value = exact ? {
+        up: Math.round(Number(exact.up_probability)),
+        down: Math.round(Number(exact.down_probability)),
+        confidence: Math.round(Number(exact.confidence))
+      } : sourceEvent ? directionFromEvent(sourceEvent, asset.key) : null;
       if (!value) return `<div class="hni-consensus-mini neutral"><small>${asset.label}</small><strong>--</strong></div>`;
       const up = value.up >= value.down;
       return `<div class="hni-consensus-mini ${up ? "up" : "down"}"><small>${asset.label}</small><strong>${up ? "↑" : "↓"} ${up ? value.up : value.down}%</strong></div>`;
     }).join("");
-    badge.innerHTML = `${minis}<small style="grid-column:1/-1;color:#687588">${escapeHtml(upcoming?.event_name || "Next economic event")}</small>`;
-  }
-
-  function stateEventFromCard(card) {
-    const title = card.querySelector(".hni-event-title")?.textContent?.trim();
-    if (!title) return null;
-    const foot = [...card.querySelectorAll(".hni-foot")].map(x => x.textContent).join(" ");
-    return { title, event_name: title, currency: "USD", id: null, actual: null, forecast: null, previous: null, phase: foot.includes("LIVE") ? "LIVE" : "PRE" };
+    badge.innerHTML = `${minis}<small style="grid-column:1/-1;color:#687588">${escapeHtml(sourceEvent?.event_name || sourceEvent?.title || "Next economic event")}</small>`;
   }
 
   function boot() {
