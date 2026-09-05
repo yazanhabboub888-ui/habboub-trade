@@ -3,5 +3,14 @@
 .lang-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:43px!important;height:30px!important;padding:0 9px!important;border:0!important;border-radius:8px!important;background:transparent!important;color:#7f8a98!important;font:800 11px/1 Inter,system-ui,sans-serif!important;cursor:pointer!important;white-space:nowrap!important;-webkit-tap-highlight-color:transparent!important}
 .lang-btn.active{background:rgba(54,217,255,.14)!important;color:#36d9ff!important;box-shadow:inset 0 0 0 1px rgba(54,217,255,.16)!important}
 .lang-btn:active{transform:scale(.96)!important}
+
+/* RTL must translate the text, not move/reflow the whole trading terminal. */
+html[dir="rtl"],html[dir="rtl"] body{direction:ltr!important;overflow-x:hidden!important;max-width:100%!important}
+html[dir="rtl"] main,html[dir="rtl"] .topbar,html[dir="rtl"] .mobile-nav{direction:ltr!important;max-width:100%!important}
+html[dir="rtl"] .page-section,html[dir="rtl"] .panel,html[dir="rtl"] .section-heading,html[dir="rtl"] .hero-content,html[dir="rtl"] .section-heading>div{direction:rtl}
+html[dir="rtl"] .page-section{width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+html[dir="rtl"] .top-actions,html[dir="rtl"] .language-switch,html[dir="rtl"] .desktop-nav{direction:ltr!important}
+html[dir="rtl"] input,html[dir="rtl"] textarea,html[dir="rtl"] select{direction:rtl!important;text-align:right!important}
+
 @media(max-width:900px){.top-actions .language-switch{display:flex!important}.top-actions{gap:7px!important}.lang-btn{min-width:38px!important;height:30px!important;padding:0 7px!important;font-size:10px!important}.login-btn{display:none!important}}
 @media(max-width:380px){.lang-btn{min-width:34px!important;padding:0 5px!important}.language-switch{gap:1px!important}.top-actions{gap:4px!important}}
