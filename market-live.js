@@ -1,7 +1,7 @@
 /* =========================================================
    HABBOUB — MARKET WATCH LIVE FEEDS
    CFD / Futures selector
-   5s polling through the Vercel server proxy
+   Lightweight live polling through the Vercel server proxy
 ========================================================= */
 
 "use strict";
@@ -36,6 +36,8 @@
 
   let busy = false;
   let refreshTimer = null;
+  let observer = null;
+  let observerQueued = false;
 
   function getSource() {
     return localStorage.getItem(SOURCE_KEY) === "futures" ? "futures" : DEFAULT_SOURCE;
@@ -68,11 +70,6 @@
     document.querySelectorAll("#markets .large-market-card .market-icon").forEach((icon) => icon.remove());
   }
 
-  /*
-     Market Watch uses one generic data-nav="dashboard" on all three buttons.
-     Own the click at document-capture level so the generic navigation handler
-     cannot overwrite the selected market. The clicked card is the source of truth.
-  */
   function bindSessionRouting() {
     if (window.__habboubMarketSessionRoutingBound) return;
     window.__habboubMarketSessionRoutingBound = true;
@@ -87,7 +84,6 @@
 
       event.preventDefault();
       event.stopImmediatePropagation();
-
       localStorage.setItem(SESSION_MARKET_KEY, symbol);
 
       if (typeof window.navigateTo === "function") {
@@ -244,6 +240,19 @@
     busy = false;
   }
 
+  function scheduleStructureCheck() {
+    if (observerQueued) return;
+    observerQueued = true;
+    requestAnimationFrame(() => {
+      observerQueued = false;
+      removeUnwantedCards();
+      removeMarketWatchBadges();
+      ensureSourceSwitch();
+      MARKETS.forEach(ensureStatus);
+      updateSourceButtons(getSource());
+    });
+  }
+
   function start() {
     removeUnwantedCards();
     removeMarketWatchBadges();
@@ -251,16 +260,26 @@
     bindSessionRouting();
     MARKETS.forEach(ensureStatus);
     refresh();
-    refreshTimer = window.setInterval(() => refresh(), REFRESH_MS);
 
-    new MutationObserver(() => {
-      removeUnwantedCards();
-      removeMarketWatchBadges();
-      ensureSourceSwitch();
-      bindSessionRouting();
-      MARKETS.forEach(ensureStatus);
-      updateSourceButtons(getSource());
-    }).observe(document.body, { childList: true, subtree: true });
+    refreshTimer = window.setInterval(() => {
+      const active = document.getElementById("home")?.classList.contains("active-section") ||
+        document.getElementById("markets")?.classList.contains("active-section");
+      if (!document.hidden && active) refresh();
+    }, REFRESH_MS);
+
+    const marketsRoot = document.getElementById("markets");
+    if (marketsRoot) {
+      observer = new MutationObserver(scheduleStructureCheck);
+      observer.observe(marketsRoot, { childList: true, subtree: true });
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        const active = document.getElementById("home")?.classList.contains("active-section") ||
+          document.getElementById("markets")?.classList.contains("active-section");
+        if (active) refresh(true);
+      }
+    }, { passive: true });
   }
 
   if (document.readyState === "loading") {
