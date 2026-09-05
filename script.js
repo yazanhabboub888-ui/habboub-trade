@@ -4384,15 +4384,19 @@ async function loadNews() {
         .from("news")
         .select(
           "id,title,description,source,url,image_url,category,impact,currency,published_at,created_at"
-        )
-        .order(
-          "published_at",
-          {
-            ascending:
-              false
-          }
-        )
-        .limit(30);
+    )
+    .eq(
+      "currency",
+      "USD"
+    )
+    .order(
+      "published_at",
+      {
+        ascending:
+          false
+      }
+    )
+    .limit(30);
 
 
     const result =
