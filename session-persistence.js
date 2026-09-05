@@ -8,17 +8,9 @@
     return String(value || "").replace(/^#/, "").trim().toLowerCase();
   }
 
-  function visibleSection() {
-    const sections = Array.from(document.querySelectorAll("section[id], main section[id], [data-section-id]"));
-    return sections.find((el) => {
-      const s = getComputedStyle(el);
-      return s.display !== "none" && s.visibility !== "hidden" && el.offsetParent !== null;
-    });
-  }
-
-  function saveCurrentSection() {
-    const section = visibleSection();
-    if (section && section.id) localStorage.setItem(KEY, section.id);
+  function saveSection(id) {
+    const section = normalize(id);
+    if (section) localStorage.setItem(KEY, section);
   }
 
   function findTarget(id) {
@@ -34,38 +26,39 @@
     const target = findTarget(saved);
     if (!target) return;
 
-    const nav = Array.from(document.querySelectorAll("a[href], button, [role='button'], [data-target], [data-section], [data-section-id]")).find((el) => {
-      const href = el.getAttribute("href");
-      const candidates = [
-        href && href.startsWith("#") ? href.slice(1) : "",
-        el.getAttribute("data-target"),
-        el.getAttribute("data-section"),
-        el.getAttribute("data-section-id")
-      ].map(normalize);
-      return candidates.includes(saved);
-    });
-
+    // Habboub navigation uses data-nav; trigger the real navigation handler.
+    const nav = document.querySelector(`[data-nav="${CSS.escape(saved)}"]`);
     if (nav) {
-      try { nav.click(); return; } catch (_) {}
+      nav.click();
+      return;
     }
 
+    target.classList.add("active-section");
     target.scrollIntoView({ block: "start" });
   }
 
+  // Save the exact section the user selected instead of trying to infer it
+  // from which DOM element happens to be visible.
   document.addEventListener("click", (event) => {
-    const nav = event.target.closest("a[href], button, [role='button'], [data-target], [data-section], [data-section-id]");
+    const nav = event.target.closest("[data-nav]");
     if (!nav) return;
-    setTimeout(saveCurrentSection, 80);
+    saveSection(nav.getAttribute("data-nav"));
   }, true);
 
-  window.addEventListener("beforeunload", saveCurrentSection);
-  window.addEventListener("pagehide", saveCurrentSection);
+  window.addEventListener("hashchange", () => {
+    const hash = normalize(window.location.hash);
+    if (hash) saveSection(hash);
+  });
 
   function init() {
-    setTimeout(restoreSection, 350);
-    setTimeout(restoreSection, 1200);
+    // Main script gets time to initialize its active section first.
+    setTimeout(restoreSection, 700);
+    setTimeout(restoreSection, 1600);
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
-  else init();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
 })();
