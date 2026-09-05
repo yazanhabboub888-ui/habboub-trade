@@ -6,6 +6,8 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_KEY
 );
 
+const $ = (id) => document.getElementById(id);
+
 const state = {
   language: localStorage.getItem("habboub_language") || "en",
   analysis: null,
@@ -14,11 +16,32 @@ const state = {
   announcements: [],
   courses: [],
   live: null,
-  lastUpdated: null
+  lastUpdated: null,
+  user: null,
+  profile: null
 };
 
 const translations = {
   en: {
+    login: "Login",
+    logout: "Logout",
+    profile: "Profile",
+    register: "Register",
+    create_account: "Create an account",
+    welcome_back: "Welcome back",
+    login_subtitle: "Enter your account to continue.",
+    register_subtitle: "Join Habboub Intelligence.",
+    full_name: "Full Name",
+    email: "Email",
+    password: "Password",
+    already_account: "Already have an account?",
+    account: "Account",
+    my_profile: "My Profile",
+    logged_in_as: "Logged in as",
+    login_success: "Login successful.",
+    account_created: "Account created. Check your email if verification is enabled.",
+    profile_updated: "Profile updated.",
+    home: "Home",
     nav_home: "Home",
     nav_session: "Trading Session",
     nav_markets: "Markets",
@@ -26,91 +49,29 @@ const translations = {
     nav_news: "News",
     nav_journal: "Journal",
     nav_live: "Live",
-    nav_academy: "Academy",
-    login: "Login",
-    system_online: "HABBOUB INTELLIGENCE ONLINE",
-    hero_title_1: "Understand the market.",
-    hero_title_2: "Trade with context.",
-    hero_description: "Habboub combines market structure, ICT context, COT positioning, economic events and AI intelligence into one clear trading environment.",
-    open_session: "Open Trading Session",
-    view_markets: "View Markets",
-    current_score: "CURRENT HABBOUB SCORE",
-    market_condition: "Market Condition",
-    risk: "Risk",
-    overview: "OVERVIEW",
-    market_overview: "Market Overview",
-    ai_context: "AI Context",
-    click_intelligence: "Open Intelligence →",
-    session: "SESSION",
-    trading_session: "Trading Session",
-    session_subtitle: "Everything you need for one trading session, in one place.",
-    habboub_score: "Habboub Score",
-    score_explanation: "Score reflects the overall market environment, not a BUY/SELL command.",
-    market_context: "Market Context",
-    symbol: "Symbol",
-    htf_bias: "HTF Bias",
-    liquidity: "Liquidity",
-    mss: "MSS",
-    fvg: "FVG",
-    environment: "Environment",
-    confidence: "Confidence",
-    ict_context: "ICT Context",
-    cot_positioning: "COT Positioning",
-    session_timeline: "Session Timeline",
-    why_score: "Why is the score here?",
-    full_analysis: "Full Analysis →",
-    waiting: "Waiting for data",
-    waiting_analysis: "Habboub will display the main factors here.",
-    markets: "MARKETS",
-    markets_title: "Market Watch",
-    markets_subtitle: "Monitor the assets that matter.",
-    intelligence_title: "Market Intelligence",
-    intelligence_subtitle: "Understand what is influencing the environment.",
-    ask_ai: "Ask Habboub AI",
-    current_analysis: "Current Analysis",
-    market_regime: "Market Regime",
-    risk_environment: "Risk Environment",
-    risk_note: "Risk describes the environment. It is not a trade instruction.",
-    news: "NEWS",
-    news_title: "Economic Calendar & Impact",
-    news_subtitle: "Major events can change the market environment quickly.",
-    loading_news: "Loading news...",
-    journal: "JOURNAL",
-    journal_title: "Trading Journal",
-    journal_subtitle: "Track execution, results and mistakes.",
-    add_trade: "Add Trade",
-    win_rate: "Win Rate",
-    average_r: "Average R",
-    drawdown: "Drawdown",
-    trades: "Trades",
-    recent_trades: "Recent Trades",
-    no_trades: "No trades yet",
-    add_first_trade: "Add your first trade to start building your journal.",
-    live: "LIVE",
-    live_title: "Live Room",
-    live_subtitle: "Live market sessions and broadcasts.",
-    no_live: "No live session right now",
-    live_waiting: "The live room will appear here when the admin starts a session.",
-    live_status: "Live Status",
-    academy: "ACADEMY",
-    academy_title: "Habboub Academy",
-    academy_subtitle: "Learn the concepts behind the analysis.",
-    loading_courses: "Loading courses...",
-    announcements: "ANNOUNCEMENTS",
-    announcements_title: "Latest Updates",
-    loading: "Loading...",
-    welcome_back: "Welcome back",
-    login_subtitle: "Enter your account to continue.",
-    create_account: "Create an account",
-    register: "Register",
-    register_subtitle: "Join Habboub Intelligence.",
-    already_account: "Already have an account?",
-    journal_form_subtitle: "Save the important details of your trade.",
-    save_trade: "Save Trade",
-    ai_welcome: "Ask about the current market context, risk, news or ICT structure."
+    nav_academy: "Academy"
   },
 
   ar: {
+    login: "تسجيل الدخول",
+    logout: "تسجيل الخروج",
+    profile: "الملف الشخصي",
+    register: "إنشاء حساب",
+    create_account: "إنشاء حساب",
+    welcome_back: "أهلاً بعودتك",
+    login_subtitle: "أدخل بيانات حسابك للمتابعة.",
+    register_subtitle: "انضم إلى Habboub Intelligence.",
+    full_name: "الاسم الكامل",
+    email: "البريد الإلكتروني",
+    password: "كلمة المرور",
+    already_account: "لديك حساب بالفعل؟",
+    account: "الحساب",
+    my_profile: "ملفي الشخصي",
+    logged_in_as: "مسجل الدخول باسم",
+    login_success: "تم تسجيل الدخول بنجاح.",
+    account_created: "تم إنشاء الحساب. افحص بريدك الإلكتروني إذا كان تأكيد البريد مفعلاً.",
+    profile_updated: "تم تحديث الملف الشخصي.",
+    home: "الرئيسية",
     nav_home: "الرئيسية",
     nav_session: "جلسة التداول",
     nav_markets: "الأسواق",
@@ -118,109 +79,35 @@ const translations = {
     nav_news: "الأخبار",
     nav_journal: "السجل",
     nav_live: "البث المباشر",
-    nav_academy: "الأكاديمية",
-    login: "تسجيل الدخول",
-    system_online: "نظام حبوب يعمل الآن",
-    hero_title_1: "افهم السوق.",
-    hero_title_2: "تداول مع السياق.",
-    hero_description: "يجمع حبوب هيكل السوق وسياق ICT وتمركزات COT والأحداث الاقتصادية وذكاء الذكاء الاصطناعي في بيئة تداول واحدة واضحة.",
-    open_session: "افتح جلسة التداول",
-    view_markets: "عرض الأسواق",
-    current_score: "درجة حبوب الحالية",
-    market_condition: "حالة السوق",
-    risk: "المخاطرة",
-    overview: "نظرة عامة",
-    market_overview: "نظرة عامة على السوق",
-    ai_context: "سياق الذكاء الاصطناعي",
-    click_intelligence: "افتح الذكاء →",
-    session: "الجلسة",
-    trading_session: "جلسة التداول",
-    session_subtitle: "كل ما تحتاجه لجلسة تداول واحدة في مكان واحد.",
-    habboub_score: "درجة حبوب",
-    score_explanation: "الدرجة تصف بيئة السوق العامة وليست أمر شراء أو بيع.",
-    market_context: "سياق السوق",
-    symbol: "الأصل",
-    htf_bias: "اتجاه HTF",
-    liquidity: "السيولة",
-    mss: "MSS",
-    fvg: "FVG",
-    environment: "البيئة",
-    confidence: "الثقة",
-    ict_context: "سياق ICT",
-    cot_positioning: "تمركزات COT",
-    session_timeline: "مراحل الجلسة",
-    why_score: "لماذا الدرجة بهذا الشكل؟",
-    full_analysis: "التحليل الكامل →",
-    waiting: "بانتظار البيانات",
-    waiting_analysis: "سيعرض حبوب أهم العوامل هنا.",
-    markets: "الأسواق",
-    markets_title: "مراقبة الأسواق",
-    markets_subtitle: "راقب الأصول المهمة.",
-    intelligence_title: "ذكاء السوق",
-    intelligence_subtitle: "افهم العوامل التي تؤثر على البيئة.",
-    ask_ai: "اسأل حبوب AI",
-    current_analysis: "التحليل الحالي",
-    market_regime: "نظام السوق",
-    risk_environment: "بيئة المخاطرة",
-    risk_note: "المخاطرة تصف البيئة وليست توصية تداول.",
-    news: "الأخبار",
-    news_title: "الأجندة الاقتصادية والتأثير",
-    news_subtitle: "الأحداث الكبرى يمكن أن تغير بيئة السوق بسرعة.",
-    loading_news: "جاري تحميل الأخبار...",
-    journal: "السجل",
-    journal_title: "سجل التداول",
-    journal_subtitle: "تابع التنفيذ والنتائج والأخطاء.",
-    add_trade: "إضافة صفقة",
-    win_rate: "نسبة الفوز",
-    average_r: "متوسط R",
-    drawdown: "السحب",
-    trades: "الصفقات",
-    recent_trades: "آخر الصفقات",
-    no_trades: "لا توجد صفقات",
-    add_first_trade: "أضف أول صفقة لبدء بناء سجل التداول.",
-    live: "مباشر",
-    live_title: "غرفة البث",
-    live_subtitle: "جلسات السوق والبث المباشر.",
-    no_live: "لا توجد جلسة مباشرة الآن",
-    live_waiting: "سيظهر البث هنا عندما يبدأ المسؤول الجلسة.",
-    live_status: "حالة البث",
-    academy: "الأكاديمية",
-    academy_title: "أكاديمية حبوب",
-    academy_subtitle: "تعلم المفاهيم التي يعتمد عليها التحليل.",
-    loading_courses: "جاري تحميل الدورات...",
-    announcements: "الإعلانات",
-    announcements_title: "آخر التحديثات",
-    loading: "جاري التحميل...",
-    welcome_back: "أهلًا بعودتك",
-    login_subtitle: "أدخل حسابك للمتابعة.",
-    create_account: "إنشاء حساب",
-    register: "تسجيل",
-    register_subtitle: "انضم إلى Habboub Intelligence.",
-    already_account: "لديك حساب بالفعل؟",
-    journal_form_subtitle: "احفظ المعلومات المهمة عن صفقتك.",
-    save_trade: "حفظ الصفقة",
-    ai_welcome: "اسأل عن سياق السوق الحالي أو المخاطرة أو الأخبار أو هيكل ICT."
+    nav_academy: "الأكاديمية"
   }
 };
 
-document.addEventListener("DOMContentLoaded", init);
+
+/* =========================================================
+   INIT
+========================================================= */
 
 async function init() {
   applyLanguage(state.language);
+
   setupNavigation();
   setupLanguage();
   setupModals();
   setupAI();
   setupMobileMenu();
+  setupAuthUI();
 
   setTimeout(() => {
-    document.getElementById("loader")?.classList.add("hide");
+    $("loader")?.classList.add("hide");
   }, 500);
 
   updateClock();
   setInterval(updateClock, 1000);
 
   updateSessionTimeline();
+
+  await refreshAuthUI();
 
   await Promise.allSettled([
     loadMarketAnalysis(),
@@ -234,68 +121,80 @@ async function init() {
   subscribeToUpdates();
 }
 
-function $(id) {
-  return document.getElementById(id);
-}
 
-/* LANGUAGE */
-
-function setupLanguage() {
-  $("langEN")?.addEventListener("click", () => changeLanguage("en"));
-  $("langAR")?.addEventListener("click", () => changeLanguage("ar"));
-}
-
-function changeLanguage(language) {
-  state.language = language;
-  localStorage.setItem("habboub_language", language);
-  applyLanguage(language);
-  renderNews();
-}
+/* =========================================================
+   LANGUAGE
+========================================================= */
 
 function applyLanguage(language) {
-  const isArabic = language === "ar";
+  const lang = translations[language] || translations.en;
 
   document.documentElement.lang = language;
-  document.documentElement.dir = isArabic ? "rtl" : "ltr";
+  document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
 
   document.querySelectorAll("[data-i18n]").forEach((element) => {
     const key = element.dataset.i18n;
-    if (translations[language][key]) {
-      element.textContent = translations[language][key];
+
+    if (lang[key]) {
+      element.textContent = lang[key];
     }
   });
 
   $("langEN")?.classList.toggle("active", language === "en");
   $("langAR")?.classList.toggle("active", language === "ar");
+
+  localStorage.setItem("habboub_language", language);
 }
 
-/* NAVIGATION */
+function setupLanguage() {
+  $("langEN")?.addEventListener("click", () => {
+    state.language = "en";
+    applyLanguage("en");
+  });
+
+  $("langAR")?.addEventListener("click", () => {
+    state.language = "ar";
+    applyLanguage("ar");
+  });
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
 
 function setupNavigation() {
   document.querySelectorAll("[data-nav]").forEach((element) => {
     element.addEventListener("click", () => {
       const target = element.dataset.nav;
-      showSection(target);
+
+      if (!target) return;
+
+      navigateTo(target);
     });
   });
 }
 
-function showSection(sectionId) {
-  const target = document.getElementById(sectionId);
-
-  if (!target) return;
-
+function navigateTo(target) {
   document.querySelectorAll(".page-section").forEach((section) => {
     section.classList.remove("active-section");
   });
 
-  target.classList.add("active-section");
+  const section = $(target);
 
-  document.querySelectorAll(".nav-link").forEach((button) => {
-    button.classList.toggle(
-      "active",
-      button.dataset.nav === sectionId
-    );
+  if (section) {
+    section.classList.add("active-section");
+  }
+
+  document.querySelectorAll("[data-nav]").forEach((element) => {
+    if (
+      element.classList.contains("nav-link") &&
+      element.dataset.nav === target
+    ) {
+      element.classList.add("active");
+    } else if (element.classList.contains("nav-link")) {
+      element.classList.remove("active");
+    }
   });
 
   $("mobileNav")?.classList.remove("open");
@@ -306,7 +205,10 @@ function showSection(sectionId) {
   });
 }
 
-/* MOBILE */
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
 
 function setupMobileMenu() {
   $("mobileMenuButton")?.addEventListener("click", () => {
@@ -314,10 +216,30 @@ function setupMobileMenu() {
   });
 }
 
-/* MODALS */
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function openModal(id) {
+  $(id)?.classList.remove("hidden");
+}
+
+function closeModal(id) {
+  $(id)?.classList.add("hidden");
+}
 
 function setupModals() {
-  $("loginButton")?.addEventListener("click", () => openModal("loginModal"));
+  $("loginButton")?.addEventListener("click", async () => {
+    const user = await getCurrentUser();
+
+    if (user) {
+      toggleProfileMenu();
+      return;
+    }
+
+    openModal("loginModal");
+  });
 
   $("showRegisterButton")?.addEventListener("click", () => {
     closeModal("loginModal");
@@ -329,7 +251,19 @@ function setupModals() {
     openModal("loginModal");
   });
 
-  $("openJournalButton")?.addEventListener("click", () => {
+  $("openJournalButton")?.addEventListener("click", async () => {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      openModal("loginModal");
+      showToast(
+        state.language === "ar"
+          ? "سجل الدخول أولاً لاستخدام السجل."
+          : "Please login first to use the journal."
+      );
+      return;
+    }
+
     openModal("journalModal");
   });
 
@@ -351,658 +285,529 @@ function setupModals() {
   $("journalForm")?.addEventListener("submit", saveJournalTrade);
 }
 
-function openModal(id) {
-  $(id)?.classList.remove("hidden");
+
+/* =========================================================
+   AUTH UI
+========================================================= */
+
+function setupAuthUI() {
+  supabaseClient.auth.onAuthStateChange(async (event) => {
+    if (
+      event === "SIGNED_IN" ||
+      event === "SIGNED_OUT" ||
+      event === "USER_UPDATED"
+    ) {
+      setTimeout(async () => {
+        await refreshAuthUI();
+        await loadJournal();
+      }, 100);
+    }
+  });
 }
 
-function closeModal(id) {
-  $(id)?.classList.add("hidden");
+async function refreshAuthUI() {
+  const user = await getCurrentUser();
+
+  state.user = user;
+  state.profile = null;
+
+  if (user) {
+    state.profile = await getProfile(user.id);
+  }
+
+  renderAuthUI();
 }
 
-/* AUTH */
+async function getCurrentUser() {
+  try {
+    const { data, error } = await supabaseClient.auth.getUser();
+
+    if (error) {
+      return null;
+    }
+
+    return data?.user || null;
+  } catch {
+    return null;
+  }
+}
+
+async function getProfile(userId) {
+  if (!userId) return null;
+
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Profile load error:", error);
+    return null;
+  }
+
+  return data;
+}
+
+function renderAuthUI() {
+  const loginButton = $("loginButton");
+
+  if (!loginButton) return;
+
+  if (!state.user) {
+    loginButton.textContent =
+      translations[state.language]?.login || "Login";
+
+    loginButton.classList.remove("user-account-button");
+
+    const oldProfile = $("profileMenu");
+    oldProfile?.remove();
+
+    return;
+  }
+
+  const name =
+    state.profile?.full_name ||
+    state.user.user_metadata?.full_name ||
+    state.user.email?.split("@")[0] ||
+    "User";
+
+  const avatarUrl =
+    state.profile?.avatar_url ||
+    state.user.user_metadata?.avatar_url ||
+    "";
+
+  loginButton.classList.add("user-account-button");
+
+  loginButton.innerHTML = "";
+
+  const avatar = document.createElement("span");
+  avatar.className = "user-avatar";
+
+  if (avatarUrl) {
+    avatar.innerHTML = `<img src="${escapeAttribute(
+      avatarUrl
+    )}" alt="Profile">`;
+  } else {
+    avatar.textContent = name.charAt(0).toUpperCase();
+  }
+
+  const nameSpan = document.createElement("span");
+  nameSpan.className = "user-name";
+  nameSpan.textContent = name;
+
+  loginButton.appendChild(avatar);
+  loginButton.appendChild(nameSpan);
+
+  createProfileMenu(name, avatarUrl);
+}
+
+function createProfileMenu(name, avatarUrl) {
+  $("profileMenu")?.remove();
+
+  const loginButton = $("loginButton");
+
+  if (!loginButton?.parentElement) return;
+
+  const menu = document.createElement("div");
+
+  menu.id = "profileMenu";
+  menu.className = "profile-menu hidden";
+
+  const lang = translations[state.language] || translations.en;
+
+  menu.innerHTML = `
+    <div class="profile-menu-header">
+      <div class="profile-menu-avatar">
+        ${
+          avatarUrl
+            ? `<img src="${escapeAttribute(avatarUrl)}" alt="Profile">`
+            : escapeHtml(name.charAt(0).toUpperCase())
+        }
+      </div>
+
+      <div class="profile-menu-info">
+        <strong>${escapeHtml(name)}</strong>
+        <small>${escapeHtml(state.user?.email || "")}</small>
+      </div>
+    </div>
+
+    <button type="button" id="profileMenuButton">
+      <span>👤</span>
+      <span>${lang.my_profile}</span>
+    </button>
+
+    <button type="button" id="logoutButton" class="logout-menu-button">
+      <span>↪</span>
+      <span>${lang.logout}</span>
+    </button>
+  `;
+
+  loginButton.parentElement.appendChild(menu);
+
+  $("profileMenuButton")?.addEventListener("click", () => {
+    menu.classList.add("hidden");
+
+    showProfileModal();
+  });
+
+  $("logoutButton")?.addEventListener("click", async () => {
+    await logoutUser();
+  });
+}
+
+function toggleProfileMenu() {
+  const menu = $("profileMenu");
+
+  if (!menu) {
+    const name =
+      state.profile?.full_name ||
+      state.user?.user_metadata?.full_name ||
+      state.user?.email?.split("@")[0] ||
+      "User";
+
+    createProfileMenu(
+      name,
+      state.profile?.avatar_url ||
+        state.user?.user_metadata?.avatar_url ||
+        ""
+    );
+  }
+
+  $("profileMenu")?.classList.toggle("hidden");
+}
+
+async function logoutUser() {
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+
+  state.user = null;
+  state.profile = null;
+  state.journal = [];
+
+  renderAuthUI();
+  renderJournal([]);
+
+  showToast(
+    state.language === "ar"
+      ? "تم تسجيل الخروج."
+      : "Logged out successfully."
+  );
+}
+
+
+/* =========================================================
+   PROFILE MODAL
+========================================================= */
+
+function showProfileModal() {
+  document.querySelector("#profileModal")?.remove();
+
+  const profile = state.profile;
+  const user = state.user;
+
+  if (!user) return;
+
+  const name =
+    profile?.full_name ||
+    user.user_metadata?.full_name ||
+    user.email?.split("@")[0] ||
+    "User";
+
+  const avatarUrl =
+    profile?.avatar_url ||
+    user.user_metadata?.avatar_url ||
+    "";
+
+  const lang = translations[state.language] || translations.en;
+
+  const modal = document.createElement("div");
+
+  modal.id = "profileModal";
+  modal.className = "modal";
+
+  modal.innerHTML = `
+    <div class="modal-overlay"></div>
+
+    <div class="modal-box profile-modal-box">
+      <button class="modal-close" id="profileModalClose">×</button>
+
+      <div class="profile-large-avatar">
+        ${
+          avatarUrl
+            ? `<img src="${escapeAttribute(avatarUrl)}" alt="Profile">`
+            : escapeHtml(name.charAt(0).toUpperCase())
+        }
+      </div>
+
+      <h2>${lang.my_profile}</h2>
+
+      <p class="profile-email">
+        ${escapeHtml(user.email || "")}
+      </p>
+
+      <form id="profileForm">
+
+        <label>
+          <span>${lang.full_name}</span>
+          <input
+            id="profileFullName"
+            type="text"
+            value="${escapeAttribute(name)}"
+            required
+          >
+        </label>
+
+        <label>
+          <span>Avatar URL</span>
+          <input
+            id="profileAvatar"
+            type="url"
+            value="${escapeAttribute(avatarUrl)}"
+            placeholder="https://..."
+          >
+        </label>
+
+        <button class="primary-btn full" type="submit">
+          ${lang.profile_updated}
+        </button>
+
+      </form>
+
+      <div class="form-message" id="profileMessage"></div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  $("profileModalClose")?.addEventListener("click", () => {
+    modal.remove();
+  });
+
+  modal.querySelector(".modal-overlay")?.addEventListener("click", () => {
+    modal.remove();
+  });
+
+  $("profileForm")?.addEventListener("submit", updateProfile);
+}
+
+async function updateProfile(event) {
+  event.preventDefault();
+
+  const fullName = $("profileFullName")?.value.trim();
+  const avatarUrl = $("profileAvatar")?.value.trim();
+
+  if (!state.user) return;
+
+  const message = $("profileMessage");
+
+  if (message) {
+    message.textContent =
+      state.language === "ar"
+        ? "جاري الحفظ..."
+        : "Saving...";
+  }
+
+  const { error } = await supabaseClient
+    .from("profiles")
+    .upsert({
+      id: state.user.id,
+      full_name: fullName,
+      email: state.user.email,
+      avatar_url: avatarUrl || null
+    });
+
+  if (error) {
+    if (message) {
+      message.textContent = error.message;
+    }
+
+    return;
+  }
+
+  await supabaseClient.auth.updateUser({
+    data: {
+      full_name: fullName,
+      avatar_url: avatarUrl || null
+    }
+  });
+
+  state.profile = await getProfile(state.user.id);
+
+  renderAuthUI();
+
+  if (message) {
+    message.textContent =
+      state.language === "ar"
+        ? "تم حفظ التغييرات."
+        : "Changes saved.";
+  }
+
+  showToast(
+    state.language === "ar"
+      ? "تم تحديث الملف الشخصي."
+      : "Profile updated."
+  );
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 async function loginUser(event) {
   event.preventDefault();
 
-  const email = $("loginEmail").value.trim();
-  const password = $("loginPassword").value;
+  const email = $("loginEmail")?.value.trim();
+  const password = $("loginPassword")?.value;
 
-  setMessage("loginMessage", "Logging in...");
+  setMessage(
+    "loginMessage",
+    state.language === "ar"
+      ? "جاري تسجيل الدخول..."
+      : "Logging in..."
+  );
 
-  const { error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
 
   if (error) {
     setMessage("loginMessage", error.message);
     return;
   }
 
-  setMessage("loginMessage", "Login successful.");
+  state.user = data?.user || null;
+
+  await refreshAuthUI();
+
   closeModal("loginModal");
 
   await loadJournal();
-  showToast("Logged in");
+
+  showToast(
+    state.language === "ar"
+      ? "تم تسجيل الدخول بنجاح."
+      : "Login successful."
+  );
 }
+
+
+/* =========================================================
+   REGISTER
+========================================================= */
 
 async function registerUser(event) {
   event.preventDefault();
 
-  const email = $("registerEmail").value.trim();
-  const password = $("registerPassword").value;
+  const fullName = $("registerFullName")?.value.trim();
+  const email = $("registerEmail")?.value.trim();
+  const password = $("registerPassword")?.value;
 
-  setMessage("registerMessage", "Creating account...");
+  if (!fullName) {
+    setMessage(
+      "registerMessage",
+      state.language === "ar"
+        ? "اكتب اسمك الكامل."
+        : "Please enter your full name."
+    );
 
-  const { error } = await supabaseClient.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo:
-        "https://yazanhabboub888-ui.github.io/habboub-trade/"
-    }
-  });
+    return;
+  }
+
+  setMessage(
+    "registerMessage",
+    state.language === "ar"
+      ? "جاري إنشاء الحساب..."
+      : "Creating account..."
+  );
+
+  const { data, error } =
+    await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName
+        },
+        emailRedirectTo:
+          "https://yazanhabboub888-ui.github.io/habboub-trade/"
+      }
+    });
 
   if (error) {
     setMessage("registerMessage", error.message);
     return;
   }
 
+  /*
+   * If email confirmation is disabled,
+   * Supabase may return an active session.
+   * The database trigger handles profile creation
+   * even when email confirmation is enabled.
+   */
+
+  if (data?.session) {
+    state.user = data.user;
+
+    await refreshAuthUI();
+
+    closeModal("registerModal");
+
+    showToast(
+      state.language === "ar"
+        ? "تم إنشاء الحساب بنجاح."
+        : "Account created successfully."
+    );
+
+    return;
+  }
+
   setMessage(
     "registerMessage",
-    "Account created. Check your email if verification is enabled."
+    state.language === "ar"
+      ? "تم إنشاء الحساب. افحص بريدك الإلكتروني لتأكيد الحساب."
+      : "Account created. Check your email to confirm your account."
   );
 }
 
-async function getCurrentUser() {
-  const { data } = await supabaseClient.auth.getUser();
-  return data?.user || null;
-}
 
-/* MARKET ANALYSIS */
-
-async function loadMarketAnalysis() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("market_analysis")
-      .select("*")
-      .eq("symbol", "XAUUSD")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (error) {
-      console.warn("Market analysis:", error.message);
-      return;
-    }
-
-    if (!data) return;
-
-    state.analysis = data;
-    state.lastUpdated = data.created_at;
-
-    renderMarketAnalysis(data);
-  } catch (error) {
-    console.warn("Market analysis failed:", error);
-  }
-}
-
-function renderMarketAnalysis(data) {
-  const score = normalizeScore(
-    data.score ??
-    data.habboub_score ??
-    data.confidence ??
-    0
-  );
-
-  const bias = data.bias ?? data.htf_bias ?? "--";
-  const tradeStatus = data.trade_status ?? data.status ?? "--";
-  const risk = data.risk_level ?? data.risk ?? "--";
-  const condition = data.market_condition ?? data.condition ?? "--";
-  const confidence = normalizeScore(data.confidence ?? score);
-  const analysisText =
-    data.analysis ??
-    data.description ??
-    data.market_analysis ??
-    "Market analysis is available.";
-
-  setText("heroScore", score);
-  setText("sessionScore", score);
-
-  setText("heroScoreState", tradeStatus);
-  setText("sessionScoreState", tradeStatus);
-
-  setText("heroCondition", condition);
-  setText("marketCondition", condition);
-
-  setText("heroRisk", risk);
-  setText("marketRisk", risk);
-
-  setText("analysisStatus", tradeStatus);
-  setText("analysisSymbol", data.symbol || "XAUUSD");
-  setText("analysisSymbolLarge", data.symbol || "XAUUSD");
-
-  setText("htfBias", bias);
-  setText("sessionBias", bias);
-  setText("intelBias", bias);
-
-  setText(
-    "liquidity",
-    data.liquidity ?? data.liquidity_status ?? "--"
-  );
-
-  setText(
-    "sessionLiquidity",
-    data.liquidity ?? data.liquidity_status ?? "--"
-  );
-
-  setText(
-    "intelLiquidity",
-    data.liquidity ?? data.liquidity_status ?? "--"
-  );
-
-  setText("mss", data.mss ?? data.market_structure ?? "--");
-  setText("sessionMSS", data.mss ?? data.market_structure ?? "--");
-  setText("intelMSS", data.mss ?? data.market_structure ?? "--");
-
-  setText("fvg", data.fvg ?? data.fvg_status ?? "--");
-  setText("sessionFVG", data.fvg ?? data.fvg_status ?? "--");
-  setText("intelFVG", data.fvg ?? data.fvg_status ?? "--");
-
-  setText("marketConfidence", `${confidence}%`);
-  setText("analysisConfidenceLarge", `${confidence}%`);
-
-  setText("marketAnalysisText", analysisText);
-  setText("analysisLongText", analysisText);
-
-  setText("analysisDescription", condition || "Market analysis");
-
-  setText(
-    "cotCommercial",
-    data.cot_commercial ?? data.commercial ?? "--"
-  );
-
-  setText(
-    "cotManaged",
-    data.cot_managed ?? data.managed_money ?? "--"
-  );
-
-  setText(
-    "cotNet",
-    data.cot_net ?? data.net_position ?? "--"
-  );
-
-  setText(
-    "cotBias",
-    data.cot_bias ?? "--"
-  );
-
-  setText(
-    "intelCommercial",
-    data.cot_commercial ?? data.commercial ?? "--"
-  );
-
-  setText(
-    "intelManaged",
-    data.cot_managed ?? data.managed_money ?? "--"
-  );
-
-  setText(
-    "intelNet",
-    data.cot_net ?? data.net_position ?? "--"
-  );
-
-  setText(
-    "intelCotBias",
-    data.cot_bias ?? "--"
-  );
-
-  setText(
-    "regimeTrend",
-    data.trend ?? data.market_trend ?? "--"
-  );
-
-  setText(
-    "regimeVolatility",
-    data.volatility ?? "--"
-  );
-
-  setText(
-    "regimeLiquidity",
-    data.liquidity ?? "--"
-  );
-
-  setText(
-    "regimeBadge",
-    data.regime ?? condition ?? "--"
-  );
-
-  const scoreBar = $("sessionScoreBar");
-  if (scoreBar) scoreBar.style.width = `${score}%`;
-
-  const confidenceBar = $("confidenceBar");
-  if (confidenceBar) confidenceBar.style.width = `${confidence}%`;
-
-  const riskMeter = $("riskMeter")?.querySelector("span");
-
-  if (riskMeter) {
-    const riskNumber = getRiskNumber(risk);
-    riskMeter.style.width = `${riskNumber}%`;
-  }
-
-  updateScoreRing(score);
-  renderReasons(data, score);
-}
-
-/* SCORE */
-
-function normalizeScore(value) {
-  const number = Number(value);
-
-  if (!Number.isFinite(number)) return 0;
-
-  return Math.max(0, Math.min(100, Math.round(number)));
-}
-
-function updateScoreRing(score) {
-  const ring = $("heroScoreRing");
-
-  if (!ring) return;
-
-  const degrees = score * 3.6;
-
-  ring.style.background =
-    `conic-gradient(var(--cyan) 0deg, var(--blue) ${degrees}deg, rgba(255,255,255,.07) ${degrees}deg)`;
-}
-
-function getRiskNumber(risk) {
-  const text = String(risk).toLowerCase();
-
-  if (
-    text.includes("high") ||
-    text.includes("مرتفع") ||
-    text.includes("danger")
-  ) return 85;
-
-  if (
-    text.includes("medium") ||
-    text.includes("moderate") ||
-    text.includes("متوسط")
-  ) return 55;
-
-  if (
-    text.includes("low") ||
-    text.includes("منخفض")
-  ) return 25;
-
-  const number = Number(risk);
-
-  return Number.isFinite(number)
-    ? Math.max(0, Math.min(100, number))
-    : 0;
-}
-
-function renderReasons(data, score) {
-  const container = $("scoreReasons");
-
-  if (!container) return;
-
-  const reasons = [
-    {
-      icon: "◈",
-      title: "HTF Bias",
-      value: data.bias ?? data.htf_bias ?? "--"
-    },
-    {
-      icon: "◎",
-      title: "Liquidity",
-      value: data.liquidity ?? "--"
-    },
-    {
-      icon: "⚡",
-      title: "News",
-      value: getNewsSummary()
-    },
-    {
-      icon: "◆",
-      title: "COT",
-      value: data.cot_bias ?? "--"
-    },
-    {
-      icon: "◉",
-      title: "Risk",
-      value: data.risk_level ?? "--"
-    },
-    {
-      icon: "✦",
-      title: "Score",
-      value: `${score}/100`
-    }
-  ];
-
-  container.innerHTML = reasons.map((reason) => `
-    <div class="reason">
-      <span>${escapeHtml(reason.icon)}</span>
-      <div>
-        <strong>${escapeHtml(reason.title)}</strong>
-        <p>${escapeHtml(String(reason.value))}</p>
-      </div>
-    </div>
-  `).join("");
-}
-
-/* NEWS */
-
-async function loadNews() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("economic_news")
-      .select("*")
-      .order("event_time", { ascending: true })
-      .limit(40);
-
-    if (error) {
-      console.warn("News table unavailable:", error.message);
-      renderDemoNews();
-      return;
-    }
-
-    state.news = data || [];
-
-    renderNews();
-  } catch (error) {
-    console.warn("News failed:", error);
-    renderDemoNews();
-  }
-}
-
-function renderDemoNews() {
-  state.news = [];
-  renderNews();
-}
-
-function renderNews() {
-  const container = $("newsContainer");
-
-  if (!container) return;
-
-  const highImpact = state.news.filter(
-    (item) => normalizeImpact(item.impact) === "high"
-  );
-
-  renderMajorAlert(highImpact);
-
-  if (!state.news.length) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <span>⚡</span>
-        <strong>${state.language === "ar" ? "لا توجد أخبار متاحة حاليًا" : "No economic events available"}</strong>
-        <p>${state.language === "ar"
-          ? "عند ربط التقويم الاقتصادي الحقيقي ستظهر الأحداث هنا."
-          : "Real economic calendar events will appear here once the feed is connected."}</p>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = state.news.map((item) => {
-    const impact = normalizeImpact(item.impact);
-    const time = formatNewsTime(item.event_time || item.time);
-
-    return `
-      <article class="news-item">
-        <div class="news-time">${escapeHtml(time)}</div>
-
-        <div>
-          <h3>${escapeHtml(item.title || item.event || "Economic Event")}</h3>
-          <p>${escapeHtml(
-            item.description ||
-            item.currency ||
-            "Economic event"
-          )}</p>
-        </div>
-
-        <div class="news-impact ${impact}">
-          ${escapeHtml(impact.toUpperCase())}
-        </div>
-      </article>
-    `;
-  }).join("");
-}
-
-function normalizeImpact(value) {
-  const text = String(value || "").toLowerCase();
-
-  if (
-    text.includes("high") ||
-    text.includes("red") ||
-    text.includes("مرتفع")
-  ) return "high";
-
-  if (
-    text.includes("medium") ||
-    text.includes("yellow") ||
-    text.includes("متوسط")
-  ) return "medium";
-
-  return "low";
-}
-
-function renderMajorAlert(events) {
-  const html = events.length
-    ? `
-      <div class="alert-title">
-        🚨 ${state.language === "ar"
-          ? "أخبار عالية التأثير"
-          : "HIGH IMPACT NEWS"}
-      </div>
-
-      <div class="alert-list">
-        ${events.map((event) => `
-          <div class="alert-event">
-            <div class="alert-time">
-              ${escapeHtml(formatNewsTime(event.event_time || event.time))}
-            </div>
-
-            <div>
-              <strong>${escapeHtml(event.title || event.event || "Major Event")}</strong>
-              <small>
-                ${escapeHtml(
-                  event.currency ||
-                  event.description ||
-                  "Potential volatility"
-                )}
-              </small>
-            </div>
-
-            <div class="alert-impact">HIGH</div>
-          </div>
-        `).join("")}
-      </div>
-    `
-    : "";
-
-  setAlert("homeNewsAlert", html);
-  setAlert("sessionNewsAlert", html);
-}
-
-function setAlert(id, html) {
-  const element = $(id);
-
-  if (!element) return;
-
-  if (!html) {
-    element.classList.add("hidden");
-    element.innerHTML = "";
-    return;
-  }
-
-  element.innerHTML = html;
-  element.classList.remove("hidden");
-}
-
-function getNewsSummary() {
-  const high = state.news.filter(
-    (item) => normalizeImpact(item.impact) === "high"
-  ).length;
-
-  if (!high) {
-    return state.language === "ar" ? "لا أخبار قوية" : "No high impact";
-  }
-
-  return state.language === "ar"
-    ? `${high} أخبار قوية`
-    : `${high} high impact`;
-}
-
-function formatNewsTime(value) {
-  if (!value) return "--";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value);
-  }
-
-  return date.toLocaleTimeString(
-    state.language === "ar" ? "ar-PS" : "en-US",
-    {
-      hour: "2-digit",
-      minute: "2-digit"
-    }
-  );
-}
-
-/* JOURNAL */
+/* =========================================================
+   JOURNAL
+========================================================= */
 
 async function loadJournal() {
   const user = await getCurrentUser();
 
   if (!user) {
+    state.journal = [];
     renderJournal([]);
     return;
   }
 
-  try {
-    const { data, error } = await supabaseClient
-      .from("trading_journal")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(100);
+  const { data, error } = await supabaseClient
+    .from("trading_journal")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", {
+      ascending: false
+    });
 
-    if (error) {
-      console.warn("Journal:", error.message);
-      renderJournal([]);
-      return;
-    }
-
-    state.journal = data || [];
-
-    renderJournal(state.journal);
-  } catch (error) {
-    console.warn("Journal failed:", error);
+  if (error) {
+    console.error("Journal load error:", error);
     renderJournal([]);
-  }
-}
-
-function renderJournal(trades) {
-  const total = trades.length;
-
-  const wins = trades.filter((trade) => {
-    const result = String(
-      trade.result ?? trade.status ?? ""
-    ).toLowerCase();
-
-    return result === "win" || Number(trade.r_result ?? trade.r) > 0;
-  }).length;
-
-  const winRate = total
-    ? Math.round((wins / total) * 100)
-    : 0;
-
-  const rValues = trades
-    .map((trade) =>
-      Number(trade.r_result ?? trade.r ?? 0)
-    )
-    .filter(Number.isFinite);
-
-  const averageR = rValues.length
-    ? rValues.reduce((a, b) => a + b, 0) / rValues.length
-    : 0;
-
-  const positive = rValues
-    .filter((r) => r > 0)
-    .reduce((a, b) => a + b, 0);
-
-  const negative = Math.abs(
-    rValues
-      .filter((r) => r < 0)
-      .reduce((a, b) => a + b, 0)
-  );
-
-  const profitFactor = negative > 0
-    ? positive / negative
-    : positive > 0
-      ? positive
-      : 0;
-
-  setText("journalWinRate", `${winRate}%`);
-  setText("journalProfitFactor", profitFactor ? profitFactor.toFixed(2) : "--");
-  setText("journalAverageR", rValues.length ? `${averageR.toFixed(2)}R` : "--");
-  setText("journalDrawdown", calculateDrawdown(rValues));
-  setText("journalTrades", total);
-
-  const table = $("journalTable");
-
-  if (!table) return;
-
-  if (!trades.length) {
-    table.innerHTML = `
-      <div class="empty-state">
-        <span>▤</span>
-        <strong>${state.language === "ar" ? "لا توجد صفقات" : "No trades yet"}</strong>
-        <p>${state.language === "ar"
-          ? "أضف أول صفقة لبدء السجل."
-          : "Add your first trade to start building your journal."}</p>
-      </div>
-    `;
     return;
   }
 
-  table.innerHTML = trades.slice(0, 30).map((trade) => `
-    <div class="trade-row">
-      <strong>${escapeHtml(trade.symbol || "XAUUSD")}</strong>
-      <span>${escapeHtml(trade.setup || "--")}</span>
-      <span>${escapeHtml(trade.result || trade.status || "--")}</span>
-      <strong>${escapeHtml(String(trade.r_result ?? trade.r ?? "--"))}R</strong>
-      <span>${escapeHtml(trade.notes || "")}</span>
-    </div>
-  `).join("");
-}
+  state.journal = data || [];
 
-function calculateDrawdown(values) {
-  let equity = 0;
-  let peak = 0;
-  let maxDrawdown = 0;
-
-  values.forEach((value) => {
-    equity += value;
-
-    if (equity > peak) {
-      peak = equity;
-    }
-
-    const drawdown = peak - equity;
-
-    if (drawdown > maxDrawdown) {
-      maxDrawdown = drawdown;
-    }
-  });
-
-  return maxDrawdown
-    ? `-${maxDrawdown.toFixed(2)}R`
-    : "0R";
+  renderJournal(state.journal);
 }
 
 async function saveJournalTrade(event) {
@@ -1014,29 +819,29 @@ async function saveJournalTrade(event) {
     setMessage(
       "journalMessage",
       state.language === "ar"
-        ? "سجّل الدخول أولًا."
+        ? "سجل الدخول أولاً."
         : "Please login first."
     );
+
     return;
   }
 
-  const payload = {
-    user_id: user.id,
-    symbol: $("tradeSymbol").value.trim(),
-    setup: $("tradeSetup").value.trim(),
-    result: $("tradeResult").value,
-    r_result: Number($("tradeR").value || 0),
-    notes: $("tradeNotes").value.trim()
-  };
-
-  setMessage(
-    "journalMessage",
-    state.language === "ar" ? "جاري الحفظ..." : "Saving..."
-  );
+  const symbol = $("tradeSymbol")?.value.trim() || "XAUUSD";
+  const setup = $("tradeSetup")?.value.trim() || "";
+  const result = $("tradeResult")?.value || "win";
+  const rResult = Number($("tradeR")?.value || 0);
+  const notes = $("tradeNotes")?.value.trim() || "";
 
   const { error } = await supabaseClient
     .from("trading_journal")
-    .insert(payload);
+    .insert({
+      user_id: user.id,
+      symbol,
+      setup,
+      result,
+      r_result: rResult,
+      notes
+    });
 
   if (error) {
     setMessage("journalMessage", error.message);
@@ -1050,7 +855,15 @@ async function saveJournalTrade(event) {
       : "Trade saved."
   );
 
-  $("journalForm").reset();
+  $("journalForm")?.reset();
+
+  if ($("tradeSymbol")) {
+    $("tradeSymbol").value = "XAUUSD";
+  }
+
+  if ($("tradeR")) {
+    $("tradeR").value = "1";
+  }
 
   await loadJournal();
 
@@ -1059,218 +872,805 @@ async function saveJournalTrade(event) {
   }, 500);
 }
 
-/* ANNOUNCEMENTS */
+function renderJournal(trades) {
+  const container = $("journalTable");
 
-async function loadAnnouncements() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("announcements")
-      .select("*")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .limit(30);
+  if (!container) return;
 
-    if (error) {
-      console.warn("Announcements:", error.message);
-      return;
-    }
+  if (!trades?.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span>▤</span>
+        <strong>No trades yet</strong>
+        <p>Add your first trade to start building your journal.</p>
+      </div>
+    `;
 
-    state.announcements = data || [];
+    $("journalWinRate").textContent = "--";
+    $("journalProfitFactor").textContent = "--";
+    $("journalAverageR").textContent = "--";
+    $("journalDrawdown").textContent = "--";
+    $("journalTrades").textContent = "0";
 
-    renderAnnouncements();
-  } catch (error) {
-    console.warn("Announcements failed:", error);
+    return;
   }
+
+  const wins = trades.filter((trade) => trade.result === "win").length;
+
+  const losses = trades.filter(
+    (trade) => trade.result === "loss"
+  ).length;
+
+  const winRate =
+    trades.length > 0
+      ? ((wins / trades.length) * 100).toFixed(1)
+      : 0;
+
+  const totalR = trades.reduce(
+    (sum, trade) => sum + Number(trade.r_result || 0),
+    0
+  );
+
+  const averageR =
+    trades.length > 0
+      ? (totalR / trades.length).toFixed(2)
+      : "0.00";
+
+  const grossProfit = trades
+    .filter((trade) => Number(trade.r_result || 0) > 0)
+    .reduce(
+      (sum, trade) => sum + Number(trade.r_result || 0),
+      0
+    );
+
+  const grossLoss = Math.abs(
+    trades
+      .filter((trade) => Number(trade.r_result || 0) < 0)
+      .reduce(
+        (sum, trade) => sum + Number(trade.r_result || 0),
+        0
+      )
+  );
+
+  const profitFactor =
+    grossLoss > 0
+      ? (grossProfit / grossLoss).toFixed(2)
+      : "--";
+
+  let cumulative = 0;
+  let peak = 0;
+  let maxDrawdown = 0;
+
+  [...trades].reverse().forEach((trade) => {
+    cumulative += Number(trade.r_result || 0);
+
+    peak = Math.max(peak, cumulative);
+
+    maxDrawdown = Math.max(
+      maxDrawdown,
+      peak - cumulative
+    );
+  });
+
+  $("journalWinRate").textContent = `${winRate}%`;
+  $("journalProfitFactor").textContent = profitFactor;
+  $("journalAverageR").textContent = averageR;
+  $("journalDrawdown").textContent =
+    maxDrawdown > 0 ? `-${maxDrawdown.toFixed(2)}R` : "0R";
+  $("journalTrades").textContent = trades.length;
+
+  container.innerHTML = trades
+    .map((trade) => {
+      const resultClass =
+        trade.result === "win"
+          ? "positive"
+          : trade.result === "loss"
+          ? "negative"
+          : "neutral";
+
+      return `
+        <div class="journal-row">
+
+          <div>
+            <strong>${escapeHtml(trade.symbol || "XAUUSD")}</strong>
+            <small>${escapeHtml(trade.setup || "—")}</small>
+          </div>
+
+          <div>
+            <span class="${resultClass}">
+              ${escapeHtml(trade.result || "—")}
+            </span>
+          </div>
+
+          <div>
+            <strong>${Number(
+              trade.r_result || 0
+            ).toFixed(2)}R</strong>
+          </div>
+
+          <div>
+            <small>${escapeHtml(
+              trade.notes || ""
+            )}</small>
+          </div>
+
+        </div>
+      `;
+    })
+    .join("");
 }
 
-function renderAnnouncements() {
+
+/* =========================================================
+   MARKET ANALYSIS
+========================================================= */
+
+async function loadMarketAnalysis() {
+  const { data, error } = await supabaseClient
+    .from("market_analysis")
+    .select("*")
+    .order("created_at", {
+      ascending: false
+    })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Market analysis error:", error);
+    return;
+  }
+
+  if (!data) return;
+
+  state.analysis = data;
+
+  renderAnalysis(data);
+}
+
+function renderAnalysis(data) {
+  const score = Number(
+    data.score ??
+      data.habboub_score ??
+      0
+  );
+
+  const confidence = Number(
+    data.confidence ??
+      data.market_confidence ??
+      0
+  );
+
+  const condition =
+    data.market_condition ||
+    data.condition ||
+    data.environment ||
+    "--";
+
+  const risk =
+    data.risk ||
+    data.risk_level ||
+    "--";
+
+  setText("heroScore", score || "--");
+  setText("sessionScore", score || "--");
+
+  setText("heroCondition", condition);
+  setText("marketCondition", condition);
+
+  setText("heroRisk", risk);
+  setText("marketRisk", risk);
+
+  setText(
+    "marketConfidence",
+    `${confidence || 0}%`
+  );
+
+  setText(
+    "analysisConfidenceLarge",
+    `${confidence || 0}%`
+  );
+
+  setText(
+    "marketAnalysisText",
+    data.analysis_text ||
+      data.description ||
+      "Waiting for market analysis..."
+  );
+
+  setText(
+    "analysisLongText",
+    data.analysis_long_text ||
+      data.analysis_text ||
+      data.description ||
+      "Waiting for the latest market analysis."
+  );
+
+  setText(
+    "analysisDescription",
+    data.title ||
+      data.description ||
+      "Market analysis"
+  );
+
+  setText(
+    "analysisStatus",
+    data.status || "LIVE"
+  );
+
+  setText(
+    "analysisSymbol",
+    data.symbol || "XAUUSD"
+  );
+
+  setText(
+    "analysisSymbolLarge",
+    data.symbol || "XAUUSD"
+  );
+
+  setText(
+    "htfBias",
+    data.htf_bias || "--"
+  );
+
+  setText(
+    "sessionBias",
+    data.htf_bias || "--"
+  );
+
+  setText(
+    "intelBias",
+    data.htf_bias || "--"
+  );
+
+  setText(
+    "liquidity",
+    data.liquidity || "--"
+  );
+
+  setText(
+    "sessionLiquidity",
+    data.liquidity || "--"
+  );
+
+  setText(
+    "intelLiquidity",
+    data.liquidity || "--"
+  );
+
+  setText(
+    "mss",
+    data.mss || "--"
+  );
+
+  setText(
+    "sessionMSS",
+    data.mss || "--"
+  );
+
+  setText(
+    "intelMSS",
+    data.mss || "--"
+  );
+
+  setText(
+    "fvg",
+    data.fvg || "--"
+  );
+
+  setText(
+    "sessionFVG",
+    data.fvg || "--"
+  );
+
+  setText(
+    "intelFVG",
+    data.fvg || "--"
+  );
+
+  setText(
+    "cotCommercial",
+    data.cot_commercial || "--"
+  );
+
+  setText(
+    "intelCommercial",
+    data.cot_commercial || "--"
+  );
+
+  setText(
+    "cotManaged",
+    data.cot_managed || "--"
+  );
+
+  setText(
+    "intelManaged",
+    data.cot_managed || "--"
+  );
+
+  setText(
+    "cotNet",
+    data.cot_net || "--"
+  );
+
+  setText(
+    "intelNet",
+    data.cot_net || "--"
+  );
+
+  setText(
+    "cotBias",
+    data.cot_bias || "--"
+  );
+
+  setText(
+    "intelCotBias",
+    data.cot_bias || "--"
+  );
+
+  setText(
+    "regimeTrend",
+    data.trend || "--"
+  );
+
+  setText(
+    "regimeVolatility",
+    data.volatility || "--"
+  );
+
+  setText(
+    "regimeLiquidity",
+    data.liquidity || "--"
+  );
+
+  setText(
+    "riskLevelText",
+    risk
+  );
+
+  updateScoreVisuals(score, confidence, risk);
+  renderScoreReasons(data);
+}
+
+function updateScoreVisuals(score, confidence, risk) {
+  const heroRing = $("heroScoreRing");
+  const sessionBar = $("sessionScoreBar");
+  const confidenceBar = $("confidenceBar");
+  const riskMeter = $("riskMeter");
+
+  if (heroRing) {
+    heroRing.style.setProperty(
+      "--score",
+      `${Math.max(0, Math.min(100, score))}%`
+    );
+  }
+
+  if (sessionBar) {
+    sessionBar.style.width =
+      `${Math.max(0, Math.min(100, score))}%`;
+  }
+
+  if (confidenceBar) {
+    confidenceBar.style.width =
+      `${Math.max(0, Math.min(100, confidence))}%`;
+  }
+
+  if (riskMeter) {
+    const riskValue =
+      typeof risk === "number"
+        ? risk
+        : riskToNumber(risk);
+
+    riskMeter.querySelector("span")?.style.setProperty(
+      "width",
+      `${riskValue}%`
+    );
+  }
+
+  const stateText =
+    score >= 80
+      ? "STRONG ENVIRONMENT"
+      : score >= 60
+      ? "FAVORABLE ENVIRONMENT"
+      : score >= 40
+      ? "MIXED ENVIRONMENT"
+      : score >= 20
+      ? "HIGH RISK ENVIRONMENT"
+      : "EXTREME RISK";
+
+  setText("heroScoreState", stateText);
+  setText("sessionScoreState", stateText);
+}
+
+function riskToNumber(risk) {
+  const text = String(risk).toLowerCase();
+
+  if (text.includes("extreme")) return 90;
+  if (text.includes("high")) return 75;
+  if (text.includes("medium")) return 50;
+  if (text.includes("low")) return 25;
+
+  return 50;
+}
+
+function renderScoreReasons(data) {
+  const container = $("scoreReasons");
+
+  if (!container) return;
+
+  const reasons = [
+    ["HTF Bias", data.htf_bias],
+    ["Liquidity", data.liquidity],
+    ["MSS", data.mss],
+    ["FVG", data.fvg],
+    ["COT", data.cot_bias],
+    ["Risk", data.risk]
+  ].filter((item) => item[1]);
+
+  if (!reasons.length) return;
+
+  container.innerHTML = reasons
+    .map(
+      ([title, value]) => `
+        <div class="reason neutral">
+          <span>◌</span>
+          <div>
+            <strong>${escapeHtml(title)}</strong>
+            <p>${escapeHtml(String(value))}</p>
+          </div>
+        </div>
+      `
+    )
+    .join("");
+}
+
+
+/* =========================================================
+   NEWS
+========================================================= */
+
+async function loadNews() {
+  const { data, error } = await supabaseClient
+    .from("news")
+    .select("*")
+    .order("event_time", {
+      ascending: true
+    });
+
+  if (error) {
+    console.error("News load error:", error);
+    return;
+  }
+
+  state.news = data || [];
+
+  renderNews(state.news);
+}
+
+function renderNews(news) {
+  const container = $("newsContainer");
+
+  if (!container) return;
+
+  if (!news?.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span>◌</span>
+        <strong>No news available</strong>
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML = news
+    .map(
+      (item) => `
+        <article class="news-card">
+          <div>
+            <span class="news-impact">
+              ${escapeHtml(item.impact || "Medium")}
+            </span>
+
+            <h3>${escapeHtml(
+              item.title || "Economic Event"
+            )}</h3>
+
+            <p>${escapeHtml(
+              item.description || ""
+            )}</p>
+          </div>
+
+          <time>
+            ${formatDate(item.event_time)}
+          </time>
+        </article>
+      `
+    )
+    .join("");
+}
+
+
+/* =========================================================
+   ANNOUNCEMENTS
+========================================================= */
+
+async function loadAnnouncements() {
+  const { data, error } = await supabaseClient
+    .from("announcements")
+    .select("*")
+    .order("created_at", {
+      ascending: false
+    });
+
+  if (error) {
+    console.error("Announcements error:", error);
+    return;
+  }
+
+  state.announcements = data || [];
+
+  renderAnnouncements(state.announcements);
+}
+
+function renderAnnouncements(items) {
   const container = $("announcementsContainer");
 
   if (!container) return;
 
-  if (!state.announcements.length) {
+  if (!items.length) {
     container.innerHTML = `
       <div class="empty-state">
         <span>◆</span>
-        <strong>${state.language === "ar" ? "لا توجد إعلانات" : "No announcements"}</strong>
+        <strong>No announcements yet</strong>
       </div>
     `;
+
     return;
   }
 
-  container.innerHTML = state.announcements.map((item) => `
-    <article class="announcement">
-      <h3>${escapeHtml(item.title || "Announcement")}</h3>
-      <p>${escapeHtml(item.content || item.description || "")}</p>
-      <small>${escapeHtml(formatDate(item.created_at))}</small>
-    </article>
-  `).join("");
+  container.innerHTML = items
+    .map(
+      (item) => `
+        <article class="announcement-card">
+          <span>◆</span>
+
+          <div>
+            <h3>${escapeHtml(
+              item.title || "Announcement"
+            )}</h3>
+
+            <p>${escapeHtml(
+              item.content ||
+                item.description ||
+                ""
+            )}</p>
+
+            <small>${formatDate(
+              item.created_at
+            )}</small>
+          </div>
+        </article>
+      `
+    )
+    .join("");
 }
 
-/* COURSES */
+
+/* =========================================================
+   COURSES
+========================================================= */
 
 async function loadCourses() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("courses")
-      .select("*")
-      .eq("is_published", true)
-      .order("created_at", { ascending: false })
-      .limit(30);
+  const { data, error } = await supabaseClient
+    .from("courses")
+    .select("*")
+    .order("created_at", {
+      ascending: false
+    });
 
-    if (error) {
-      console.warn("Courses:", error.message);
-      return;
-    }
-
-    state.courses = data || [];
-
-    renderCourses();
-  } catch (error) {
-    console.warn("Courses failed:", error);
+  if (error) {
+    console.error("Courses error:", error);
+    return;
   }
+
+  state.courses = data || [];
+
+  renderCourses(state.courses);
 }
 
-function renderCourses() {
+function renderCourses(courses) {
   const container = $("courseContainer");
 
   if (!container) return;
 
-  if (!state.courses.length) {
+  if (!courses.length) {
     container.innerHTML = `
       <div class="empty-state">
         <span>◇</span>
-        <strong>${state.language === "ar" ? "لا توجد دورات منشورة" : "No published courses"}</strong>
+        <strong>No courses available yet</strong>
       </div>
     `;
+
     return;
   }
 
-  container.innerHTML = state.courses.map((course) => `
-    <article class="course-card">
-      <div class="course-cover">
-        <span>HABBOUB ACADEMY</span>
-      </div>
+  container.innerHTML = courses
+    .map(
+      (course) => `
+        <article class="course-card">
+          <div class="course-icon">◇</div>
 
-      <div class="course-content">
-        <h3>${escapeHtml(course.title || "Course")}</h3>
-        <p>${escapeHtml(course.description || "")}</p>
+          <h3>${escapeHtml(
+            course.title || "Course"
+          )}</h3>
 
-        <div class="course-meta">
-          <span>${escapeHtml(course.level || "All levels")}</span>
-          <span>${escapeHtml(String(course.lessons_count || "--"))} lessons</span>
-        </div>
-      </div>
-    </article>
-  `).join("");
+          <p>${escapeHtml(
+            course.description || ""
+          )}</p>
+
+          <button
+            class="secondary-btn"
+            type="button"
+          >
+            Open Course
+          </button>
+        </article>
+      `
+    )
+    .join("");
 }
 
-/* LIVE */
+
+/* =========================================================
+   LIVE
+========================================================= */
 
 async function loadLive() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("live_sessions")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  const { data, error } = await supabaseClient
+    .from("live_sessions")
+    .select("*")
+    .order("created_at", {
+      ascending: false
+    })
+    .limit(1)
+    .maybeSingle();
 
-    if (error) {
-      console.warn("Live:", error.message);
-      return;
-    }
-
-    state.live = data;
-
-    renderLive();
-  } catch (error) {
-    console.warn("Live failed:", error);
-  }
-}
-
-function renderLive() {
-  const data = state.live;
-
-  if (!data) {
-    setLiveOffline();
+  if (error) {
+    console.error("Live error:", error);
     return;
   }
 
-  const active =
-    data.is_live === true ||
-    data.status === "live" ||
-    data.active === true;
+  state.live = data;
 
-  if (!active) {
-    setLiveOffline();
-    return;
-  }
+  renderLive(data);
+}
 
-  setText(
-    "liveTitleDisplay",
-    data.title || "Habboub Live"
-  );
-
-  setText(
-    "liveDescriptionDisplay",
-    data.description || "Live market session."
-  );
-
+function renderLive(data) {
   const indicator = $("liveIndicator");
+  const title = $("liveTitleDisplay");
+  const description = $("liveDescriptionDisplay");
+
+  const isLive =
+    data &&
+    (
+      data.is_live === true ||
+      data.status === "live"
+    );
 
   if (indicator) {
-    indicator.textContent = "LIVE";
-    indicator.className = "status-pill online";
+    indicator.textContent =
+      isLive ? "LIVE" : "OFFLINE";
+
+    indicator.classList.toggle(
+      "offline",
+      !isLive
+    );
+
+    indicator.classList.toggle(
+      "online",
+      isLive
+    );
+  }
+
+  if (title) {
+    title.textContent =
+      isLive
+        ? data.title || "Habboub Live"
+        : "No live session right now";
+  }
+
+  if (description) {
+    description.textContent =
+      isLive
+        ? data.description || ""
+        : "The live room will appear here when the admin starts a session.";
   }
 }
 
-function setLiveOffline() {
-  const indicator = $("liveIndicator");
 
-  if (indicator) {
-    indicator.textContent = "OFFLINE";
-    indicator.className = "status-pill offline";
-  }
+/* =========================================================
+   REALTIME
+========================================================= */
 
-  setText(
-    "liveTitleDisplay",
-    state.language === "ar"
-      ? "لا توجد جلسة مباشرة الآن"
-      : "No live session right now"
-  );
-
-  setText(
-    "liveDescriptionDisplay",
-    state.language === "ar"
-      ? "سيظهر البث هنا عند بدء الجلسة."
-      : "The live room will appear here when a session starts."
-  );
+function subscribeToUpdates() {
+  supabaseClient
+    .channel("habboub-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "market_analysis"
+      },
+      () => {
+        loadMarketAnalysis();
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "announcements"
+      },
+      () => {
+        loadAnnouncements();
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "courses"
+      },
+      () => {
+        loadCourses();
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "live_sessions"
+      },
+      () => {
+        loadLive();
+      }
+    )
+    .subscribe();
 }
 
-/* AI */
+
+/* =========================================================
+   AI
+========================================================= */
 
 function setupAI() {
-  $("floatingAI")?.addEventListener("click", openAI);
-  $("openAIButton")?.addEventListener("click", openAI);
-  $("closeAIButton")?.addEventListener("click", closeAI);
+  $("openAIButton")?.addEventListener("click", () => {
+    $("aiWindow")?.classList.remove("hidden");
+  });
+
+  $("floatingAI")?.addEventListener("click", () => {
+    $("aiWindow")?.classList.toggle("hidden");
+  });
+
+  $("closeAIButton")?.addEventListener("click", () => {
+    $("aiWindow")?.classList.add("hidden");
+  });
 
   $("aiForm")?.addEventListener("submit", handleAI);
-}
-
-function openAI() {
-  $("aiWindow")?.classList.remove("hidden");
-  $("aiInput")?.focus();
-}
-
-function closeAI() {
-  $("aiWindow")?.classList.add("hidden");
 }
 
 async function handleAI(event) {
   event.preventDefault();
 
   const input = $("aiInput");
+  const messages = $("aiMessages");
+
+  if (!input || !messages) return;
+
   const message = input.value.trim();
 
   if (!message) return;
@@ -1279,182 +1679,173 @@ async function handleAI(event) {
 
   input.value = "";
 
-  addAIMessage(
-    "bot",
-    buildLocalAIResponse(message)
-  );
+  const response = buildLocalAIResponse(message);
+
+  setTimeout(() => {
+    addAIMessage("bot", response);
+  }, 400);
 }
 
-function buildLocalAIResponse(message) {
-  const analysis = state.analysis;
-
-  if (!analysis) {
-    return state.language === "ar"
-      ? "لسه ما وصلني تحليل السوق من قاعدة البيانات. أول ما تتوفر البيانات أقدر أعطيك سياق أوضح."
-      : "I do not have the latest market analysis yet. Once the data is available, I can explain the current context.";
-  }
-
-  const score = normalizeScore(
-    analysis.score ??
-    analysis.habboub_score ??
-    analysis.confidence
-  );
-
-  const bias = analysis.bias ?? analysis.htf_bias ?? "--";
-  const risk = analysis.risk_level ?? analysis.risk ?? "--";
-  const condition =
-    analysis.market_condition ??
-    analysis.condition ??
-    "--";
-
-  if (state.language === "ar") {
-    return `السياق الحالي: درجة حبوب ${score}/100، الاتجاه HTF هو ${bias}، حالة السوق ${condition}، والمخاطرة ${risk}. هذا وصف لبيئة السوق وليس أمر شراء أو بيع.`;
-  }
-
-  return `Current context: Habboub Score ${score}/100, HTF Bias ${bias}, market condition ${condition}, and risk ${risk}. This describes the environment and is not a BUY/SELL instruction.`;
-}
-
-function addAIMessage(type, message) {
+function addAIMessage(type, text) {
   const container = $("aiMessages");
 
   if (!container) return;
 
-  const element = document.createElement("div");
+  const message = document.createElement("div");
 
-  element.className = `ai-message ${type}`;
+  message.className =
+    `ai-message ${type}`;
 
-  element.innerHTML = `
-    <strong>${type === "user" ? "You" : "Habboub"}</strong>
-    <p>${escapeHtml(message)}</p>
+  message.innerHTML = `
+    <strong>
+      ${type === "bot" ? "Habboub" : "You"}
+    </strong>
+
+    <p>${escapeHtml(text)}</p>
   `;
 
-  container.appendChild(element);
+  container.appendChild(message);
 
-  while (container.children.length > 30) {
-    container.removeChild(container.firstChild);
-  }
-
-  container.scrollTop = container.scrollHeight;
+  container.scrollTop =
+    container.scrollHeight;
 }
 
-/* CLOCK */
+function buildLocalAIResponse(message) {
+  const text = message.toLowerCase();
+
+  const score =
+    state.analysis?.score ??
+    state.analysis?.habboub_score;
+
+  const condition =
+    state.analysis?.market_condition ||
+    state.analysis?.condition;
+
+  const risk =
+    state.analysis?.risk ||
+    state.analysis?.risk_level;
+
+  if (
+    text.includes("score") ||
+    text.includes("درجة")
+  ) {
+    return `Current Habboub Score: ${
+      score ?? "--"
+    }/100.`;
+  }
+
+  if (
+    text.includes("risk") ||
+    text.includes("خطر") ||
+    text.includes("مخاطرة")
+  ) {
+    return `Current risk environment: ${
+      risk ?? "--"
+    }.`;
+  }
+
+  if (
+    text.includes("gold") ||
+    text.includes("xau")
+  ) {
+    return `XAUUSD is currently being monitored through the Habboub market context. Current environment: ${
+      condition ?? "--"
+    }.`;
+  }
+
+  return `Habboub is monitoring market structure, liquidity, risk and the current market environment.`;
+}
+
+
+/* =========================================================
+   CLOCK
+========================================================= */
 
 function updateClock() {
   const now = new Date();
 
   const time = now.toLocaleTimeString(
-    state.language === "ar" ? "ar-PS" : "en-US",
+    "en-GB",
     {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
+      hour12: false
     }
   );
 
   setText("sessionClock", time);
 
-  updateSessionTimeline();
-}
+  const hour = now.getUTCHours();
 
-function updateSessionTimeline() {
-  const now = new Date();
+  let session = "Asia";
 
-  const utcHour = now.getUTCHours() + now.getUTCMinutes() / 60;
-
-  setActive("asiaSession", utcHour >= 0 && utcHour < 8);
-  setActive("londonSession", utcHour >= 8 && utcHour < 13);
-  setActive("newYorkSession", utcHour >= 13 && utcHour < 21);
-
-  let session = "Market closed";
-
-  if (utcHour >= 0 && utcHour < 8) {
-    session = "Asia";
-  } else if (utcHour >= 8 && utcHour < 13) {
+  if (hour >= 8 && hour < 13) {
     session = "London";
-  } else if (utcHour >= 13 && utcHour < 21) {
+  } else if (hour >= 13 && hour < 21) {
     session = "New York";
   }
 
   setText("sessionName", session);
 }
 
-function setActive(id, active) {
-  $(id)?.classList.toggle("active", active);
-}
+function updateSessionTimeline() {
+  const now = new Date();
+  const hour = now.getUTCHours();
 
-/* REALTIME */
+  document
+    .querySelectorAll(".timeline-item")
+    .forEach((item) => {
+      item.classList.remove("current");
+    });
 
-function subscribeToUpdates() {
-  try {
-    supabaseClient
-      .channel("habboub-market-analysis")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "market_analysis"
-        },
-        () => loadMarketAnalysis()
-      )
-      .subscribe();
-
-    supabaseClient
-      .channel("habboub-announcements")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "announcements"
-        },
-        () => loadAnnouncements()
-      )
-      .subscribe();
-
-    supabaseClient
-      .channel("habboub-courses")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "courses"
-        },
-        () => loadCourses()
-      )
-      .subscribe();
-
-    supabaseClient
-      .channel("habboub-live")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "live_sessions"
-        },
-        () => loadLive()
-      )
-      .subscribe();
-
-  } catch (error) {
-    console.warn("Realtime setup:", error);
+  if (hour >= 0 && hour < 8) {
+    $("asiaSession")?.classList.add("current");
+  } else if (hour >= 8 && hour < 13) {
+    $("londonSession")?.classList.add("current");
+  } else if (hour >= 13 && hour < 21) {
+    $("newYorkSession")?.classList.add("current");
   }
 }
 
-/* HELPERS */
+
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function setText(id, value) {
   const element = $(id);
 
   if (element) {
-    element.textContent = value ?? "--";
+    element.textContent =
+      value === null ||
+      value === undefined
+        ? "--"
+        : String(value);
   }
 }
 
 function setMessage(id, message) {
-  setText(id, message);
+  const element = $(id);
+
+  if (element) {
+    element.textContent = message || "";
+  }
+}
+
+function showToast(message) {
+  const toast = $("toast");
+
+  if (!toast) return;
+
+  toast.textContent = message;
+
+  toast.classList.add("show");
+
+  clearTimeout(
+    showToast.timeout
+  );
+
+  showToast.timeout = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
 }
 
 function formatDate(value) {
@@ -1463,41 +1854,39 @@ function formatDate(value) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return String(value);
+    return "--";
   }
 
-  return date.toLocaleDateString(
-    state.language === "ar" ? "ar-PS" : "en-US",
+  return date.toLocaleString(
+    state.language === "ar"
+      ? "ar"
+      : "en",
     {
-      year: "numeric",
-      month: "short",
-      day: "numeric"
+      dateStyle: "medium",
+      timeStyle: "short"
     }
   );
 }
 
 function escapeHtml(value) {
   return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-let toastTimer = null;
-
-function showToast(message) {
-  const toast = $("toast");
-
-  if (!toast) return;
-
-  toast.textContent = message;
-  toast.classList.add("show");
-
-  clearTimeout(toastTimer);
-
-  toastTimer = setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2200);
+function escapeAttribute(value) {
+  return escapeHtml(value);
 }
+
+
+/* =========================================================
+   START
+========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  init
+);
