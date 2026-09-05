@@ -1,123 +1,109 @@
 /* =========================================================
    HABBOUB — MARKET WATCH LIVE FEEDS
-   EURUSD reference FX + BTCUSD live market data
+   Core markets only: Gold, Nasdaq 100, S&P 500
 ========================================================= */
 
 "use strict";
 
 (function () {
-  const REFRESH_BTC_MS = 15000;
-  const REFRESH_EUR_MS = 60000;
+  const REFRESH_MS = 30000;
+  const YAHOO_BASE = "https://query1.finance.yahoo.com/v8/finance/chart/";
 
-  function getMarketCard(symbol) {
-    return Array.from(document.querySelectorAll(".large-market-card")).find((card) => {
-      const label = card.querySelector(".market-symbol");
-      return label && label.textContent.trim().toUpperCase() === symbol;
+  const MARKETS = [
+    { symbol: "XAUUSD", yahoo: "XAUUSD=X", priceId: "goldPrice", changeId: "goldChange", heroPriceId: "heroGold", heroChangeId: "heroGoldChange", decimals: 2 },
+    { symbol: "NAS100", yahoo: "^NDX", priceId: "nasdaqPrice", changeId: "nasdaqChange", heroPriceId: "heroNasdaq", heroChangeId: "heroNasdaqChange", decimals: 2 },
+    { symbol: "SPX", yahoo: "^GSPC", priceId: "spxPrice", changeId: "spxChange", heroPriceId: "heroSPX", heroChangeId: "heroSPXChange", decimals: 2 }
+  ];
+
+  let busy = false;
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  function removeUnwantedCards() {
+    document.querySelectorAll("#markets .large-market-card").forEach((card) => {
+      const symbol = card.dataset.symbol || card.querySelector(".market-symbol")?.textContent?.trim().toUpperCase();
+      if (symbol === "EURUSD" || symbol === "BTCUSD") card.remove();
     });
   }
 
-  function ensureCardElements(card) {
-    if (!card) return null;
-    const price = card.querySelector(".price-row strong");
-    const change = card.querySelector(".price-row span");
-    if (!price || !change) return null;
+  function formatPrice(value, decimals) {
+    return Number(value).toLocaleString("en-US", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  }
+
+  function formatChange(value) {
+    if (!Number.isFinite(value)) return "--";
+    return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
+  }
+
+  async function fetchQuote(market) {
+    const url = `${YAHOO_BASE}${encodeURIComponent(market.yahoo)}?range=1d&interval=1m`;
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) throw new Error(`${market.symbol} HTTP ${response.status}`);
+
+    const payload = await response.json();
+    const meta = payload?.chart?.result?.[0]?.meta;
+    if (!meta) throw new Error(`${market.symbol} returned no quote data`);
+
+    const price = Number(meta.regularMarketPrice ?? meta.previousClose);
+    const previous = Number(meta.chartPreviousClose ?? meta.previousClose);
+    if (!Number.isFinite(price)) throw new Error(`${market.symbol} returned invalid price`);
+
+    const change = Number.isFinite(previous) && previous !== 0
+      ? ((price - previous) / previous) * 100
+      : NaN;
+
     return { price, change };
   }
 
-  function formatBtc(value) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
+  function render(market, quote) {
+    const price = formatPrice(quote.price, market.decimals);
+    const change = formatChange(quote.change);
+
+    setText(market.priceId, price);
+    setText(market.changeId, change);
+    setText(market.heroPriceId, price);
+    setText(market.heroChangeId, change);
+
+    [market.changeId, market.heroChangeId].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle("positive", quote.change > 0);
+      el.classList.toggle("negative", quote.change < 0);
+    });
   }
 
-  function formatEurUsd(value) {
-    return Number(value).toFixed(5);
-  }
-
-  function formatPercent(value) {
-    const n = Number(value);
-    if (!Number.isFinite(n)) return "--";
-    return `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
-  }
-
-  function setStatus(changeEl, text, positive) {
-    changeEl.textContent = text;
-    changeEl.dataset.live = "true";
-    changeEl.classList.toggle("positive", positive === true);
-    changeEl.classList.toggle("negative", positive === false);
-  }
-
-  async function loadBitcoin() {
-    const card = getMarketCard("BTCUSD");
-    const els = ensureCardElements(card);
-    if (!els) return;
+  async function refresh() {
+    if (busy) return;
+    busy = true;
+    removeUnwantedCards();
 
     try {
-      const response = await fetch(
-        "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT",
-        { cache: "no-store" }
-      );
-
-      if (!response.ok) throw new Error(`BTC feed HTTP ${response.status}`);
-
-      const data = await response.json();
-      const price = Number(data.lastPrice);
-      const change = Number(data.priceChangePercent);
-
-      if (!Number.isFinite(price)) throw new Error("Invalid BTC price");
-
-      els.price.textContent = formatBtc(price);
-      setStatus(
-        els.change,
-        `${formatPercent(change)} · 24h`,
-        change > 0 ? true : change < 0 ? false : null
-      );
-    } catch (error) {
-      console.warn("Habboub BTC feed unavailable:", error);
-      if (els.price.textContent === "--") {
-        els.change.textContent = "Live feed unavailable";
-      }
-    }
-  }
-
-  async function loadEurUsd() {
-    const card = getMarketCard("EURUSD");
-    const els = ensureCardElements(card);
-    if (!els) return;
-
-    try {
-      const response = await fetch(
-        "https://api.frankfurter.app/latest?from=EUR&to=USD",
-        { cache: "no-store" }
-      );
-
-      if (!response.ok) throw new Error(`EURUSD feed HTTP ${response.status}`);
-
-      const data = await response.json();
-      const price = Number(data?.rates?.USD);
-
-      if (!Number.isFinite(price)) throw new Error("Invalid EURUSD price");
-
-      els.price.textContent = formatEurUsd(price);
-      els.change.textContent = `FX reference · ${data.date || "latest"}`;
-      els.change.classList.remove("positive", "negative");
-    } catch (error) {
-      console.warn("Habboub EURUSD feed unavailable:", error);
-      if (els.price.textContent === "--") {
-        els.change.textContent = "FX feed unavailable";
-      }
+      await Promise.all(MARKETS.map(async (market) => {
+        try {
+          const quote = await fetchQuote(market);
+          render(market, quote);
+        } catch (error) {
+          console.warn(`Habboub ${market.symbol} feed unavailable:`, error);
+        }
+      }));
+    } finally {
+      busy = false;
     }
   }
 
   function start() {
-    loadBitcoin();
-    loadEurUsd();
+    removeUnwantedCards();
+    refresh();
+    window.setInterval(refresh, REFRESH_MS);
 
-    window.setInterval(loadBitcoin, REFRESH_BTC_MS);
-    window.setInterval(loadEurUsd, REFRESH_EUR_MS);
+    const observer = new MutationObserver(removeUnwantedCards);
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   if (document.readyState === "loading") {
