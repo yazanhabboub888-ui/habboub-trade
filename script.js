@@ -1,3 +1,4 @@
+```javascript
 const SUPABASE_URL = "https://feoyjasuvrqxzhskqzye.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0";
 
@@ -99,6 +100,7 @@ async function init() {
   setupAI();
   setupMobileMenu();
   setupAuthUI();
+  setupProfileMenu();
 
   setTimeout(() => {
     $("loader")?.classList.add("hide");
@@ -136,6 +138,7 @@ function applyLanguage(language) {
   const lang = translations[language] || translations.en;
 
   document.documentElement.lang = language;
+
   document.documentElement.dir =
     language === "ar" ? "rtl" : "ltr";
 
@@ -312,6 +315,7 @@ function setupModals() {
     .forEach((button) => {
       button.addEventListener("click", () => {
         const modal = button.closest(".modal");
+
         modal?.classList.add("hidden");
       });
     });
@@ -365,6 +369,7 @@ function setupAuthUI() {
 
           if (session?.user) {
             await ensureProfile(session.user);
+            await refreshAuthUI();
           }
 
           await loadJournal();
@@ -381,9 +386,7 @@ async function refreshAuthUI() {
   state.profile = null;
 
   if (user) {
-    state.profile = await getProfile(
-      user.id
-    );
+    state.profile = await getProfile(user.id);
 
     if (!state.profile) {
       state.profile = await ensureProfile(user);
@@ -449,9 +452,7 @@ async function ensureProfile(user) {
     return null;
   }
 
-  const existing = await getProfile(
-    user.id
-  );
+  const existing = await getProfile(user.id);
 
   if (existing) {
     return existing;
@@ -495,36 +496,43 @@ async function ensureProfile(user) {
 
 /* =========================================================
    AUTH UI
+   IMPORTANT:
+   Uses the EXISTING HTML profileArea/profileMenu.
+   Does NOT create another profile menu.
 ========================================================= */
 
 function renderAuthUI() {
   const loginButton = $("loginButton");
-  const existingProfileArea = $("profileArea");
+  const profileArea = $("profileArea");
 
   if (!loginButton) return;
 
-  if (!state.user) {
-    loginButton.textContent =
-      translations[state.language]?.login ||
-      "Login";
+  /*
+   * LOGGED OUT
+   */
 
-    loginButton.classList.remove(
-      "user-account-button"
-    );
+  if (!state.user) {
+    loginButton.classList.remove("hidden");
+    loginButton.classList.remove("user-account-button");
 
     loginButton.innerHTML =
       translations[state.language]?.login ||
       "Login";
 
-    $("profileArea")?.classList.add("hidden");
+    profileArea?.classList.add("hidden");
 
-    const oldProfile =
-      $("profileMenu");
-
-    oldProfile?.remove();
+    $("profileMenu")?.classList.add("hidden");
 
     return;
   }
+
+  /*
+   * LOGGED IN
+   */
+
+  loginButton.classList.add("hidden");
+
+  profileArea?.classList.remove("hidden");
 
   const name =
     state.profile?.full_name ||
@@ -532,59 +540,135 @@ function renderAuthUI() {
     state.user.email?.split("@")[0] ||
     "User";
 
+  const email =
+    state.user.email || "";
+
   const avatarUrl =
     state.profile?.avatar_url ||
     state.user.user_metadata?.avatar_url ||
     "";
 
   /*
-   * Hide the original profile area from the HTML.
-   * We use the dynamic profile menu below.
+   * Header avatar
    */
 
-  existingProfileArea?.classList.add(
-    "hidden"
-  );
-
-  loginButton.classList.add(
-    "user-account-button"
-  );
-
-  loginButton.innerHTML = "";
-
-  const avatar =
-    document.createElement("span");
-
-  avatar.className = "user-avatar";
-
-  if (avatarUrl) {
-    const image =
-      document.createElement("img");
-
-    image.src = avatarUrl;
-    image.alt = "Profile";
-
-    avatar.appendChild(image);
-  } else {
-    avatar.textContent =
-      name.charAt(0).toUpperCase();
-  }
-
-  const nameSpan =
-    document.createElement("span");
-
-  nameSpan.className =
-    "user-name";
-
-  nameSpan.textContent = name;
-
-  loginButton.appendChild(avatar);
-  loginButton.appendChild(nameSpan);
-
-  createProfileMenu(
+  updateAvatarElement(
+    $("profileAvatar"),
     name,
     avatarUrl
   );
+
+  /*
+   * Menu avatar
+   */
+
+  updateAvatarElement(
+    $("profileAvatarLarge"),
+    name,
+    avatarUrl
+  );
+
+  /*
+   * Names
+   */
+
+  setText(
+    "profileButtonName",
+    name
+  );
+
+  setText(
+    "profileName",
+    name
+  );
+
+  setText(
+    "profileEmail",
+    email
+  );
+
+  /*
+   * Keep menu closed after rendering.
+   */
+
+  $("profileMenu")?.classList.add("hidden");
+}
+
+
+/* =========================================================
+   AVATAR
+========================================================= */
+
+function updateAvatarElement(
+  element,
+  name,
+  avatarUrl
+) {
+  if (!element) return;
+
+  const initial =
+    String(name || "U")
+      .trim()
+      .charAt(0)
+      .toUpperCase() || "U";
+
+  /*
+   * Clear previous content.
+   */
+
+  element.innerHTML = "";
+
+  /*
+   * Prevent any old inline sizing from causing problems.
+   */
+
+  element.style.overflow = "hidden";
+  element.style.borderRadius = "50%";
+  element.style.backgroundSize = "cover";
+  element.style.backgroundPosition = "center";
+  element.style.backgroundRepeat = "no-repeat";
+
+  /*
+   * Avatar image.
+   */
+
+  if (avatarUrl) {
+    const img =
+      document.createElement("img");
+
+    img.src = avatarUrl;
+    img.alt = "Profile avatar";
+
+    img.style.display = "block";
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.maxWidth = "100%";
+    img.style.maxHeight = "100%";
+    img.style.minWidth = "0";
+    img.style.minHeight = "0";
+    img.style.objectFit = "cover";
+    img.style.objectPosition = "center";
+    img.style.borderRadius = "50%";
+
+    img.onerror = () => {
+      element.innerHTML = "";
+      element.textContent = initial;
+      element.classList.remove("has-image");
+    };
+
+    element.classList.add("has-image");
+
+    element.appendChild(img);
+
+    return;
+  }
+
+  /*
+   * No avatar: first letter.
+   */
+
+  element.classList.remove("has-image");
+  element.textContent = initial;
 }
 
 
@@ -592,129 +676,94 @@ function renderAuthUI() {
    PROFILE MENU
 ========================================================= */
 
-function createProfileMenu(
-  name,
-  avatarUrl
-) {
-  $("profileMenu")?.remove();
+function setupProfileMenu() {
+  const profileButton =
+    $("profileButton");
 
-  const loginButton =
-    $("loginButton");
+  const profileMenu =
+    $("profileMenu");
 
-  if (!loginButton?.parentElement) {
-    return;
-  }
+  const profileLabel =
+    $("profileLabel");
 
-  const menu =
-    document.createElement("div");
+  const logoutButton =
+    $("logoutButton");
 
-  menu.id = "profileMenu";
-  menu.className =
-    "profile-menu hidden";
+  /*
+   * Profile button
+   */
 
-  const lang =
-    translations[state.language] ||
-    translations.en;
+  profileButton?.addEventListener(
+    "click",
+    (event) => {
+      event.stopPropagation();
 
-  const avatarHTML =
-    avatarUrl
-      ? `
-        <img
-          src="${escapeAttribute(avatarUrl)}"
-          alt="Profile"
-        >
-      `
-      : escapeHtml(
-          name.charAt(0).toUpperCase()
-        );
-
-  menu.innerHTML = `
-    <div class="profile-menu-header">
-
-      <div class="profile-menu-avatar">
-        ${avatarHTML}
-      </div>
-
-      <div class="profile-menu-info">
-
-        <strong>
-          ${escapeHtml(name)}
-        </strong>
-
-        <small>
-          ${escapeHtml(
-            state.user?.email || ""
-          )}
-        </small>
-
-      </div>
-    </div>
-
-    <button
-      type="button"
-      id="profileMenuButton"
-    >
-      <span>👤</span>
-      <span>${lang.my_profile}</span>
-    </button>
-
-    <button
-      type="button"
-      id="logoutButton"
-      class="logout-menu-button"
-    >
-      <span>↪</span>
-      <span>${lang.logout}</span>
-    </button>
-  `;
-
-  loginButton.parentElement.appendChild(
-    menu
+      toggleProfileMenu();
+    }
   );
 
-  loginButton.onclick = () => {
-    toggleProfileMenu();
-  };
+  /*
+   * Profile
+   */
 
-  $("profileMenuButton")?.addEventListener(
+  profileLabel?.addEventListener(
     "click",
     () => {
-      menu.classList.add("hidden");
+      profileMenu?.classList.add("hidden");
 
       showProfileModal();
     }
   );
 
-  $("logoutButton")?.addEventListener(
+  /*
+   * Logout
+   */
+
+  logoutButton?.addEventListener(
     "click",
     async () => {
+      profileMenu?.classList.add("hidden");
+
       await logoutUser();
+    }
+  );
+
+  /*
+   * Click outside.
+   */
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (
+        !profileMenu ||
+        profileMenu.classList.contains("hidden")
+      ) {
+        return;
+      }
+
+      if (
+        !profileMenu.contains(event.target) &&
+        !profileButton?.contains(event.target)
+      ) {
+        profileMenu.classList.add("hidden");
+      }
     }
   );
 }
 
 function toggleProfileMenu() {
+  if (!state.user) {
+    openModal("loginModal");
+    return;
+  }
+
   const menu =
     $("profileMenu");
 
-  if (!menu) {
-    const name =
-      state.profile?.full_name ||
-      state.user?.user_metadata?.full_name ||
-      state.user?.email?.split("@")[0] ||
-      "User";
+  if (!menu) return;
 
-    createProfileMenu(
-      name,
-      state.profile?.avatar_url ||
-        state.user?.user_metadata?.avatar_url ||
-        ""
-    );
-  }
-
-  $("profileMenu")?.classList.toggle(
-    "hidden"
-  );
+  menu.classList.toggle("hidden");
 }
 
 
@@ -742,7 +791,7 @@ async function logoutUser() {
   state.profile = null;
   state.journal = [];
 
-  $("profileMenu")?.remove();
+  $("profileMenu")?.classList.add("hidden");
 
   renderAuthUI();
 
@@ -761,9 +810,15 @@ async function logoutUser() {
 ========================================================= */
 
 function showProfileModal() {
+  /*
+   * Remove an old dynamically-created profile modal.
+   */
+
   document
-    .querySelector("#profileModal")
-    ?.remove();
+    .querySelectorAll("#profileModal")
+    .forEach((element) => {
+      element.remove();
+    });
 
   const profile =
     state.profile;
@@ -794,50 +849,70 @@ function showProfileModal() {
   modal.id = "profileModal";
   modal.className = "modal";
 
-  const avatarHTML =
-    avatarUrl
-      ? `
-        <img
-          src="${escapeAttribute(avatarUrl)}"
-          alt="Profile"
-        >
-      `
-      : escapeHtml(
-          name.charAt(0).toUpperCase()
-        );
-
   modal.innerHTML = `
-    <div class="modal-overlay"></div>
+    <div
+      class="modal-overlay"
+      data-profile-close
+    ></div>
 
-    <div class="modal-box profile-modal-box">
+    <div
+      class="modal-box profile-modal-box"
+      style="
+        width:min(460px, calc(100vw - 32px));
+        max-width:460px;
+        min-width:0;
+        height:auto;
+        max-height:calc(100vh - 40px);
+        overflow-y:auto;
+        box-sizing:border-box;
+      "
+    >
 
       <button
         class="modal-close"
         id="profileModalClose"
         type="button"
+        aria-label="Close"
       >
         ×
       </button>
 
-      <div class="profile-large-avatar">
-        ${avatarHTML}
-      </div>
+      <div
+        id="profileLargeAvatarPreview"
+        style="
+          width:96px;
+          height:96px;
+          min-width:96px;
+          min-height:96px;
+          max-width:96px;
+          max-height:96px;
+          margin:0 auto 18px;
+          border-radius:50%;
+          overflow:hidden;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          background:linear-gradient(135deg,#ffffff,#8c9aaa);
+          color:#080b12;
+          font-size:32px;
+          font-weight:800;
+          box-sizing:border-box;
+        "
+      ></div>
 
       <h2>
-        ${lang.my_profile}
+        ${escapeHtml(lang.my_profile)}
       </h2>
 
       <p class="profile-email">
-        ${escapeHtml(
-          user.email || ""
-        )}
+        ${escapeHtml(user.email || "")}
       </p>
 
       <form id="profileForm">
 
         <label>
           <span>
-            ${lang.full_name}
+            ${escapeHtml(lang.full_name)}
           </span>
 
           <input
@@ -860,6 +935,7 @@ function showProfileModal() {
             type="url"
             value="${escapeAttribute(avatarUrl)}"
             placeholder="https://..."
+            autocomplete="off"
           >
         </label>
 
@@ -867,9 +943,11 @@ function showProfileModal() {
           class="primary-btn full"
           type="submit"
         >
-          ${state.language === "ar"
-            ? "حفظ التغييرات"
-            : "Save Changes"}
+          ${
+            state.language === "ar"
+              ? "حفظ التغييرات"
+              : "Save Changes"
+          }
         </button>
 
       </form>
@@ -884,6 +962,20 @@ function showProfileModal() {
 
   document.body.appendChild(modal);
 
+  /*
+   * Render preview.
+   */
+
+  updateAvatarElement(
+    $("profileLargeAvatarPreview"),
+    name,
+    avatarUrl
+  );
+
+  /*
+   * Close.
+   */
+
   $("profileModalClose")?.addEventListener(
     "click",
     () => {
@@ -891,8 +983,12 @@ function showProfileModal() {
     }
   );
 
+  /*
+   * Overlay close.
+   */
+
   modal
-    .querySelector(".modal-overlay")
+    .querySelector("[data-profile-close]")
     ?.addEventListener(
       "click",
       () => {
@@ -900,9 +996,65 @@ function showProfileModal() {
       }
     );
 
+  /*
+   * Save.
+   */
+
   $("profileForm")?.addEventListener(
     "submit",
     updateProfile
+  );
+
+  /*
+   * Live avatar preview.
+   */
+
+  $("profileAvatarUrl")?.addEventListener(
+    "input",
+    () => {
+      const currentUrl =
+        $("profileAvatarUrl")
+          ?.value
+          .trim() || "";
+
+      const currentName =
+        $("profileFullName")
+          ?.value
+          .trim() ||
+        name;
+
+      updateAvatarElement(
+        $("profileLargeAvatarPreview"),
+        currentName,
+        currentUrl
+      );
+    }
+  );
+
+  /*
+   * Live name preview.
+   */
+
+  $("profileFullName")?.addEventListener(
+    "input",
+    () => {
+      const currentName =
+        $("profileFullName")
+          ?.value
+          .trim() ||
+        "User";
+
+      const currentUrl =
+        $("profileAvatarUrl")
+          ?.value
+          .trim() || "";
+
+      updateAvatarElement(
+        $("profileLargeAvatarPreview"),
+        currentName,
+        currentUrl
+      );
+    }
   );
 }
 
@@ -979,6 +1131,10 @@ async function updateProfile(event) {
 
     return;
   }
+
+  /*
+   * Update Supabase Auth metadata too.
+   */
 
   const {
     error: authError
@@ -1123,7 +1279,7 @@ async function registerUser(event) {
 
   /*
    * IMPORTANT:
-   * The HTML must use:
+   * HTML must use:
    * id="registerFullName"
    */
 
@@ -1239,17 +1395,13 @@ async function registerUser(event) {
   }
 
   /*
-   * If Supabase email confirmation is disabled,
-   * session will normally exist immediately.
+   * Confirmation disabled.
    */
 
   if (data?.session && data?.user) {
     state.user =
       data.user;
 
-    /*
-     * Create profile immediately.
-     */
     await ensureProfile(
       data.user
     );
@@ -1272,7 +1424,7 @@ async function registerUser(event) {
   }
 
   /*
-   * Email confirmation is probably enabled.
+   * Confirmation enabled.
    */
 
   setMessage(
@@ -1299,12 +1451,6 @@ async function loadJournal() {
 
     return;
   }
-
-  /*
-   * SECURITY:
-   * We explicitly filter by the logged-in user's ID.
-   * RLS also protects this on the database level.
-   */
 
   const {
     data,
@@ -1492,9 +1638,7 @@ async function saveJournalTrade(event) {
   );
 
   setTimeout(() => {
-    closeModal(
-      "journalModal"
-    );
+    closeModal("journalModal");
   }, 500);
 }
 
@@ -1503,9 +1647,7 @@ async function saveJournalTrade(event) {
    JOURNAL — DELETE
 ========================================================= */
 
-async function deleteJournalTrade(
-  tradeId
-) {
+async function deleteJournalTrade(tradeId) {
   if (!tradeId) {
     return;
   }
@@ -1573,6 +1715,7 @@ function renderJournal(trades) {
   if (!trades?.length) {
     container.innerHTML = `
       <div class="empty-state">
+
         <span>▤</span>
 
         <strong>
@@ -1590,6 +1733,7 @@ function renderJournal(trades) {
               : "Add your first trade to start building your journal."
           }
         </p>
+
       </div>
     `;
 
@@ -1625,12 +1769,6 @@ function renderJournal(trades) {
     trades.filter(
       (trade) =>
         trade.result === "win"
-    ).length;
-
-  const losses =
-    trades.filter(
-      (trade) =>
-        trade.result === "loss"
     ).length;
 
   const winRate =
@@ -1705,8 +1843,7 @@ function renderJournal(trades) {
       : "--";
 
   /*
-   * Calculate maximum drawdown
-   * from chronological order.
+   * Maximum drawdown.
    */
 
   let cumulative = 0;
@@ -1803,9 +1940,7 @@ function renderJournal(trades) {
             </div>
 
             <div>
-              <span
-                class="${resultClass}"
-              >
+              <span class="${resultClass}">
                 ${resultLabel}
               </span>
             </div>
@@ -1813,8 +1948,7 @@ function renderJournal(trades) {
             <div>
               <strong>
                 ${Number(
-                  trade.r_result ||
-                    0
+                  trade.r_result || 0
                 ).toFixed(2)}R
               </strong>
             </div>
@@ -1837,8 +1971,7 @@ function renderJournal(trades) {
                 )}"
               >
                 ${
-                  state.language ===
-                  "ar"
+                  state.language === "ar"
                     ? "حذف"
                     : "Delete"
                 }
@@ -1850,10 +1983,6 @@ function renderJournal(trades) {
       })
       .join("");
 
-  /*
-   * Delete buttons.
-   */
-
   container
     .querySelectorAll(
       "[data-delete-trade]"
@@ -1863,8 +1992,7 @@ function renderJournal(trades) {
         "click",
         () => {
           deleteJournalTrade(
-            button.dataset
-              .deleteTrade
+            button.dataset.deleteTrade
           );
         }
       );
@@ -1910,9 +2038,7 @@ async function loadMarketAnalysis() {
     data.created_at ||
     null;
 
-  renderAnalysis(
-    data
-  );
+  renderAnalysis(data);
 
   setText(
     "lastUpdated",
@@ -2183,9 +2309,7 @@ function renderAnalysis(data) {
     risk
   );
 
-  renderScoreReasons(
-    data
-  );
+  renderScoreReasons(data);
 }
 
 
@@ -2247,14 +2371,10 @@ function updateScoreVisuals(
 
   if (riskMeter) {
     const riskValue =
-      riskToNumber(
-        risk
-      );
+      riskToNumber(risk);
 
     const meter =
-      riskMeter.querySelector(
-        "span"
-      );
+      riskMeter.querySelector("span");
 
     if (meter) {
       meter.style.width =
@@ -2303,9 +2423,7 @@ function riskToNumber(risk) {
       .toLowerCase();
 
   if (
-    text.includes(
-      "extreme"
-    )
+    text.includes("extreme")
   ) {
     return 90;
   }
@@ -2317,9 +2435,7 @@ function riskToNumber(risk) {
   }
 
   if (
-    text.includes(
-      "medium"
-    )
+    text.includes("medium")
   ) {
     return 50;
   }
@@ -2338,9 +2454,7 @@ function riskToNumber(risk) {
    SCORE REASONS
 ========================================================= */
 
-function renderScoreReasons(
-  data
-) {
+function renderScoreReasons(data) {
   const container =
     $("scoreReasons");
 
@@ -2375,13 +2489,9 @@ function renderScoreReasons(
     ]
   ].filter(
     (item) =>
-      item[1] !==
-        null &&
-      item[1] !==
-        undefined &&
-      String(
-        item[1]
-      ).trim() !== ""
+      item[1] !== null &&
+      item[1] !== undefined &&
+      String(item[1]).trim() !== ""
   );
 
   if (!reasons.length) {
@@ -2399,9 +2509,7 @@ function renderScoreReasons(
             <div>
 
               <strong>
-                ${escapeHtml(
-                  title
-                )}
+                ${escapeHtml(title)}
               </strong>
 
               <p>
@@ -2471,8 +2579,7 @@ function renderNews(news) {
 
         <strong>
           ${
-            state.language ===
-            "ar"
+            state.language === "ar"
               ? "لا توجد أخبار"
               : "No news available"
           }
@@ -2564,9 +2671,7 @@ async function loadAnnouncements() {
   );
 }
 
-function renderAnnouncements(
-  items
-) {
+function renderAnnouncements(items) {
   const container =
     $("announcementsContainer");
 
@@ -2582,8 +2687,7 @@ function renderAnnouncements(
 
         <strong>
           ${
-            state.language ===
-            "ar"
+            state.language === "ar"
               ? "لا توجد إعلانات بعد"
               : "No announcements yet"
           }
@@ -2671,9 +2775,7 @@ async function loadCourses() {
   );
 }
 
-function renderCourses(
-  courses
-) {
+function renderCourses(courses) {
   const container =
     $("courseContainer");
 
@@ -2689,8 +2791,7 @@ function renderCourses(
 
         <strong>
           ${
-            state.language ===
-            "ar"
+            state.language === "ar"
               ? "لا توجد دورات متاحة حالياً"
               : "No courses available yet"
           }
@@ -2731,8 +2832,7 @@ function renderCourses(
               type="button"
             >
               ${
-                state.language ===
-                "ar"
+                state.language === "ar"
                   ? "فتح الدورة"
                   : "Open Course"
               }
@@ -2778,9 +2878,7 @@ async function loadLive() {
   state.live =
     data;
 
-  renderLive(
-    data
-  );
+  renderLive(data);
 }
 
 function renderLive(data) {
@@ -2797,8 +2895,7 @@ function renderLive(data) {
     data &&
     (
       data.is_live === true ||
-      data.status ===
-        "live"
+      data.status === "live"
     );
 
   if (indicator) {
@@ -2823,8 +2920,7 @@ function renderLive(data) {
       isLive
         ? data.title ||
           "Habboub Live"
-        : state.language ===
-          "ar"
+        : state.language === "ar"
         ? "لا توجد جلسة مباشرة الآن"
         : "No live session right now";
   }
@@ -2834,8 +2930,7 @@ function renderLive(data) {
       isLive
         ? data.description ||
           ""
-        : state.language ===
-          "ar"
+        : state.language === "ar"
         ? "ستظهر جلسة البث هنا عندما يبدأ المشرف جلسة."
         : "The live room will appear here when the admin starts a session.";
   }
@@ -2848,9 +2943,7 @@ function renderLive(data) {
 
 function subscribeToUpdates() {
   supabaseClient
-    .channel(
-      "habboub-realtime"
-    )
+    .channel("habboub-realtime")
 
     .on(
       "postgres_changes",
@@ -2927,9 +3020,7 @@ function setupAI() {
     "click",
     () => {
       $("aiWindow")
-        ?.classList.remove(
-          "hidden"
-        );
+        ?.classList.remove("hidden");
     }
   );
 
@@ -2937,9 +3028,7 @@ function setupAI() {
     "click",
     () => {
       $("aiWindow")
-        ?.classList.toggle(
-          "hidden"
-        );
+        ?.classList.toggle("hidden");
     }
   );
 
@@ -2947,9 +3036,7 @@ function setupAI() {
     "click",
     () => {
       $("aiWindow")
-        ?.classList.add(
-          "hidden"
-        );
+        ?.classList.add("hidden");
     }
   );
 
@@ -2987,9 +3074,7 @@ async function handleAI(event) {
   input.value = "";
 
   const response =
-    buildLocalAIResponse(
-      message
-    );
+    buildLocalAIResponse(message);
 
   setTimeout(() => {
     addAIMessage(
@@ -3011,9 +3096,7 @@ function addAIMessage(
   }
 
   const message =
-    document.createElement(
-      "div"
-    );
+    document.createElement("div");
 
   message.className =
     `ai-message ${type}`;
@@ -3028,9 +3111,7 @@ function addAIMessage(
     </strong>
 
     <p>
-      ${escapeHtml(
-        text
-      )}
+      ${escapeHtml(text)}
     </p>
   `;
 
@@ -3042,35 +3123,25 @@ function addAIMessage(
     container.scrollHeight;
 }
 
-function buildLocalAIResponse(
-  message
-) {
+function buildLocalAIResponse(message) {
   const text =
     message.toLowerCase();
 
   const score =
     state.analysis?.score ??
-    state.analysis
-      ?.habboub_score;
+    state.analysis?.habboub_score;
 
   const condition =
-    state.analysis
-      ?.market_condition ||
-    state.analysis
-      ?.condition;
+    state.analysis?.market_condition ||
+    state.analysis?.condition;
 
   const risk =
     state.analysis?.risk ||
-    state.analysis
-      ?.risk_level;
+    state.analysis?.risk_level;
 
   if (
-    text.includes(
-      "score"
-    ) ||
-    text.includes(
-      "درجة"
-    )
+    text.includes("score") ||
+    text.includes("درجة")
   ) {
     return `Current Habboub Score: ${
       score ?? "--"
@@ -3078,15 +3149,9 @@ function buildLocalAIResponse(
   }
 
   if (
-    text.includes(
-      "risk"
-    ) ||
-    text.includes(
-      "خطر"
-    ) ||
-    text.includes(
-      "مخاطرة"
-    )
+    text.includes("risk") ||
+    text.includes("خطر") ||
+    text.includes("مخاطرة")
   ) {
     return `Current risk environment: ${
       risk ?? "--"
@@ -3094,15 +3159,9 @@ function buildLocalAIResponse(
   }
 
   if (
-    text.includes(
-      "gold"
-    ) ||
-    text.includes(
-      "xau"
-    ) ||
-    text.includes(
-      "ذهب"
-    )
+    text.includes("gold") ||
+    text.includes("xau") ||
+    text.includes("ذهب")
   ) {
     return `XAUUSD is currently being monitored through the Habboub market context. Current environment: ${
       condition ?? "--"
@@ -3168,13 +3227,9 @@ function updateSessionTimeline() {
     now.getUTCHours();
 
   document
-    .querySelectorAll(
-      ".timeline-item"
-    )
+    .querySelectorAll(".timeline-item")
     .forEach((item) => {
-      item.classList.remove(
-        "current"
-      );
+      item.classList.remove("current");
     });
 
   if (
@@ -3182,25 +3237,19 @@ function updateSessionTimeline() {
     hour < 8
   ) {
     $("asiaSession")
-      ?.classList.add(
-        "current"
-      );
+      ?.classList.add("current");
   } else if (
     hour >= 8 &&
     hour < 13
   ) {
     $("londonSession")
-      ?.classList.add(
-        "current"
-      );
+      ?.classList.add("current");
   } else if (
     hour >= 13 &&
     hour < 21
   ) {
     $("newYorkSession")
-      ?.classList.add(
-        "current"
-      );
+      ?.classList.add("current");
   }
 }
 
@@ -3245,9 +3294,7 @@ function clearMessage(id) {
   );
 }
 
-function showToast(
-  message
-) {
+function showToast(message) {
   const toast =
     $("toast");
 
@@ -3258,9 +3305,7 @@ function showToast(
   toast.textContent =
     message;
 
-  toast.classList.add(
-    "show"
-  );
+  toast.classList.add("show");
 
   clearTimeout(
     showToast.timeout
@@ -3268,15 +3313,11 @@ function showToast(
 
   showToast.timeout =
     setTimeout(() => {
-      toast.classList.remove(
-        "show"
-      );
+      toast.classList.remove("show");
     }, 3000);
 }
 
-function formatDate(
-  value
-) {
+function formatDate(value) {
   if (!value) {
     return "--";
   }
@@ -3293,22 +3334,17 @@ function formatDate(
   }
 
   return date.toLocaleString(
-    state.language ===
-      "ar"
+    state.language === "ar"
       ? "ar"
       : "en",
     {
-      dateStyle:
-        "medium",
-      timeStyle:
-        "short"
+      dateStyle: "medium",
+      timeStyle: "short"
     }
   );
 }
 
-function escapeHtml(
-  value
-) {
+function escapeHtml(value) {
   return String(
     value ?? ""
   )
@@ -3334,12 +3370,8 @@ function escapeHtml(
     );
 }
 
-function escapeAttribute(
-  value
-) {
-  return escapeHtml(
-    value
-  );
+function escapeAttribute(value) {
+  return escapeHtml(value);
 }
 
 
@@ -3351,3 +3383,4 @@ document.addEventListener(
   "DOMContentLoaded",
   init
 );
+```
