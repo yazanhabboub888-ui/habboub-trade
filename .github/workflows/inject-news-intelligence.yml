@@ -13,48 +13,46 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Inject Habboub enhancement assets
+      - name: Restore index if corrupted and inject assets
         run: |
+          set -e
           python3 - <<'PY'
           from pathlib import Path
+          import subprocess
+
           p = Path('index.html')
-          text = p.read_text(encoding='utf-8')
+          text = p.read_text(encoding='utf-8') if p.exists() else ''
 
-          css = '<link rel="stylesheet" href="mobile-polish.css">'
-          if css not in text:
-              marker = '<link rel="stylesheet" href="style.css">'
-              if marker not in text:
-                  raise SystemExit('style.css tag not found in index.html')
-              text = text.replace(marker, marker + '\n  ' + css, 1)
+          # The previous feed-loader commit accidentally replaced the whole index.html.
+          # Restore the last known-good full page before applying enhancements.
+          if '<!DOCTYPE html>' not in text or '<main>' not in text or len(text) < 10000:
+              subprocess.run(['git', 'checkout', '96806ffe54c563f9d0ab727cf0cf5f3389a18c08', '--', 'index.html'], check=True)
+              text = p.read_text(encoding='utf-8')
 
-          script = '<script src="news-intelligence.js"></script>'
-          if script not in text:
-              marker = '<script src="script.js"></script>'
+          def add_after(marker, tag):
+              nonlocal text
+              if tag in text:
+                  return
               if marker not in text:
-                  raise SystemExit('script.js tag not found in index.html')
-              text = text.replace(marker, marker + '\n  ' + script, 1)
+                  raise SystemExit(f'marker not found: {marker}')
+              text = text.replace(marker, marker + '\n  ' + tag, 1)
 
-          consensus = '<script src="news-consensus.js"></script>'
-          if consensus not in text:
-              marker = '<script src="news-intelligence.js"></script>'
-              if marker not in text:
-                  raise SystemExit('news-intelligence.js tag not found in index.html')
-              text = text.replace(marker, marker + '\n  ' + consensus, 1)
+          add_after('<link rel="stylesheet" href="style.css">', '<link rel="stylesheet" href="mobile-polish.css">')
+          add_after('<script src="script.js"></script>', '<script src="news-intelligence.js"></script>')
+          add_after('<script src="news-intelligence.js"></script>', '<script src="news-consensus.js"></script>')
+          add_after('<script src="news-consensus.js"></script>', '<script src="trading-session-market.js"></script>')
+          add_after('<script src="trading-session-market.js"></script>', '<script src="session-persistence.js"></script>')
 
-          market_session = '<script src="trading-session-market.js"></script>'
-          if market_session not in text:
-              marker = '<script src="news-consensus.js"></script>'
+          # Load the live market feed after the page scripts so the DOM is ready.
+          market_live = '<script src="market-live.js?v=20260906"></script>'
+          if market_live not in text:
+              marker = '<script src="session-persistence.js"></script>'
               if marker not in text:
-                  raise SystemExit('news-consensus.js tag not found in index.html')
-              text = text.replace(marker, marker + '\n  ' + market_session, 1)
-
-          session_persistence = '<script src="session-persistence.js"></script>'
-          if session_persistence not in text:
-              marker = '<script src="trading-session-market.js"></script>'
-              if marker not in text:
-                  raise SystemExit('trading-session-market.js tag not found in index.html')
-              text = text.replace(marker, marker + '\n  ' + session_persistence, 1)
+                  raise SystemExit('session persistence marker not found')
+              text = text.replace(marker, marker + '\n  ' + market_live, 1)
 
           p.write_text(text, encoding='utf-8')
           PY
@@ -65,5 +63,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "feat: persist last app section"
+          git commit -m "fix: restore index and load market feed"
           git push
