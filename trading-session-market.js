@@ -37,6 +37,23 @@
 
   const q = (id) => document.getElementById(id);
 
+  /*
+     Market Watch has one generic data-nav="dashboard" on all Open Session
+     buttons. Capture the click before the generic navigation handler runs and
+     resolve the market from the card that was actually clicked.
+  */
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("#markets .market-open-btn");
+    if (!button) return;
+
+    const card = button.closest(".large-market-card");
+    const symbol = String(card?.dataset?.symbol || "").toUpperCase();
+    if (!MARKETS[symbol]) return;
+
+    selected = symbol;
+    localStorage.setItem(STORAGE_KEY, selected);
+  }, true);
+
   function labels() {
     return document.documentElement.lang === "ar"
       ? {
