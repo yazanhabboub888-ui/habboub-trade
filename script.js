@@ -1,4 +1,3 @@
-```javascript
 /* =========================================================
    HABBOUB — MAIN SCRIPT
    Stable frontend + Supabase
@@ -332,13 +331,33 @@ async function init() {
 
   state.initialized = true;
 
+
+  /*
+   * CRITICAL:
+   *
+   * Hide the loader BEFORE waiting for Supabase.
+   *
+   * The website must NEVER depend on
+   * Supabase to become visible.
+   */
+
   hideLoader();
+
+
+  /*
+   * Extra loader safety.
+   */
 
   setTimeout(() => {
     hideLoader();
   }, 1000);
 
+
   try {
+
+    /* -----------------------------------------
+       FRONTEND
+    ----------------------------------------- */
 
     applyLanguage(
       state.language
@@ -362,6 +381,11 @@ async function init() {
 
     updateSessionTimeline();
 
+
+    /* -----------------------------------------
+       CLOCK
+    ----------------------------------------- */
+
     setInterval(() => {
 
       try {
@@ -381,7 +405,18 @@ async function init() {
 
     }, 1000);
 
+
+    /*
+     * Make absolutely sure loader is gone.
+     */
+
     hideLoader();
+
+
+    /* -----------------------------------------
+       SUPABASE DATA
+       Runs in background.
+    ----------------------------------------- */
 
     if (!supabaseClient) {
 
@@ -391,6 +426,14 @@ async function init() {
 
       return;
     }
+
+
+    /*
+     * Authentication gets a maximum of 5 seconds.
+     *
+     * Even if Supabase hangs,
+     * the website stays usable.
+     */
 
     try {
 
@@ -408,6 +451,11 @@ async function init() {
       );
 
     }
+
+
+    /*
+     * NEVER block the page on database requests.
+     */
 
     Promise.allSettled([
 
@@ -438,6 +486,11 @@ async function init() {
 
     });
 
+
+    /*
+     * Realtime is also background-only.
+     */
+
     try {
 
       subscribeToUpdates();
@@ -460,6 +513,10 @@ async function init() {
 
   } finally {
 
+    /*
+     * Final emergency loader removal.
+     */
+
     hideLoader();
 
   }
@@ -478,18 +535,22 @@ function applyLanguage(
     translations[language] ||
     translations.en;
 
+
   state.language =
     translations[language]
       ? language
       : "en";
 
+
   document.documentElement.lang =
     state.language;
+
 
   document.documentElement.dir =
     state.language === "ar"
       ? "rtl"
       : "ltr";
+
 
   document
     .querySelectorAll(
@@ -510,6 +571,7 @@ function applyLanguage(
       }
 
     });
+
 
   document
     .querySelectorAll(
@@ -532,15 +594,18 @@ function applyLanguage(
 
     });
 
+
   $("langEN")?.classList.toggle(
     "active",
     state.language === "en"
   );
 
+
   $("langAR")?.classList.toggle(
     "active",
     state.language === "ar"
   );
+
 
   try {
 
@@ -557,25 +622,31 @@ function applyLanguage(
 
   }
 
+
   if (state.user) {
     renderAuthUI();
   }
+
 
   renderJournal(
     state.journal
   );
 
+
   renderNews(
     state.news
   );
+
 
   renderAnnouncements(
     state.announcements
   );
 
+
   renderCourses(
     state.courses
   );
+
 
   renderLive(
     state.live
@@ -595,6 +666,7 @@ function setupLanguage() {
 
     }
   );
+
 
   $("langAR")?.addEventListener(
     "click",
@@ -659,8 +731,10 @@ function navigateTo(
 
     });
 
+
   const section =
     $(target);
+
 
   if (section) {
 
@@ -669,6 +743,7 @@ function navigateTo(
     );
 
   }
+
 
   document
     .querySelectorAll(
@@ -692,10 +767,12 @@ function navigateTo(
 
     });
 
+
   $("mobileNav")
     ?.classList.remove(
       "open"
     );
+
 
   try {
 
@@ -795,6 +872,7 @@ function setupModals() {
       }
     );
 
+
   $("showRegisterButton")
     ?.addEventListener(
       "click",
@@ -815,6 +893,7 @@ function setupModals() {
       }
     );
 
+
   $("showLoginButton")
     ?.addEventListener(
       "click",
@@ -834,6 +913,7 @@ function setupModals() {
 
       }
     );
+
 
   $("openJournalButton")
     ?.addEventListener(
@@ -872,6 +952,7 @@ function setupModals() {
       }
     );
 
+
   document
     .querySelectorAll(
       "[data-close-modal]"
@@ -896,6 +977,7 @@ function setupModals() {
 
     });
 
+
   document
     .querySelectorAll(
       ".modal-overlay"
@@ -919,17 +1001,20 @@ function setupModals() {
 
     });
 
+
   $("loginForm")
     ?.addEventListener(
       "submit",
       loginUser
     );
 
+
   $("registerForm")
     ?.addEventListener(
       "submit",
       registerUser
     );
+
 
   $("journalForm")
     ?.addEventListener(
@@ -949,6 +1034,7 @@ function setupAuthUI() {
     return;
   }
 
+
   try {
 
     supabaseClient.auth
@@ -962,6 +1048,7 @@ function setupAuthUI() {
             "Habboub Auth Event:",
             event
           );
+
 
           if (
             event === "SIGNED_IN" ||
@@ -983,11 +1070,13 @@ function setupAuthUI() {
                         : state.user
                     );
 
+
                   await withTimeout(
                     refreshAuthUI(),
                     5000,
                     null
                   );
+
 
                   if (
                     state.user
@@ -1039,11 +1128,14 @@ async function refreshAuthUI() {
       null
     );
 
+
   state.user =
     user;
 
+
   state.profile =
     null;
+
 
   if (user) {
 
@@ -1055,6 +1147,7 @@ async function refreshAuthUI() {
         4500,
         null
       );
+
 
     if (
       !state.profile
@@ -1073,6 +1166,7 @@ async function refreshAuthUI() {
 
   }
 
+
   renderAuthUI();
 }
 
@@ -1082,6 +1176,7 @@ async function getCurrentUser() {
   if (!supabaseClient) {
     return null;
   }
+
 
   try {
 
@@ -1094,14 +1189,17 @@ async function getCurrentUser() {
         null
       );
 
+
     if (!result) {
       return null;
     }
+
 
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -1112,6 +1210,7 @@ async function getCurrentUser() {
 
       return null;
     }
+
 
     return (
       data?.user ||
@@ -1145,6 +1244,7 @@ async function getProfile(
     return null;
   }
 
+
   try {
 
     const result =
@@ -1161,14 +1261,17 @@ async function getProfile(
         null
       );
 
+
     if (!result) {
       return null;
     }
+
 
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -1179,6 +1282,7 @@ async function getProfile(
 
       return null;
     }
+
 
     return data || null;
 
@@ -1205,14 +1309,17 @@ async function ensureProfile(
     return null;
   }
 
+
   const existing =
     await getProfile(
       user.id
     );
 
+
   if (existing) {
     return existing;
   }
+
 
   const fullName =
     user.user_metadata
@@ -1221,10 +1328,12 @@ async function ensureProfile(
       ?.split("@")[0] ||
     "User";
 
+
   const avatarUrl =
     user.user_metadata
       ?.avatar_url ||
     null;
+
 
   try {
 
@@ -1252,14 +1361,17 @@ async function ensureProfile(
         null
       );
 
+
     if (!result) {
       return null;
     }
+
 
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -1270,6 +1382,7 @@ async function ensureProfile(
 
       return null;
     }
+
 
     return data || null;
 
@@ -1297,9 +1410,15 @@ function renderAuthUI() {
   const profileArea =
     $("profileArea");
 
+
   if (!loginButton) {
     return;
   }
+
+
+  /*
+   * LOGGED OUT
+   */
 
   if (!state.user) {
 
@@ -1307,9 +1426,11 @@ function renderAuthUI() {
       "hidden"
     );
 
+
     loginButton.classList.remove(
       "user-account-button"
     );
+
 
     loginButton.innerHTML =
       translations[
@@ -1317,27 +1438,37 @@ function renderAuthUI() {
       ]?.login ||
       "Login";
 
+
     profileArea
       ?.classList.add(
         "hidden"
       );
+
 
     $("profileMenu")
       ?.classList.add(
         "hidden"
       );
 
+
     return;
   }
+
+
+  /*
+   * LOGGED IN
+   */
 
   loginButton.classList.add(
     "hidden"
   );
 
+
   profileArea
     ?.classList.remove(
       "hidden"
     );
+
 
   const name =
     state.profile
@@ -1348,9 +1479,11 @@ function renderAuthUI() {
       ?.split("@")[0] ||
     "User";
 
+
   const email =
     state.user.email ||
     "";
+
 
   const avatarUrl =
     state.profile
@@ -1359,11 +1492,13 @@ function renderAuthUI() {
       ?.avatar_url ||
     "";
 
+
   updateAvatarElement(
     $("profileAvatar"),
     name,
     avatarUrl
   );
+
 
   updateAvatarElement(
     $("profileAvatarLarge"),
@@ -1371,20 +1506,24 @@ function renderAuthUI() {
     avatarUrl
   );
 
+
   setText(
     "profileButtonName",
     name
   );
+
 
   setText(
     "profileName",
     name
   );
 
+
   setText(
     "profileEmail",
     email
   );
+
 
   $("profileMenu")
     ?.classList.add(
@@ -1407,6 +1546,7 @@ function updateAvatarElement(
     return;
   }
 
+
   const initial =
     String(
       name || "U"
@@ -1416,14 +1556,17 @@ function updateAvatarElement(
       .toUpperCase() ||
     "U";
 
+
   element.innerHTML =
     "";
+
 
   element.style.borderRadius =
     "50%";
 
   element.style.overflow =
     "hidden";
+
 
   if (avatarUrl) {
 
@@ -1432,11 +1575,14 @@ function updateAvatarElement(
         "img"
       );
 
+
     img.src =
       avatarUrl;
 
+
     img.alt =
       "Profile avatar";
+
 
     img.style.width =
       "100%";
@@ -1468,6 +1614,7 @@ function updateAvatarElement(
     img.style.borderRadius =
       "50%";
 
+
     img.onerror = () => {
 
       element.innerHTML =
@@ -1482,20 +1629,25 @@ function updateAvatarElement(
 
     };
 
+
     element.classList.add(
       "has-image"
     );
+
 
     element.appendChild(
       img
     );
 
+
     return;
   }
+
 
   element.classList.remove(
     "has-image"
   );
+
 
   element.textContent =
     initial;
@@ -1517,12 +1669,15 @@ function toggleProfileMenu() {
     return;
   }
 
+
   const menu =
     $("profileMenu");
+
 
   if (!menu) {
     return;
   }
+
 
   menu.classList.toggle(
     "hidden"
@@ -1544,9 +1699,11 @@ function setupProfileMenu() {
   const logoutButton =
     $("logoutButton");
 
+
   if (!profileButton) {
     return;
   }
+
 
   profileButton.addEventListener(
     "click",
@@ -1558,6 +1715,7 @@ function setupProfileMenu() {
 
     }
   );
+
 
   profileLabel?.addEventListener(
     "click",
@@ -1573,6 +1731,7 @@ function setupProfileMenu() {
     }
   );
 
+
   logoutButton?.addEventListener(
     "click",
     async () => {
@@ -1587,6 +1746,7 @@ function setupProfileMenu() {
     }
   );
 
+
   document.addEventListener(
     "click",
     (event) => {
@@ -1599,6 +1759,7 @@ function setupProfileMenu() {
       ) {
         return;
       }
+
 
       if (
         !profileMenu.contains(
@@ -1630,6 +1791,7 @@ async function logoutUser() {
     return;
   }
 
+
   try {
 
     const result =
@@ -1640,6 +1802,7 @@ async function logoutUser() {
         5000,
         null
       );
+
 
     if (!result) {
 
@@ -1652,6 +1815,7 @@ async function logoutUser() {
       const {
         error
       } = result;
+
 
       if (error) {
 
@@ -1669,6 +1833,7 @@ async function logoutUser() {
 
     }
 
+
     state.user =
       null;
 
@@ -1678,16 +1843,20 @@ async function logoutUser() {
     state.journal =
       [];
 
+
     $("profileMenu")
       ?.classList.add(
         "hidden"
       );
 
+
     renderAuthUI();
+
 
     renderJournal(
       []
     );
+
 
     showToast(
       state.language === "ar"
@@ -1722,15 +1891,19 @@ function showProfileModal() {
 
     });
 
+
   const user =
     state.user;
+
 
   if (!user) {
     return;
   }
 
+
   const profile =
     state.profile;
+
 
   const name =
     profile?.full_name ||
@@ -1740,11 +1913,13 @@ function showProfileModal() {
       ?.split("@")[0] ||
     "User";
 
+
   const avatarUrl =
     profile?.avatar_url ||
     user.user_metadata
       ?.avatar_url ||
     "";
+
 
   const lang =
     translations[
@@ -1752,16 +1927,20 @@ function showProfileModal() {
     ] ||
     translations.en;
 
+
   const modal =
     document.createElement(
       "div"
     );
 
+
   modal.id =
     "profileModal";
 
+
   modal.className =
     "modal";
+
 
   modal.style.position =
     "fixed";
@@ -1786,6 +1965,7 @@ function showProfileModal() {
 
   modal.style.boxSizing =
     "border-box";
+
 
   modal.innerHTML = `
 
@@ -1818,6 +1998,7 @@ function showProfileModal() {
         ×
       </button>
 
+
       <div
         id="profileLargeAvatarPreview"
         style="
@@ -1841,17 +2022,20 @@ function showProfileModal() {
         "
       ></div>
 
+
       <h2>
         ${escapeHtml(
           lang.my_profile
         )}
       </h2>
 
+
       <p class="profile-email">
         ${escapeHtml(
           user.email || ""
         )}
       </p>
+
 
       <form
         id="profileForm"
@@ -1864,6 +2048,7 @@ function showProfileModal() {
               lang.full_name
             )}
           </span>
+
 
           <input
             id="profileFullName"
@@ -1878,11 +2063,13 @@ function showProfileModal() {
 
         </label>
 
+
         <label>
 
           <span>
             Avatar URL
           </span>
+
 
           <input
             id="profileAvatarUrl"
@@ -1895,6 +2082,7 @@ function showProfileModal() {
           >
 
         </label>
+
 
         <button
           class="primary-btn full"
@@ -1909,6 +2097,7 @@ function showProfileModal() {
 
       </form>
 
+
       <div
         class="form-message"
         id="profileMessage"
@@ -1917,15 +2106,18 @@ function showProfileModal() {
     </div>
   `;
 
+
   document.body.appendChild(
     modal
   );
+
 
   updateAvatarElement(
     $("profileLargeAvatarPreview"),
     name,
     avatarUrl
   );
+
 
   $("profileModalClose")
     ?.addEventListener(
@@ -1936,6 +2128,7 @@ function showProfileModal() {
 
       }
     );
+
 
   modal
     .querySelector(
@@ -1950,11 +2143,13 @@ function showProfileModal() {
       }
     );
 
+
   $("profileForm")
     ?.addEventListener(
       "submit",
       updateProfile
     );
+
 
   $("profileAvatarUrl")
     ?.addEventListener(
@@ -1966,11 +2161,13 @@ function showProfileModal() {
             ?.value
             .trim() || "";
 
+
         const currentName =
           $("profileFullName")
             ?.value
             .trim() ||
           name;
+
 
         updateAvatarElement(
           $("profileLargeAvatarPreview"),
@@ -1980,6 +2177,7 @@ function showProfileModal() {
 
       }
     );
+
 
   $("profileFullName")
     ?.addEventListener(
@@ -1992,10 +2190,12 @@ function showProfileModal() {
             .trim() ||
           "User";
 
+
         const currentUrl =
           $("profileAvatarUrl")
             ?.value
             .trim() || "";
+
 
         updateAvatarElement(
           $("profileLargeAvatarPreview"),
@@ -2018,6 +2218,7 @@ async function updateProfile(
 
   event.preventDefault();
 
+
   if (
     !state.user ||
     !supabaseClient
@@ -2025,15 +2226,18 @@ async function updateProfile(
     return;
   }
 
+
   const fullName =
     $("profileFullName")
       ?.value
       .trim();
 
+
   const avatarUrl =
     $("profileAvatarUrl")
       ?.value
       .trim();
+
 
   if (!fullName) {
 
@@ -2047,12 +2251,14 @@ async function updateProfile(
     return;
   }
 
+
   setMessage(
     "profileMessage",
     state.language === "ar"
       ? "جاري الحفظ..."
       : "Saving..."
   );
+
 
   try {
 
@@ -2085,6 +2291,7 @@ async function updateProfile(
         null
       );
 
+
     if (!result) {
 
       setMessage(
@@ -2097,9 +2304,11 @@ async function updateProfile(
       return;
     }
 
+
     const {
       error
     } = result;
+
 
     if (error) {
 
@@ -2115,6 +2324,7 @@ async function updateProfile(
 
       return;
     }
+
 
     try {
 
@@ -2144,12 +2354,15 @@ async function updateProfile(
 
     }
 
+
     state.profile =
       await getProfile(
         state.user.id
       );
 
+
     renderAuthUI();
+
 
     setMessage(
       "profileMessage",
@@ -2157,6 +2370,7 @@ async function updateProfile(
         ? "تم حفظ التغييرات."
         : "Changes saved."
     );
+
 
     showToast(
       state.language === "ar"
@@ -2190,6 +2404,7 @@ async function loginUser(
 
   event.preventDefault();
 
+
   if (!supabaseClient) {
 
     setMessage(
@@ -2200,14 +2415,17 @@ async function loginUser(
     return;
   }
 
+
   const email =
     $("loginEmail")
       ?.value
       .trim();
 
+
   const password =
     $("loginPassword")
       ?.value;
+
 
   if (!email || !password) {
 
@@ -2221,12 +2439,14 @@ async function loginUser(
     return;
   }
 
+
   setMessage(
     "loginMessage",
     state.language === "ar"
       ? "جاري تسجيل الدخول..."
       : "Logging in..."
   );
+
 
   try {
 
@@ -2242,6 +2462,7 @@ async function loginUser(
         null
       );
 
+
     if (!result) {
 
       setMessage(
@@ -2254,10 +2475,12 @@ async function loginUser(
       return;
     }
 
+
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -2274,9 +2497,11 @@ async function loginUser(
       return;
     }
 
+
     state.user =
       data?.user ||
       null;
+
 
     if (!state.user) {
 
@@ -2290,20 +2515,26 @@ async function loginUser(
       return;
     }
 
+
     await ensureProfile(
       state.user
     );
 
+
     await refreshAuthUI();
+
 
     closeModal(
       "loginModal"
     );
 
+
     $("loginForm")
       ?.reset();
 
+
     await loadJournal();
+
 
     showToast(
       state.language === "ar"
@@ -2337,6 +2568,7 @@ async function registerUser(
 
   event.preventDefault();
 
+
   if (!supabaseClient) {
 
     setMessage(
@@ -2347,6 +2579,7 @@ async function registerUser(
     return;
   }
 
+
   const fullName =
     (
       $("registerFullName") ||
@@ -2355,15 +2588,18 @@ async function registerUser(
       ?.value
       .trim();
 
+
   const email =
     $("registerEmail")
       ?.value
       .trim()
       .toLowerCase();
 
+
   const password =
     $("registerPassword")
       ?.value;
+
 
   if (!fullName) {
 
@@ -2376,6 +2612,7 @@ async function registerUser(
 
     return;
   }
+
 
   if (
     fullName.length < 2
@@ -2391,6 +2628,7 @@ async function registerUser(
     return;
   }
 
+
   if (!email) {
 
     setMessage(
@@ -2403,6 +2641,7 @@ async function registerUser(
     return;
   }
 
+
   if (!password) {
 
     setMessage(
@@ -2414,6 +2653,7 @@ async function registerUser(
 
     return;
   }
+
 
   if (
     password.length < 6
@@ -2429,12 +2669,14 @@ async function registerUser(
     return;
   }
 
+
   setMessage(
     "registerMessage",
     state.language === "ar"
       ? "جاري إنشاء الحساب..."
       : "Creating account..."
   );
+
 
   try {
 
@@ -2461,6 +2703,7 @@ async function registerUser(
         null
       );
 
+
     if (!result) {
 
       setMessage(
@@ -2473,10 +2716,12 @@ async function registerUser(
       return;
     }
 
+
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -2493,6 +2738,7 @@ async function registerUser(
       return;
     }
 
+
     if (
       data?.session &&
       data?.user
@@ -2501,18 +2747,23 @@ async function registerUser(
       state.user =
         data.user;
 
+
       await ensureProfile(
         data.user
       );
 
+
       await refreshAuthUI();
+
 
       closeModal(
         "registerModal"
       );
 
+
       $("registerForm")
         ?.reset();
+
 
       showToast(
         state.language === "ar"
@@ -2520,8 +2771,10 @@ async function registerUser(
           : "Account created successfully."
       );
 
+
       return;
     }
+
 
     setMessage(
       "registerMessage",
@@ -2556,8 +2809,10 @@ async function loadJournal() {
     return;
   }
 
+
   const user =
     await getCurrentUser();
+
 
   if (!user) {
 
@@ -2570,6 +2825,7 @@ async function loadJournal() {
 
     return;
   }
+
 
   try {
 
@@ -2593,6 +2849,7 @@ async function loadJournal() {
         null
       );
 
+
     if (!result) {
 
       console.warn(
@@ -2602,10 +2859,12 @@ async function loadJournal() {
       return;
     }
 
+
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -2624,8 +2883,10 @@ async function loadJournal() {
       return;
     }
 
+
     state.journal =
       data || [];
+
 
     renderJournal(
       state.journal
@@ -2652,8 +2913,10 @@ async function saveJournalTrade(
 
   event.preventDefault();
 
+
   const user =
     await getCurrentUser();
+
 
   if (!user) {
 
@@ -2667,6 +2930,7 @@ async function saveJournalTrade(
     return;
   }
 
+
   const symbol =
     $("tradeSymbol")
       ?.value
@@ -2674,16 +2938,19 @@ async function saveJournalTrade(
       .toUpperCase() ||
     "XAUUSD";
 
+
   const setup =
     $("tradeSetup")
       ?.value
       .trim() ||
     "";
 
+
   const result =
     $("tradeResult")
       ?.value ||
     "win";
+
 
   const rResult =
     Number(
@@ -2692,11 +2959,13 @@ async function saveJournalTrade(
       0
     );
 
+
   const notes =
     $("tradeNotes")
       ?.value
       .trim() ||
     "";
+
 
   if (
     Number.isNaN(
@@ -2714,12 +2983,14 @@ async function saveJournalTrade(
     return;
   }
 
+
   setMessage(
     "journalMessage",
     state.language === "ar"
       ? "جاري حفظ الصفقة..."
       : "Saving trade..."
   );
+
 
   try {
 
@@ -2759,6 +3030,7 @@ async function saveJournalTrade(
         null
       );
 
+
     if (!resultResponse) {
 
       setMessage(
@@ -2771,10 +3043,12 @@ async function saveJournalTrade(
       return;
     }
 
+
     const {
       data,
       error
     } = resultResponse;
+
 
     if (error) {
 
@@ -2791,10 +3065,12 @@ async function saveJournalTrade(
       return;
     }
 
+
     console.log(
       "Trade saved:",
       data
     );
+
 
     setMessage(
       "journalMessage",
@@ -2803,8 +3079,10 @@ async function saveJournalTrade(
         : "Trade saved."
     );
 
+
     $("journalForm")
       ?.reset();
+
 
     if ($("tradeSymbol")) {
 
@@ -2813,6 +3091,7 @@ async function saveJournalTrade(
 
     }
 
+
     if ($("tradeR")) {
 
       $("tradeR").value =
@@ -2820,13 +3099,16 @@ async function saveJournalTrade(
 
     }
 
+
     await loadJournal();
+
 
     showToast(
       state.language === "ar"
         ? "تم حفظ الصفقة بنجاح."
         : "Trade saved successfully."
     );
+
 
     setTimeout(() => {
 
@@ -2864,17 +3146,21 @@ async function deleteJournalTrade(
     return;
   }
 
+
   const user =
     await getCurrentUser();
+
 
   if (!user) {
     return;
   }
 
+
   const confirmText =
     state.language === "ar"
       ? "هل أنت متأكد أنك تريد حذف هذه الصفقة؟"
       : "Are you sure you want to delete this trade?";
+
 
   if (
     !window.confirm(
@@ -2883,6 +3169,7 @@ async function deleteJournalTrade(
   ) {
     return;
   }
+
 
   try {
 
@@ -2903,6 +3190,7 @@ async function deleteJournalTrade(
         null
       );
 
+
     if (!result) {
 
       showToast(
@@ -2914,9 +3202,11 @@ async function deleteJournalTrade(
       return;
     }
 
+
     const {
       error
     } = result;
+
 
     if (error) {
 
@@ -2932,7 +3222,9 @@ async function deleteJournalTrade(
       return;
     }
 
+
     await loadJournal();
+
 
     showToast(
       state.language === "ar"
@@ -2962,9 +3254,11 @@ function renderJournal(
   const container =
     $("journalTable");
 
+
   if (!container) {
     return;
   }
+
 
   if (!trades?.length) {
 
@@ -2993,33 +3287,40 @@ function renderJournal(
       </div>
     `;
 
+
     setText(
       "journalWinRate",
       "--"
     );
+
 
     setText(
       "journalProfitFactor",
       "--"
     );
 
+
     setText(
       "journalAverageR",
       "--"
     );
+
 
     setText(
       "journalDrawdown",
       "--"
     );
 
+
     setText(
       "journalTrades",
       "0"
     );
 
+
     return;
   }
+
 
   const wins =
     trades.filter(
@@ -3028,12 +3329,14 @@ function renderJournal(
         "win"
     ).length;
 
+
   const winRate =
     (
       wins /
       trades.length *
       100
     ).toFixed(1);
+
 
   const totalR =
     trades.reduce(
@@ -3049,11 +3352,13 @@ function renderJournal(
       0
     );
 
+
   const averageR =
     (
       totalR /
       trades.length
     ).toFixed(2);
+
 
   const grossProfit =
     trades
@@ -3076,6 +3381,7 @@ function renderJournal(
           ),
         0
       );
+
 
   const grossLoss =
     Math.abs(
@@ -3101,6 +3407,7 @@ function renderJournal(
         )
     );
 
+
   const profitFactor =
     grossLoss > 0
       ? (
@@ -3109,14 +3416,18 @@ function renderJournal(
         ).toFixed(2)
       : "--";
 
+
   let cumulative =
     0;
+
 
   let peak =
     0;
 
+
   let maxDrawdown =
     0;
+
 
   [...trades]
     .reverse()
@@ -3129,11 +3440,13 @@ function renderJournal(
               0
           );
 
+
         peak =
           Math.max(
             peak,
             cumulative
           );
+
 
         maxDrawdown =
           Math.max(
@@ -3145,20 +3458,24 @@ function renderJournal(
       }
     );
 
+
   setText(
     "journalWinRate",
     `${winRate}%`
   );
+
 
   setText(
     "journalProfitFactor",
     profitFactor
   );
 
+
   setText(
     "journalAverageR",
     averageR
   );
+
 
   setText(
     "journalDrawdown",
@@ -3167,10 +3484,12 @@ function renderJournal(
       : "0R"
   );
 
+
   setText(
     "journalTrades",
     trades.length
   );
+
 
   container.innerHTML =
     trades
@@ -3186,6 +3505,7 @@ function renderJournal(
               ? "negative"
               : "neutral";
 
+
           const resultLabel =
             trade.result ===
             "win"
@@ -3195,14 +3515,15 @@ function renderJournal(
                 : "Win"
               : trade.result ===
                 "loss"
-                ? state.language ===
-                  "ar"
-                  ? "خسارة"
-                  : "Loss"
-                : state.language ===
-                  "ar"
-                ? "تعادل"
-                : "Breakeven";
+              ? state.language ===
+                "ar"
+                ? "خسارة"
+                : "Loss"
+              : state.language ===
+                "ar"
+              ? "تعادل"
+              : "Breakeven";
+
 
           return `
 
@@ -3226,6 +3547,7 @@ function renderJournal(
 
               </div>
 
+
               <div>
 
                 <span
@@ -3235,6 +3557,7 @@ function renderJournal(
                 </span>
 
               </div>
+
 
               <div>
 
@@ -3247,6 +3570,7 @@ function renderJournal(
 
               </div>
 
+
               <div>
 
                 <small>
@@ -3257,6 +3581,7 @@ function renderJournal(
                 </small>
 
               </div>
+
 
               <div>
 
@@ -3282,6 +3607,7 @@ function renderJournal(
         }
       )
       .join("");
+
 
   container
     .querySelectorAll(
@@ -3317,6 +3643,7 @@ async function loadMarketAnalysis() {
     return;
   }
 
+
   try {
 
     const result =
@@ -3337,6 +3664,7 @@ async function loadMarketAnalysis() {
         null
       );
 
+
     if (!result) {
 
       console.warn(
@@ -3346,10 +3674,12 @@ async function loadMarketAnalysis() {
       return;
     }
 
+
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -3361,20 +3691,25 @@ async function loadMarketAnalysis() {
       return;
     }
 
+
     if (!data) {
       return;
     }
 
+
     state.analysis =
       data;
+
 
     state.lastUpdated =
       data.created_at ||
       null;
 
+
     renderAnalysis(
       data
     );
+
 
     setText(
       "lastUpdated",
@@ -3407,6 +3742,7 @@ function renderAnalysis(
       0
     );
 
+
   const confidence =
     Number(
       data.confidence ??
@@ -3414,16 +3750,19 @@ function renderAnalysis(
       0
     );
 
+
   const condition =
     data.market_condition ||
     data.condition ||
     data.environment ||
     "--";
 
+
   const risk =
     data.risk ||
     data.risk_level ||
     "--";
+
 
   setText(
     "heroScore",
@@ -3432,6 +3771,7 @@ function renderAnalysis(
       : "--"
   );
 
+
   setText(
     "sessionScore",
     Number.isFinite(score)
@@ -3439,25 +3779,30 @@ function renderAnalysis(
       : "--"
   );
 
+
   setText(
     "heroCondition",
     condition
   );
+
 
   setText(
     "marketCondition",
     condition
   );
 
+
   setText(
     "heroRisk",
     risk
   );
 
+
   setText(
     "marketRisk",
     risk
   );
+
 
   setText(
     "marketConfidence",
@@ -3470,6 +3815,7 @@ function renderAnalysis(
     }%`
   );
 
+
   setText(
     "analysisConfidenceLarge",
     `${
@@ -3481,12 +3827,14 @@ function renderAnalysis(
     }%`
   );
 
+
   setText(
     "marketAnalysisText",
     data.analysis_text ||
       data.description ||
       "Waiting for market analysis..."
   );
+
 
   setText(
     "analysisLongText",
@@ -3496,6 +3844,7 @@ function renderAnalysis(
       "Waiting for the latest market analysis."
   );
 
+
   setText(
     "analysisDescription",
     data.title ||
@@ -3503,11 +3852,13 @@ function renderAnalysis(
       "Market analysis"
   );
 
+
   setText(
     "analysisStatus",
     data.status ||
       "LIVE"
   );
+
 
   setText(
     "analysisSymbol",
@@ -3515,11 +3866,13 @@ function renderAnalysis(
       "XAUUSD"
   );
 
+
   setText(
     "analysisSymbolLarge",
     data.symbol ||
       "XAUUSD"
   );
+
 
   setText(
     "htfBias",
@@ -3527,11 +3880,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "sessionBias",
     data.htf_bias ||
       "--"
   );
+
 
   setText(
     "intelBias",
@@ -3539,11 +3894,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "liquidity",
     data.liquidity ||
       "--"
   );
+
 
   setText(
     "sessionLiquidity",
@@ -3551,11 +3908,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "intelLiquidity",
     data.liquidity ||
       "--"
   );
+
 
   setText(
     "mss",
@@ -3563,11 +3922,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "sessionMSS",
     data.mss ||
       "--"
   );
+
 
   setText(
     "intelMSS",
@@ -3575,11 +3936,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "fvg",
     data.fvg ||
       "--"
   );
+
 
   setText(
     "sessionFVG",
@@ -3587,11 +3950,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "intelFVG",
     data.fvg ||
       "--"
   );
+
 
   setText(
     "cotCommercial",
@@ -3599,11 +3964,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "intelCommercial",
     data.cot_commercial ||
       "--"
   );
+
 
   setText(
     "cotManaged",
@@ -3611,11 +3978,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "intelManaged",
     data.cot_managed ||
       "--"
   );
+
 
   setText(
     "cotNet",
@@ -3623,11 +3992,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "intelNet",
     data.cot_net ||
       "--"
   );
+
 
   setText(
     "cotBias",
@@ -3635,11 +4006,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "intelCotBias",
     data.cot_bias ||
       "--"
   );
+
 
   setText(
     "regimeTrend",
@@ -3647,11 +4020,13 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "regimeVolatility",
     data.volatility ||
       "--"
   );
+
 
   setText(
     "regimeLiquidity",
@@ -3659,16 +4034,19 @@ function renderAnalysis(
       "--"
   );
 
+
   setText(
     "riskLevelText",
     risk
   );
+
 
   updateScoreVisuals(
     score,
     confidence,
     risk
   );
+
 
   renderScoreReasons(
     data
@@ -3696,6 +4074,7 @@ function updateScoreVisuals(
       )
     );
 
+
   const safeConfidence =
     Math.max(
       0,
@@ -3706,17 +4085,22 @@ function updateScoreVisuals(
       )
     );
 
+
   const heroRing =
     $("heroScoreRing");
+
 
   const sessionBar =
     $("sessionScoreBar");
 
+
   const confidenceBar =
     $("confidenceBar");
 
+
   const riskMeter =
     $("riskMeter");
+
 
   if (heroRing) {
 
@@ -3727,12 +4111,14 @@ function updateScoreVisuals(
 
   }
 
+
   if (sessionBar) {
 
     sessionBar.style.width =
       `${safeScore}%`;
 
   }
+
 
   if (confidenceBar) {
 
@@ -3741,6 +4127,7 @@ function updateScoreVisuals(
 
   }
 
+
   if (riskMeter) {
 
     const riskValue =
@@ -3748,10 +4135,12 @@ function updateScoreVisuals(
         risk
       );
 
+
     const meter =
       riskMeter.querySelector(
         "span"
       );
+
 
     if (meter) {
 
@@ -3761,6 +4150,7 @@ function updateScoreVisuals(
     }
 
   }
+
 
   const stateText =
     safeScore >= 80
@@ -3773,10 +4163,12 @@ function updateScoreVisuals(
       ? "HIGH RISK ENVIRONMENT"
       : "EXTREME RISK";
 
+
   setText(
     "heroScoreState",
     stateText
   );
+
 
   setText(
     "sessionScoreState",
@@ -3804,11 +4196,13 @@ function riskToNumber(
 
   }
 
+
   const text =
     String(
       risk
     )
       .toLowerCase();
+
 
   if (
     text.includes(
@@ -3820,6 +4214,7 @@ function riskToNumber(
 
   }
 
+
   if (
     text.includes(
       "high"
@@ -3829,6 +4224,7 @@ function riskToNumber(
     return 75;
 
   }
+
 
   if (
     text.includes(
@@ -3840,6 +4236,7 @@ function riskToNumber(
 
   }
 
+
   if (
     text.includes(
       "low"
@@ -3849,6 +4246,7 @@ function riskToNumber(
     return 25;
 
   }
+
 
   return 50;
 }
@@ -3865,9 +4263,11 @@ function renderScoreReasons(
   const container =
     $("scoreReasons");
 
+
   if (!container) {
     return;
   }
+
 
   const reasons = [
 
@@ -3912,9 +4312,11 @@ function renderScoreReasons(
       ).trim() !== ""
   );
 
+
   if (!reasons.length) {
     return;
   }
+
 
   container.innerHTML =
     reasons
@@ -3952,32 +4354,60 @@ function renderScoreReasons(
 
 /* =========================================================
    NEWS
+   IMPORTANT:
+   - Uses published_at
+   - Never blocks the loader
+   - News errors are isolated
 ========================================================= */
 
 async function loadNews() {
 
+  /*
+   * NEWS IS ALWAYS BACKGROUND-ONLY.
+   * It must never prevent the website from loading.
+   */
+
   if (!supabaseClient) {
+
+    state.news = [];
+
+    renderNews([]);
+
     return;
   }
 
+
   try {
+
+    const newsRequest =
+      supabaseClient
+        .from("news")
+        .select(
+          "id,title,description,source,url,image_url,category,impact,currency,published_at,created_at"
+        )
+        .order(
+          "published_at",
+          {
+            ascending:
+              false
+          }
+        )
+        .limit(30);
+
 
     const result =
       await withTimeout(
-        supabaseClient
-          .from("news")
-          .select("*")
-          .order(
-            "published_at",
-            {
-              ascending:
-                false
-            }
-          )
-          .limit(30),
+        newsRequest,
         5000,
         null
       );
+
+
+    /*
+     * Timeout:
+     * Do NOT throw.
+     * Do NOT affect the rest of the website.
+     */
 
     if (!result) {
 
@@ -3985,33 +4415,40 @@ async function loadNews() {
         "News request timed out."
       );
 
+      state.news = [];
+
+      renderNews([]);
+
       return;
     }
+
 
     const {
       data,
       error
     } = result;
 
+
     if (error) {
 
-      console.error(
-        "News load error:",
-        error
+      console.warn(
+        "News unavailable:",
+        error.message
       );
 
-      state.news =
-        [];
+      state.news = [];
 
-      renderNews(
-        []
-      );
+      renderNews([]);
 
       return;
     }
 
+
     state.news =
-      data || [];
+      Array.isArray(data)
+        ? data
+        : [];
+
 
     renderNews(
       state.news
@@ -4019,17 +4456,29 @@ async function loadNews() {
 
   } catch (error) {
 
-    console.error(
+    /*
+     * News must NEVER break the page.
+     */
+
+    console.warn(
       "News request failed:",
       error
     );
 
-    state.news =
-      [];
+    state.news = [];
 
-    renderNews(
-      []
-    );
+    try {
+
+      renderNews([]);
+
+    } catch (renderError) {
+
+      console.warn(
+        "News render failed:",
+        renderError
+      );
+
+    }
 
   }
 }
@@ -4042,11 +4491,16 @@ function renderNews(
   const container =
     $("newsContainer");
 
+
   if (!container) {
     return;
   }
 
-  if (!news?.length) {
+
+  if (
+    !Array.isArray(news) ||
+    news.length === 0
+  ) {
 
     container.innerHTML = `
 
@@ -4077,6 +4531,7 @@ function renderNews(
     return;
   }
 
+
   container.innerHTML =
     news
       .map(
@@ -4084,109 +4539,178 @@ function renderNews(
 
           const impact =
             String(
-              item.impact ||
-                "medium"
+              item?.impact ||
+              "medium"
             ).toLowerCase();
 
-          const impactLabel =
-            state.language === "ar"
-              ? impact === "critical"
-                ? "حرج"
-                : impact === "high"
-                ? "مرتفع"
-                : impact === "medium"
-                ? "متوسط"
-                : "منخفض"
-              : impact.toUpperCase();
 
-          const published =
-            item.published_at ||
-            item.created_at;
+          let impactLabel =
+            "MEDIUM";
+
+
+          if (
+            impact ===
+            "critical"
+          ) {
+
+            impactLabel =
+              state.language === "ar"
+                ? "حرج"
+                : "CRITICAL";
+
+          } else if (
+            impact ===
+            "high"
+          ) {
+
+            impactLabel =
+              state.language === "ar"
+                ? "مرتفع"
+                : "HIGH";
+
+          } else {
+
+            impactLabel =
+              state.language === "ar"
+                ? "متوسط"
+                : "MEDIUM";
+
+          }
+
+
+          const title =
+            item?.title ||
+            (
+              state.language === "ar"
+                ? "خبر اقتصادي"
+                : "Economic News"
+            );
+
+
+          const description =
+            item?.description ||
+            "";
+
+
+          const source =
+            item?.source ||
+            "Finnhub";
+
+
+          const publishedAt =
+            item?.published_at ||
+            item?.created_at ||
+            null;
+
+
+          const date =
+            publishedAt
+              ? formatDate(
+                  publishedAt
+                )
+              : "--";
+
+
+          const articleUrl =
+            item?.url ||
+            "";
+
+
+          const imageUrl =
+            item?.image_url ||
+            "";
+
 
           return `
 
-            <article
-              class="news-card"
-              data-impact="${escapeAttribute(
-                impact
-              )}"
-            >
+            <article class="news-card">
 
-              <div class="news-card-content">
+              ${
+                imageUrl
+                  ? `
+                    <div class="news-image">
+                      <img
+                        src="${escapeAttribute(
+                          imageUrl
+                        )}"
+                        alt="${escapeAttribute(
+                          title
+                        )}"
+                        loading="lazy"
+                        onerror="this.parentElement.style.display='none';"
+                      >
+                    </div>
+                  `
+                  : ""
+              }
 
-                <div class="news-card-meta">
 
-                  <span
-                    class="news-impact"
-                  >
-                    ${escapeHtml(
-                      impactLabel
-                    )}
-                  </span>
+              <div>
 
-                  <span
-                    class="news-source"
-                  >
-                    ${escapeHtml(
-                      item.source ||
-                        "Habboub Intelligence"
-                    )}
-                  </span>
+                <span class="news-impact">
+                  ${escapeHtml(
+                    impactLabel
+                  )}
+                </span>
 
-                </div>
 
                 <h3>
                   ${escapeHtml(
-                    item.title ||
-                      (
-                        state.language ===
-                        "ar"
-                          ? "خبر اقتصادي"
-                          : "Economic News"
-                      )
+                    title
                   )}
                 </h3>
 
-                <p>
+
+                ${
+                  description
+                    ? `
+                      <p>
+                        ${escapeHtml(
+                          description
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
+
+
+                <small>
                   ${escapeHtml(
-                    item.description ||
-                      ""
+                    source
                   )}
-                </p>
+                </small>
 
-                <div class="news-card-footer">
 
-                  <time>
-                    ${formatDate(
-                      published
-                    )}
-                  </time>
-
-                  ${
-                    item.url
-                      ? `
-                        <a
-                          href="${escapeAttribute(
-                            item.url
-                          )}"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="news-link"
-                        >
-                          ${
-                            state.language ===
-                            "ar"
-                              ? "اقرأ الخبر ↗"
-                              : "Read Article ↗"
-                          }
-                        </a>
-                      `
-                      : ""
-                  }
-
-                </div>
+                ${
+                  articleUrl
+                    ? `
+                      <a
+                        href="${escapeAttribute(
+                          articleUrl
+                        )}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="news-link"
+                      >
+                        ${
+                          state.language ===
+                          "ar"
+                            ? "قراءة الخبر"
+                            : "Read article"
+                        }
+                      </a>
+                    `
+                    : ""
+                }
 
               </div>
+
+
+              <time>
+                ${escapeHtml(
+                  date
+                )}
+              </time>
 
             </article>
 
@@ -4207,6 +4731,7 @@ async function loadAnnouncements() {
     return;
   }
 
+
   try {
 
     const result =
@@ -4225,6 +4750,7 @@ async function loadAnnouncements() {
         null
       );
 
+
     if (!result) {
 
       console.warn(
@@ -4234,10 +4760,12 @@ async function loadAnnouncements() {
       return;
     }
 
+
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -4249,8 +4777,10 @@ async function loadAnnouncements() {
       return;
     }
 
+
     state.announcements =
       data || [];
+
 
     renderAnnouncements(
       state.announcements
@@ -4274,9 +4804,11 @@ function renderAnnouncements(
   const container =
     $("announcementsContainer");
 
+
   if (!container) {
     return;
   }
+
 
   if (!items?.length) {
 
@@ -4299,6 +4831,7 @@ function renderAnnouncements(
 
     return;
   }
+
 
   container.innerHTML =
     items
@@ -4351,6 +4884,7 @@ async function loadCourses() {
     return;
   }
 
+
   try {
 
     const result =
@@ -4369,6 +4903,7 @@ async function loadCourses() {
         null
       );
 
+
     if (!result) {
 
       console.warn(
@@ -4378,10 +4913,12 @@ async function loadCourses() {
       return;
     }
 
+
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -4393,8 +4930,10 @@ async function loadCourses() {
       return;
     }
 
+
     state.courses =
       data || [];
+
 
     renderCourses(
       state.courses
@@ -4418,9 +4957,11 @@ function renderCourses(
   const container =
     $("courseContainer");
 
+
   if (!container) {
     return;
   }
+
 
   if (!courses?.length) {
 
@@ -4443,6 +4984,7 @@ function renderCourses(
 
     return;
   }
+
 
   container.innerHTML =
     courses
@@ -4498,6 +5040,7 @@ async function loadLive() {
     return;
   }
 
+
   try {
 
     const result =
@@ -4518,6 +5061,7 @@ async function loadLive() {
         null
       );
 
+
     if (!result) {
 
       console.warn(
@@ -4527,10 +5071,12 @@ async function loadLive() {
       return;
     }
 
+
     const {
       data,
       error
     } = result;
+
 
     if (error) {
 
@@ -4542,8 +5088,10 @@ async function loadLive() {
       return;
     }
 
+
     state.live =
       data || null;
+
 
     renderLive(
       state.live
@@ -4567,11 +5115,14 @@ function renderLive(
   const indicator =
     $("liveIndicator");
 
+
   const title =
     $("liveTitleDisplay");
 
+
   const description =
     $("liveDescriptionDisplay");
+
 
   const isLive =
     data &&
@@ -4582,6 +5133,7 @@ function renderLive(
         "live"
     );
 
+
   if (indicator) {
 
     indicator.textContent =
@@ -4589,10 +5141,12 @@ function renderLive(
         ? "LIVE"
         : "OFFLINE";
 
+
     indicator.classList.toggle(
       "offline",
       !isLive
     );
+
 
     indicator.classList.toggle(
       "online",
@@ -4600,6 +5154,7 @@ function renderLive(
     );
 
   }
+
 
   if (title) {
 
@@ -4613,6 +5168,7 @@ function renderLive(
         : "No live session right now";
 
   }
+
 
   if (description) {
 
@@ -4639,6 +5195,7 @@ function subscribeToUpdates() {
     return;
   }
 
+
   try {
 
     const channel =
@@ -4646,6 +5203,7 @@ function subscribeToUpdates() {
         .channel(
           "habboub-realtime"
         );
+
 
     channel
       .on(
@@ -4663,6 +5221,7 @@ function subscribeToUpdates() {
         }
       )
 
+
       .on(
         "postgres_changes",
         {
@@ -4677,6 +5236,7 @@ function subscribeToUpdates() {
 
         }
       )
+
 
       .on(
         "postgres_changes",
@@ -4693,6 +5253,7 @@ function subscribeToUpdates() {
         }
       )
 
+
       .on(
         "postgres_changes",
         {
@@ -4708,20 +5269,6 @@ function subscribeToUpdates() {
         }
       )
 
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table:
-            "news"
-        },
-        () => {
-
-          loadNews();
-
-        }
-      )
 
       .on(
         "postgres_changes",
@@ -4741,6 +5288,7 @@ function subscribeToUpdates() {
 
         }
       )
+
 
       .subscribe(
         (status) => {
@@ -4783,6 +5331,7 @@ function setupAI() {
       }
     );
 
+
   $("floatingAI")
     ?.addEventListener(
       "click",
@@ -4796,6 +5345,7 @@ function setupAI() {
       }
     );
 
+
   $("closeAIButton")
     ?.addEventListener(
       "click",
@@ -4808,6 +5358,7 @@ function setupAI() {
 
       }
     );
+
 
   $("aiForm")
     ?.addEventListener(
@@ -4823,11 +5374,14 @@ async function handleAI(
 
   event.preventDefault();
 
+
   const input =
     $("aiInput");
 
+
   const messages =
     $("aiMessages");
+
 
   if (
     !input ||
@@ -4836,25 +5390,31 @@ async function handleAI(
     return;
   }
 
+
   const message =
     input.value.trim();
+
 
   if (!message) {
     return;
   }
+
 
   addAIMessage(
     "user",
     message
   );
 
+
   input.value =
     "";
+
 
   const response =
     buildLocalAIResponse(
       message
     );
+
 
   setTimeout(
     () => {
@@ -4878,17 +5438,21 @@ function addAIMessage(
   const container =
     $("aiMessages");
 
+
   if (!container) {
     return;
   }
+
 
   const message =
     document.createElement(
       "div"
     );
 
+
   message.className =
     `ai-message ${type}`;
+
 
   message.innerHTML = `
 
@@ -4908,9 +5472,11 @@ function addAIMessage(
 
   `;
 
+
   container.appendChild(
     message
   );
+
 
   container.scrollTop =
     container.scrollHeight;
@@ -4924,10 +5490,12 @@ function buildLocalAIResponse(
   const text =
     message.toLowerCase();
 
+
   const score =
     state.analysis?.score ??
     state.analysis
       ?.habboub_score;
+
 
   const condition =
     state.analysis
@@ -4935,10 +5503,12 @@ function buildLocalAIResponse(
     state.analysis
       ?.condition;
 
+
   const risk =
     state.analysis?.risk ||
     state.analysis
       ?.risk_level;
+
 
   if (
     text.includes(
@@ -4953,6 +5523,7 @@ function buildLocalAIResponse(
       score ?? "--"
     }/100.`;
   }
+
 
   if (
     text.includes(
@@ -4971,6 +5542,7 @@ function buildLocalAIResponse(
     }.`;
   }
 
+
   if (
     text.includes(
       "gold"
@@ -4988,6 +5560,7 @@ function buildLocalAIResponse(
     }.`;
   }
 
+
   return "Habboub is monitoring market structure, liquidity, risk and the current market environment.";
 }
 
@@ -5001,6 +5574,7 @@ function updateClock() {
   const now =
     new Date();
 
+
   const time =
     now.toLocaleTimeString(
       "en-GB",
@@ -5010,16 +5584,20 @@ function updateClock() {
       }
     );
 
+
   setText(
     "sessionClock",
     time
   );
 
+
   const hour =
     now.getUTCHours();
 
+
   let session =
     "Asia";
+
 
   if (
     hour >= 8 &&
@@ -5039,6 +5617,7 @@ function updateClock() {
 
   }
 
+
   setText(
     "sessionName",
     session
@@ -5051,8 +5630,10 @@ function updateSessionTimeline() {
   const now =
     new Date();
 
+
   const hour =
     now.getUTCHours();
+
 
   document
     .querySelectorAll(
@@ -5067,6 +5648,7 @@ function updateSessionTimeline() {
 
       }
     );
+
 
   if (
     hour >= 0 &&
@@ -5114,6 +5696,7 @@ function setText(
   const element =
     $(id);
 
+
   if (element) {
 
     element.textContent =
@@ -5133,6 +5716,7 @@ function setMessage(
 
   const element =
     $(id);
+
 
   if (element) {
 
@@ -5161,20 +5745,25 @@ function showToast(
   const toast =
     $("toast");
 
+
   if (!toast) {
     return;
   }
 
+
   toast.textContent =
     message;
+
 
   toast.classList.add(
     "show"
   );
 
+
   clearTimeout(
     showToast.timeout
   );
+
 
   showToast.timeout =
     setTimeout(
@@ -5198,8 +5787,10 @@ function formatDate(
     return "--";
   }
 
+
   const date =
     new Date(value);
+
 
   if (
     Number.isNaN(
@@ -5208,6 +5799,7 @@ function formatDate(
   ) {
     return "--";
   }
+
 
   return date.toLocaleString(
     state.language === "ar"
@@ -5278,6 +5870,12 @@ window.addEventListener(
         event.message
     );
 
+
+    /*
+     * If ANY unexpected JS error happens,
+     * the loader still disappears.
+     */
+
     hideLoader();
 
   }
@@ -5293,6 +5891,7 @@ window.addEventListener(
       event.reason
     );
 
+
     hideLoader();
 
   }
@@ -5305,16 +5904,30 @@ window.addEventListener(
 
 function startHabboub() {
 
+  /*
+   * Emergency loader kill.
+   * Even if something goes horribly wrong,
+   * the page won't stay stuck.
+   */
+
   hideLoader();
+
 
   setTimeout(() => {
     hideLoader();
   }, 1500);
 
+
   try {
 
     const result =
       init();
+
+
+    /*
+     * init() is async.
+     * Catch rejected promises here too.
+     */
 
     if (
       result &&
@@ -5368,4 +5981,3 @@ if (
   startHabboub();
 
 }
-```
