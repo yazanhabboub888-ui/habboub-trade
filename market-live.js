@@ -10,6 +10,7 @@
   const REFRESH_MS = 5000;
   const QUOTE_PROXY = "/api/market-quote?symbol=";
   const SOURCE_KEY = "habboub_market_source";
+  const SESSION_MARKET_KEY = "habboub_trading_session_symbol";
   const DEFAULT_SOURCE = "cfd";
 
   const SOURCES = {
@@ -66,6 +67,22 @@
 
   function removeMarketWatchBadges() {
     document.querySelectorAll("#markets .large-market-card .market-icon").forEach((icon) => icon.remove());
+  }
+
+  function ensureSessionOpenButtons() {
+    document.querySelectorAll("#markets .large-market-card[data-symbol] .market-open-btn").forEach((button) => {
+      if (button.dataset.habboubSessionBound === "true") return;
+      const card = button.closest(".large-market-card");
+      const symbol = card?.dataset.symbol;
+      if (!MARKETS.some((market) => market.symbol === symbol)) return;
+
+      button.dataset.habboubSessionBound = "true";
+      button.addEventListener("click", () => {
+        // The main navigation still handles opening the Trading Session.
+        // We only persist the market here so the session opens in the same context.
+        localStorage.setItem(SESSION_MARKET_KEY, symbol);
+      }, true);
+    });
   }
 
   function ensureStatus(market) {
@@ -192,6 +209,7 @@
     removeUnwantedCards();
     removeMarketWatchBadges();
     ensureSourceSwitch();
+    ensureSessionOpenButtons();
     MARKETS.forEach(ensureStatus);
 
     const sourceAtStart = getSource();
@@ -211,6 +229,7 @@
     removeUnwantedCards();
     removeMarketWatchBadges();
     ensureSourceSwitch();
+    ensureSessionOpenButtons();
     MARKETS.forEach(ensureStatus);
     refresh();
     refreshTimer = window.setInterval(() => refresh(), REFRESH_MS);
@@ -219,6 +238,7 @@
       removeUnwantedCards();
       removeMarketWatchBadges();
       ensureSourceSwitch();
+      ensureSessionOpenButtons();
       MARKETS.forEach(ensureStatus);
       updateSourceButtons(getSource());
     }).observe(document.body, { childList: true, subtree: true });
