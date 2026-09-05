@@ -17,8 +17,8 @@
     cfd: {
       label: "CFD",
       XAUUSD: "XAUUSD=X",
-      NAS100: "^NDX",
-      SPX: "^GSPC"
+      NAS100: "USTEC",
+      SPX: "US500_X100"
     },
     futures: {
       label: "FUTURES",
@@ -35,15 +35,13 @@
   ];
 
   let busy = false;
-  let refreshTimer = null;
-  let observer = null;
   let observerQueued = false;
 
   function getSource() {
     return localStorage.getItem(SOURCE_KEY) === "futures" ? "futures" : DEFAULT_SOURCE;
   }
 
-  function currentYahooSymbol(market) {
+  function currentSymbol(market) {
     return SOURCES[getSource()][market.symbol];
   }
 
@@ -77,7 +75,6 @@
     document.addEventListener("click", (event) => {
       const button = event.target.closest("#markets .large-market-card[data-symbol] .market-open-btn");
       if (!button) return;
-
       const card = button.closest(".large-market-card");
       const symbol = String(card?.dataset?.symbol || "").toUpperCase();
       if (!MARKETS.some((market) => market.symbol === symbol)) return;
@@ -86,17 +83,14 @@
       event.stopImmediatePropagation();
       localStorage.setItem(SESSION_MARKET_KEY, symbol);
 
-      if (typeof window.navigateTo === "function") {
-        window.navigateTo("dashboard");
-      } else {
+      if (typeof window.navigateTo === "function") window.navigateTo("dashboard");
+      else {
         const dashboard = document.getElementById("dashboard");
         document.querySelectorAll(".page-section").forEach((section) => section.classList.remove("active-section"));
         dashboard?.classList.add("active-section");
       }
 
-      window.dispatchEvent(new CustomEvent("habboub:trading-session-open", {
-        detail: { symbol, source: getSource() }
-      }));
+      window.dispatchEvent(new CustomEvent("habboub:trading-session-open", { detail: { symbol, source: getSource() } }));
     }, true);
   }
 
@@ -138,17 +132,9 @@
     const heading = document.querySelector("#markets .section-heading");
     if (!heading || heading.querySelector(".market-source-switch")) return;
     ensureSourceStyles();
-
     const wrap = document.createElement("div");
     wrap.className = "market-source-switch";
-    wrap.innerHTML = `
-      <div class="market-source-label">PRICE SOURCE</div>
-      <div class="market-source-buttons" role="group" aria-label="Market price source">
-        <button type="button" class="market-source-btn" data-market-source="cfd" aria-pressed="false">CFD</button>
-        <button type="button" class="market-source-btn" data-market-source="futures" aria-pressed="false">FUTURES</button>
-      </div>
-    `;
-
+    wrap.innerHTML = `<div class="market-source-label">PRICE SOURCE</div><div class="market-source-buttons" role="group" aria-label="Market price source"><button type="button" class="market-source-btn" data-market-source="cfd" aria-pressed="false">CFD</button><button type="button" class="market-source-btn" data-market-source="futures" aria-pressed="false">FUTURES</button></div>`;
     heading.appendChild(wrap);
     wrap.addEventListener("click", (event) => {
       const button = event.target.closest("[data-market-source]");
@@ -158,15 +144,11 @@
       updateSourceButtons(source);
       refresh(true);
     });
-
     updateSourceButtons(getSource());
   }
 
   function formatPrice(value, decimals) {
-    return Number(value).toLocaleString("en-US", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    });
+    return Number(value).toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   }
 
   function formatChange(value) {
@@ -175,13 +157,9 @@
   }
 
   async function fetchQuote(market) {
-    const yahoo = currentYahooSymbol(market);
-    const response = await fetch(`${QUOTE_PROXY}${encodeURIComponent(yahoo)}&t=${Date.now()}`, {
-      cache: "no-store",
-      headers: { Accept: "application/json" }
-    });
+    const symbol = currentSymbol(market);
+    const response = await fetch(`${QUOTE_PROXY}${encodeURIComponent(symbol)}&t=${Date.now()}`, { cache: "no-store", headers: { Accept: "application/json" } });
     if (!response.ok) throw new Error(`${market.symbol} HTTP ${response.status}`);
-
     const payload = await response.json();
     const meta = payload?.chart?.result?.[0]?.meta;
     if (!meta) throw new Error(`${market.symbol} returned no quote data`);
@@ -190,21 +168,15 @@
     const previous = Number(meta.chartPreviousClose ?? meta.previousClose);
     if (!Number.isFinite(price)) throw new Error(`${market.symbol} returned invalid price`);
 
-    const change = Number.isFinite(previous) && previous !== 0
-      ? ((price - previous) / previous) * 100
-      : NaN;
-
+    const change = Number.isFinite(previous) && previous !== 0 ? ((price - previous) / previous) * 100 : NaN;
     return { price, change, marketState: String(meta.marketState || "CLOSED").toUpperCase() };
   }
 
   function render(market, quote) {
-    const price = formatPrice(quote.price, market.decimals);
-    const change = formatChange(quote.change);
-
-    setText(market.priceId, price);
-    setText(market.changeId, change);
-    setText(market.heroPriceId, price);
-    setText(market.heroChangeId, change);
+    setText(market.priceId, formatPrice(quote.price, market.decimals));
+    setText(market.changeId, formatChange(quote.change));
+    setText(market.heroPriceId, formatPrice(quote.price, market.decimals));
+    setText(market.heroChangeId, formatChange(quote.change));
 
     [market.changeId, market.heroChangeId].forEach((id) => {
       const el = document.getElementById(id);
@@ -213,8 +185,7 @@
       el.classList.toggle("negative", quote.change < 0);
     });
 
-    const liveStates = ["REGULAR", "PRE", "POST"];
-    const live = liveStates.includes(quote.marketState);
+    const live = ["REGULAR", "PRE", "POST"].includes(quote.marketState);
     setStatus(market, live ? `● LIVE ${SOURCES[getSource()].label}` : "● MARKET CLOSED", live ? "live" : "closed");
   }
 
@@ -226,17 +197,15 @@
     ensureSourceSwitch();
     bindSessionRouting();
     MARKETS.forEach(ensureStatus);
-
     const sourceAtStart = getSource();
+
     await Promise.all(MARKETS.map(async (market) => {
-      try {
-        render(market, await fetchQuote(market));
-      } catch (error) {
+      try { render(market, await fetchQuote(market)); }
+      catch (error) {
         setStatus(market, `● ${SOURCES[sourceAtStart].label} FEED ERROR`, "error");
         console.warn(`Habboub ${market.symbol} ${sourceAtStart} feed unavailable:`, error);
       }
     }));
-
     busy = false;
   }
 
@@ -261,30 +230,25 @@
     MARKETS.forEach(ensureStatus);
     refresh();
 
-    refreshTimer = window.setInterval(() => {
-      const active = document.getElementById("home")?.classList.contains("active-section") ||
-        document.getElementById("markets")?.classList.contains("active-section");
+    window.setInterval(() => {
+      const active = document.getElementById("home")?.classList.contains("active-section") || document.getElementById("markets")?.classList.contains("active-section");
       if (!document.hidden && active) refresh();
     }, REFRESH_MS);
 
     const marketsRoot = document.getElementById("markets");
     if (marketsRoot) {
-      observer = new MutationObserver(scheduleStructureCheck);
+      const observer = new MutationObserver(scheduleStructureCheck);
       observer.observe(marketsRoot, { childList: true, subtree: true });
     }
 
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
-        const active = document.getElementById("home")?.classList.contains("active-section") ||
-          document.getElementById("markets")?.classList.contains("active-section");
+        const active = document.getElementById("home")?.classList.contains("active-section") || document.getElementById("markets")?.classList.contains("active-section");
         if (active) refresh(true);
       }
     }, { passive: true });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start, { once: true });
-  } else {
-    start();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
+  else start();
 })();
