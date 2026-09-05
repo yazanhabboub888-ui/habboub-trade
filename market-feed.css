@@ -1,0 +1,25 @@
+/* HABBOUB — market feed status, kept subtle to preserve the original card design */
+#markets .market-live-status{
+  position:relative;
+  z-index:2;
+  align-self:flex-start;
+  margin-top:10px;
+  padding:4px 8px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  background:rgba(255,255,255,.025);
+  color:#7f8a98;
+  font-size:9px;
+  font-weight:800;
+  line-height:1.2;
+  letter-spacing:.06em;
+  white-space:nowrap;
+}
+#markets .market-live-status.live{color:#29d391;border-color:rgba(41,211,145,.18);background:rgba(41,211,145,.045)}
+#markets .market-live-status.closed{color:#8d98a6;border-color:rgba(255,255,255,.08)}
+#markets .market-live-status.error{color:#ff7182;border-color:rgba(255,82,104,.18);background:rgba(255,82,104,.045)}
+#markets .market-live-status.connecting{color:#36d9ff;border-color:rgba(54,217,255,.16);background:rgba(54,217,255,.04)}
+
+@media(max-width:520px){
+  #markets .market-live-status{font-size:8px;padding:4px 7px;margin-top:8px}
+}
