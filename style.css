@@ -1377,50 +1377,132 @@ main {
   font-size: 12px;
 }
 
-/* =========================
-   MODALS
-========================= */
+/* =========================================================
+   MODALS — FIXED
+========================================================= */
 
 .modal {
   position: fixed;
   inset: 0;
   z-index: 9000;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   padding: 20px;
+
+  isolation: isolate;
 }
 
 .modal.hidden {
   display: none !important;
 }
 
+/* الخلفية السوداء */
 .modal-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
+
+  z-index: -1;
+
   background: rgba(0, 0, 0, 0.75);
+
+  pointer-events: auto;
 }
 
-.modal-content {
+/* صندوق النافذة */
+.modal-content,
+.modal-box {
   position: relative;
-  z-index: 1;
+
+  z-index: 10;
+
   width: min(100%, 460px);
   max-height: 90vh;
+
   overflow-y: auto;
+
   padding: 26px;
+
   border: 1px solid var(--border-strong);
   border-radius: 20px;
+
   background: #0b1016;
+
   box-shadow: var(--shadow);
+
+  pointer-events: auto;
+  user-select: auto;
+  -webkit-user-select: auto;
 }
 
-.modal-content h2 {
+.modal-content h2,
+.modal-box h2 {
   margin-bottom: 8px;
 }
 
-.modal-content p {
+.modal-content p,
+.modal-box p {
   color: var(--muted);
   font-size: 13px;
+}
+
+/* كل عناصر الفورم داخل النافذة */
+.modal-content input,
+.modal-content textarea,
+.modal-content select,
+.modal-box input,
+.modal-box textarea,
+.modal-box select {
+  position: relative;
+
+  z-index: 20;
+
+  width: 100%;
+
+  pointer-events: auto !important;
+
+  user-select: text !important;
+  -webkit-user-select: text !important;
+
+  cursor: text;
+}
+
+/* الأزرار */
+.modal-content button,
+.modal-box button {
+  position: relative;
+
+  z-index: 20;
+
+  pointer-events: auto !important;
+
+  cursor: pointer;
+}
+
+/* التركيز */
+.modal-content input:focus,
+.modal-content textarea:focus,
+.modal-content select:focus,
+.modal-box input:focus,
+.modal-box textarea:focus,
+.modal-box select:focus {
+  outline: none;
+
+  border-color: rgba(54, 217, 255, 0.55);
+
+  box-shadow:
+    0 0 0 3px rgba(54, 217, 255, 0.10),
+    0 0 20px rgba(54, 217, 255, 0.05);
+}
+
+/* لا تسمح لأي pseudo-element داخل الصندوق بمنع الضغط */
+.modal-content::before,
+.modal-content::after,
+.modal-box::before,
+.modal-box::after {
+  pointer-events: none;
 }
 
 /* =========================
@@ -1431,13 +1513,32 @@ input,
 textarea,
 select {
   width: 100%;
+
   padding: 12px 13px;
+
   margin-top: 7px;
+
   border: 1px solid var(--border);
+
   border-radius: 10px;
+
   outline: none;
+
   background: #080c11;
+
   color: white;
+
+  pointer-events: auto;
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #56616d;
 }
 
 input:focus,
@@ -1448,9 +1549,14 @@ select:focus {
 
 label {
   display: block;
+
   margin-top: 14px;
+
   color: var(--muted);
+
   font-size: 11px;
+
+  cursor: text;
 }
 
 /* =========================
@@ -1459,15 +1565,24 @@ label {
 
 #aiWindow {
   position: fixed;
+
   right: 22px;
   bottom: 22px;
+
   z-index: 7000;
+
   width: min(390px, calc(100vw - 30px));
+
   max-height: 600px;
+
   overflow: hidden;
+
   border: 1px solid var(--border-strong);
+
   border-radius: 20px;
+
   background: #0a0f15;
+
   box-shadow: var(--shadow);
 }
 
@@ -1647,6 +1762,19 @@ html[dir="rtl"] .major-alert::before {
     margin-left: 0;
     margin-right: auto;
   }
+
+  /* Modal على الموبايل */
+  .modal {
+    padding: 12px;
+  }
+
+  .modal-content,
+  .modal-box {
+    width: 100%;
+    max-height: 92vh;
+    padding: 20px;
+    border-radius: 16px;
+  }
 }
 
 /* =========================
@@ -1696,6 +1824,11 @@ html[dir="rtl"] .major-alert::before {
     right: 10px;
     bottom: 10px;
     width: calc(100vw - 20px);
+  }
+
+  .modal-content,
+  .modal-box {
+    padding: 17px;
   }
 }
 
