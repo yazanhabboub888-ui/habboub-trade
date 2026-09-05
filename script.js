@@ -2691,17 +2691,535 @@ async function loadNews() {
 
 function renderNews(newsItems) {
   const container =
-  $("newsList") ||
-  $("newsContainer") ||
-  $("economicCalendar");
+    $("newsList") ||
+    $("newsContainer") ||
+    $("economicCalendar");
+
   if (!container) return;
 
-  if (!newsItems || newsItems.length === 0) {
-    container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">${
-      state.language === "ar" ? "لا توجد أحداث اقتصادية متاحة حالياً" : "No economic events available"
-    }</p>`;
-    return;
+  const events = Array.isArray(newsItems) ? newsItems : [];
+
+  /*
+   * =========================
+   * DATE HELPERS
+   * =========================
+   */
+
+  const now = new Date();
+
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+
+  const startOfTomorrow = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1
+  );
+
+  const startOfDayAfterTomorrow = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 2
+  );
+
+  const startOfNextWeek = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 7
+  );
+
+  const startOfNextMonth = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    1
+  );
+
+  /*
+   * =========================
+   * SPLIT EVENTS
+   * =========================
+   */
+
+  const todayEvents = [];
+  const tomorrowEvents = [];
+  const weekEvents = [];
+  const monthEvents = [];
+
+  events.forEach((item) => {
+    if (!item.event_time) return;
+
+    const eventDate = new Date(item.event_time);
+
+    if (isNaN(eventDate.getTime())) return;
+
+    if (
+      eventDate >= startOfToday &&
+      eventDate < startOfTomorrow
+    ) {
+      todayEvents.push(item);
+    }
+
+    if (
+      eventDate >= startOfTomorrow &&
+      eventDate < startOfDayAfterTomorrow
+    ) {
+      tomorrowEvents.push(item);
+    }
+
+    if (
+      eventDate >= startOfToday &&
+      eventDate < startOfNextWeek
+    ) {
+      weekEvents.push(item);
+    }
+
+    if (
+      eventDate >= startOfToday &&
+      eventDate < startOfNextMonth
+    ) {
+      monthEvents.push(item);
+    }
+  });
+
+  /*
+   * =========================
+   * SORT BY TIME
+   * =========================
+   */
+
+  const sortByTime = (a, b) =>
+    new Date(a.event_time) -
+    new Date(b.event_time);
+
+  todayEvents.sort(sortByTime);
+  tomorrowEvents.sort(sortByTime);
+  weekEvents.sort(sortByTime);
+  monthEvents.sort(sortByTime);
+
+  /*
+   * =========================
+   * LANGUAGE
+   * =========================
+   */
+
+  const isArabic =
+    state.language === "ar";
+
+  /*
+   * =========================
+   * PERIOD CARDS
+   * =========================
+   */
+
+  const periods = [
+    {
+      id: "today",
+      icon: "📅",
+      title: isArabic
+        ? "أحداث اليوم"
+        : "Today's Events",
+      subtitle: isArabic
+        ? "أحداث اليوم الاقتصادية"
+        : "Today's economic events",
+      count: todayEvents.length,
+      events: todayEvents
+    },
+    {
+      id: "tomorrow",
+      icon: "📆",
+      title: isArabic
+        ? "أحداث بكرا"
+        : "Tomorrow's Events",
+      subtitle: isArabic
+        ? "الأحداث الاقتصادية القادمة"
+        : "Upcoming economic events",
+      count: tomorrowEvents.length,
+      events: tomorrowEvents
+    },
+    {
+      id: "week",
+      icon: "🗓️",
+      title: isArabic
+        ? "أحداث الأسبوع"
+        : "This Week",
+      subtitle: isArabic
+        ? "أحداث هذا الأسبوع"
+        : "Economic events this week",
+      count: weekEvents.length,
+      events: weekEvents
+    },
+    {
+      id: "month",
+      icon: "📊",
+      title: isArabic
+        ? "أحداث الشهر"
+        : "This Month",
+      subtitle: isArabic
+        ? "أحداث هذا الشهر"
+        : "Economic events this month",
+      count: monthEvents.length,
+      events: monthEvents
+    }
+  ];
+
+  /*
+   * =========================
+   * EVENT HTML
+   * =========================
+   */
+
+  function renderEvent(item) {
+    const impact =
+      String(item.impact || "low").toLowerCase();
+
+    const impactClass =
+      impact === "high"
+        ? "high"
+        : impact === "medium"
+        ? "medium"
+        : "low";
+
+    const impactText =
+      impact === "high"
+        ? (isArabic ? "مرتفع" : "HIGH")
+        : impact === "medium"
+        ? (isArabic ? "متوسط" : "MEDIUM")
+        : (isArabic ? "منخفض" : "LOW");
+
+    const eventDate =
+      new Date(item.event_time);
+
+    const time =
+      eventDate.toLocaleTimeString(
+        [],
+        {
+          hour: "2-digit",
+          minute: "2-digit"
+        }
+      );
+
+    const date =
+      eventDate.toLocaleDateString(
+        [],
+        {
+          day: "2-digit",
+          month: "short"
+        }
+      );
+
+    const eventName =
+      item.event_name ||
+      item.title ||
+      "USD Event";
+
+    return `
+      <div
+        class="habboub-economic-event"
+        style="
+          padding:14px;
+          margin-top:10px;
+          border:1px solid rgba(255,255,255,.07);
+          border-radius:12px;
+          background:rgba(255,255,255,.025);
+        "
+      >
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              gap:10px;
+            "
+          >
+
+            <span
+              class="impact-badge ${impactClass}"
+              style="
+                padding:4px 8px;
+                border-radius:6px;
+                font-size:10px;
+                font-weight:800;
+              "
+            >
+              ${escapeHtml(impactText)}
+            </span>
+
+            <span
+              style="
+                font-size:12px;
+                color:var(--text-muted);
+              "
+            >
+              🇺🇸 USD
+            </span>
+
+          </div>
+
+          <div
+            style="
+              color:var(--text-muted);
+              font-size:12px;
+            "
+          >
+            ${escapeHtml(date)} · ${escapeHtml(time)}
+          </div>
+
+        </div>
+
+        <div
+          style="
+            margin-top:10px;
+            font-size:15px;
+            font-weight:700;
+            color:#f3f4f6;
+          "
+        >
+          ${escapeHtml(eventName)}
+        </div>
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:
+              repeat(3, minmax(0, 1fr));
+            gap:8px;
+            margin-top:12px;
+          "
+        >
+
+          <div>
+            <small style="color:var(--text-muted);">
+              ${isArabic ? "الفعلي" : "Actual"}
+            </small>
+            <div style="font-weight:700;">
+              ${escapeHtml(item.actual || "-")}
+            </div>
+          </div>
+
+          <div>
+            <small style="color:var(--text-muted);">
+              ${isArabic ? "المتوقع" : "Forecast"}
+            </small>
+            <div style="font-weight:700;">
+              ${escapeHtml(item.forecast || "-")}
+            </div>
+          </div>
+
+          <div>
+            <small style="color:var(--text-muted);">
+              ${isArabic ? "السابق" : "Previous"}
+            </small>
+            <div style="font-weight:700;">
+              ${escapeHtml(item.previous || "-")}
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    `;
   }
+
+  /*
+   * =========================
+   * BUILD PAGE
+   * =========================
+   */
+
+  container.innerHTML = `
+    <div
+      class="habboub-calendar-periods"
+      style="
+        display:grid;
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+        gap:12px;
+        margin-bottom:18px;
+      "
+    >
+
+      ${periods
+        .map(
+          (period) => `
+            <button
+              type="button"
+              data-calendar-period="${period.id}"
+              style="
+                text-align:left;
+                padding:16px;
+                border:1px solid
+                  rgba(255,255,255,.08);
+                border-radius:14px;
+                background:
+                  rgba(255,255,255,.025);
+                color:#fff;
+                cursor:pointer;
+                transition:.2s;
+              "
+            >
+
+              <div
+                style="
+                  display:flex;
+                  align-items:center;
+                  justify-content:space-between;
+                  gap:10px;
+                "
+              >
+
+                <span
+                  style="
+                    font-size:25px;
+                  "
+                >
+                  ${period.icon}
+                </span>
+
+                <span
+                  style="
+                    min-width:28px;
+                    height:28px;
+                    padding:0 8px;
+                    border-radius:20px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    background:rgba(255,255,255,.08);
+                    font-size:12px;
+                    font-weight:800;
+                  "
+                >
+                  ${period.count}
+                </span>
+
+              </div>
+
+              <div
+                style="
+                  margin-top:10px;
+                  font-size:15px;
+                  font-weight:800;
+                "
+              >
+                ${period.title}
+              </div>
+
+              <div
+                style="
+                  margin-top:4px;
+                  color:var(--text-muted);
+                  font-size:11px;
+                "
+              >
+                ${period.subtitle}
+              </div>
+
+            </button>
+          `
+        )
+        .join("")}
+
+    </div>
+
+    <div id="habboubCalendarEvents">
+
+      ${
+        periods[0].events.length
+          ? periods[0].events
+              .map(renderEvent)
+              .join("")
+          : `
+            <div
+              style="
+                text-align:center;
+                padding:30px 15px;
+                color:var(--text-muted);
+              "
+            >
+              ${
+                isArabic
+                  ? "لا توجد أحداث اليوم"
+                  : "No events today"
+              }
+            </div>
+          `
+      }
+
+    </div>
+  `;
+
+  /*
+   * =========================
+   * PERIOD BUTTONS
+   * =========================
+   */
+
+  container
+    .querySelectorAll(
+      "[data-calendar-period]"
+    )
+    .forEach((button) => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const periodId =
+            button.dataset.calendarPeriod;
+
+          const selectedPeriod =
+            periods.find(
+              (period) =>
+                period.id === periodId
+            );
+
+          if (!selectedPeriod) return;
+
+          const eventsContainer =
+            container.querySelector(
+              "#habboubCalendarEvents"
+            );
+
+          if (!eventsContainer) return;
+
+          eventsContainer.innerHTML =
+            selectedPeriod.events.length
+              ? selectedPeriod.events
+                  .map(renderEvent)
+                  .join("")
+              : `
+                <div
+                  style="
+                    text-align:center;
+                    padding:30px 15px;
+                    color:var(--text-muted);
+                  "
+                >
+                  ${
+                    isArabic
+                      ? "لا توجد أحداث في هذه الفترة"
+                      : "No events available"
+                  }
+                </div>
+              `;
+        }
+      );
+
+    });
+}
 
   container.innerHTML = newsItems
     .map((item) => {
