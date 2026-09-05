@@ -29,6 +29,9 @@ html[dir="rtl"] button{line-height:1.35!important}
 /* Prevent flex/grid children from becoming narrower than their text. */
 html[dir="rtl"] .topbar>*,html[dir="rtl"] .top-actions>*,html[dir="rtl"] .hero>*,html[dir="rtl"] .hero-content>*,html[dir="rtl"] .section-heading>*,html[dir="rtl"] .market-grid>*,html[dir="rtl"] .session-layout>*,html[dir="rtl"] .panel-header>*,html[dir="rtl"] .score-meta>*{min-width:0!important}
 
+/* Market cards: remove the small Au / NQ / SP badges completely. */
+#home .market-grid .market-card:not(.intelligence-card) .market-icon{display:none!important}
+
 @media(max-width:900px){.top-actions .language-switch{display:flex!important}.top-actions{gap:7px!important}.lang-btn{min-width:38px!important;height:30px!important;padding:0 7px!important;font-size:10px!important}.login-btn{display:none!important}}
 @media(max-width:700px){html[dir="rtl"] .desktop-nav{display:none!important}}
 @media(max-width:520px){html[dir="rtl"] .section-heading{align-items:flex-start;gap:12px;flex-wrap:wrap}html[dir="rtl"] .hero-actions{flex-wrap:wrap}html[dir="rtl"] .hero-actions>*{max-width:100%;white-space:normal!important}}
