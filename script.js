@@ -39,7 +39,8 @@ const translations = {
     my_profile: "My Profile",
     logged_in_as: "Logged in as",
     login_success: "Login successful.",
-    account_created: "Account created. Check your email if verification is enabled.",
+    account_created:
+      "Account created. Check your email if verification is enabled.",
     profile_updated: "Profile updated.",
     home: "Home",
     nav_home: "Home",
@@ -69,7 +70,8 @@ const translations = {
     my_profile: "ملفي الشخصي",
     logged_in_as: "مسجل الدخول باسم",
     login_success: "تم تسجيل الدخول بنجاح.",
-    account_created: "تم إنشاء الحساب. افحص بريدك الإلكتروني إذا كان تأكيد البريد مفعلاً.",
+    account_created:
+      "تم إنشاء الحساب. افحص بريدك الإلكتروني إذا كان تأكيد البريد مفعلاً.",
     profile_updated: "تم تحديث الملف الشخصي.",
     home: "الرئيسية",
     nav_home: "الرئيسية",
@@ -103,7 +105,11 @@ async function init() {
   }, 500);
 
   updateClock();
-  setInterval(updateClock, 1000);
+
+  setInterval(() => {
+    updateClock();
+    updateSessionTimeline();
+  }, 1000);
 
   updateSessionTimeline();
 
@@ -130,7 +136,8 @@ function applyLanguage(language) {
   const lang = translations[language] || translations.en;
 
   document.documentElement.lang = language;
-  document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+  document.documentElement.dir =
+    language === "ar" ? "rtl" : "ltr";
 
   document.querySelectorAll("[data-i18n]").forEach((element) => {
     const key = element.dataset.i18n;
@@ -140,10 +147,34 @@ function applyLanguage(language) {
     }
   });
 
-  $("langEN")?.classList.toggle("active", language === "en");
-  $("langAR")?.classList.toggle("active", language === "ar");
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(
+    (element) => {
+      const key = element.dataset.i18nPlaceholder;
 
-  localStorage.setItem("habboub_language", language);
+      if (lang[key]) {
+        element.placeholder = lang[key];
+      }
+    }
+  );
+
+  $("langEN")?.classList.toggle(
+    "active",
+    language === "en"
+  );
+
+  $("langAR")?.classList.toggle(
+    "active",
+    language === "ar"
+  );
+
+  localStorage.setItem(
+    "habboub_language",
+    language
+  );
+
+  if (state.user) {
+    renderAuthUI();
+  }
 }
 
 function setupLanguage() {
@@ -192,7 +223,9 @@ function navigateTo(target) {
       element.dataset.nav === target
     ) {
       element.classList.add("active");
-    } else if (element.classList.contains("nav-link")) {
+    } else if (
+      element.classList.contains("nav-link")
+    ) {
       element.classList.remove("active");
     }
   });
@@ -243,66 +276,102 @@ function setupModals() {
 
   $("showRegisterButton")?.addEventListener("click", () => {
     closeModal("loginModal");
+    clearMessage("loginMessage");
     openModal("registerModal");
   });
 
   $("showLoginButton")?.addEventListener("click", () => {
     closeModal("registerModal");
+    clearMessage("registerMessage");
     openModal("loginModal");
   });
 
-  $("openJournalButton")?.addEventListener("click", async () => {
-    const user = await getCurrentUser();
+  $("openJournalButton")?.addEventListener(
+    "click",
+    async () => {
+      const user = await getCurrentUser();
 
-    if (!user) {
-      openModal("loginModal");
-      showToast(
-        state.language === "ar"
-          ? "سجل الدخول أولاً لاستخدام السجل."
-          : "Please login first to use the journal."
-      );
-      return;
+      if (!user) {
+        openModal("loginModal");
+
+        showToast(
+          state.language === "ar"
+            ? "سجل الدخول أولاً لاستخدام السجل."
+            : "Please login first to use the journal."
+        );
+
+        return;
+      }
+
+      openModal("journalModal");
     }
+  );
 
-    openModal("journalModal");
-  });
-
-  document.querySelectorAll("[data-close-modal]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const modal = button.closest(".modal");
-      modal?.classList.add("hidden");
+  document
+    .querySelectorAll("[data-close-modal]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        const modal = button.closest(".modal");
+        modal?.classList.add("hidden");
+      });
     });
-  });
 
-  document.querySelectorAll(".modal-overlay").forEach((overlay) => {
-    overlay.addEventListener("click", () => {
-      overlay.closest(".modal")?.classList.add("hidden");
+  document
+    .querySelectorAll(".modal-overlay")
+    .forEach((overlay) => {
+      overlay.addEventListener("click", () => {
+        overlay
+          .closest(".modal")
+          ?.classList.add("hidden");
+      });
     });
-  });
 
-  $("loginForm")?.addEventListener("submit", loginUser);
-  $("registerForm")?.addEventListener("submit", registerUser);
-  $("journalForm")?.addEventListener("submit", saveJournalTrade);
+  $("loginForm")?.addEventListener(
+    "submit",
+    loginUser
+  );
+
+  $("registerForm")?.addEventListener(
+    "submit",
+    registerUser
+  );
+
+  $("journalForm")?.addEventListener(
+    "submit",
+    saveJournalTrade
+  );
 }
 
 
 /* =========================================================
-   AUTH UI
+   AUTH STATE
 ========================================================= */
 
 function setupAuthUI() {
-  supabaseClient.auth.onAuthStateChange(async (event) => {
-    if (
-      event === "SIGNED_IN" ||
-      event === "SIGNED_OUT" ||
-      event === "USER_UPDATED"
-    ) {
-      setTimeout(async () => {
-        await refreshAuthUI();
-        await loadJournal();
-      }, 100);
+  supabaseClient.auth.onAuthStateChange(
+    async (event, session) => {
+      console.log(
+        "Habboub Auth Event:",
+        event
+      );
+
+      if (
+        event === "SIGNED_IN" ||
+        event === "SIGNED_OUT" ||
+        event === "USER_UPDATED"
+      ) {
+        setTimeout(async () => {
+          await refreshAuthUI();
+
+          if (session?.user) {
+            await ensureProfile(session.user);
+          }
+
+          await loadJournal();
+        }, 100);
+      }
     }
-  });
+  );
 }
 
 async function refreshAuthUI() {
@@ -312,7 +381,13 @@ async function refreshAuthUI() {
   state.profile = null;
 
   if (user) {
-    state.profile = await getProfile(user.id);
+    state.profile = await getProfile(
+      user.id
+    );
+
+    if (!state.profile) {
+      state.profile = await ensureProfile(user);
+    }
   }
 
   renderAuthUI();
@@ -320,47 +395,132 @@ async function refreshAuthUI() {
 
 async function getCurrentUser() {
   try {
-    const { data, error } = await supabaseClient.auth.getUser();
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.getUser();
 
     if (error) {
       return null;
     }
 
     return data?.user || null;
-  } catch {
+  } catch (error) {
+    console.error(
+      "Get current user error:",
+      error
+    );
+
     return null;
   }
 }
 
+
+/* =========================================================
+   PROFILE DATABASE
+========================================================= */
+
 async function getProfile(userId) {
   if (!userId) return null;
 
-  const { data, error } = await supabaseClient
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("profiles")
     .select("*")
     .eq("id", userId)
     .maybeSingle();
 
   if (error) {
-    console.error("Profile load error:", error);
+    console.error(
+      "Profile load error:",
+      error
+    );
+
     return null;
   }
 
-  return data;
+  return data || null;
 }
+
+async function ensureProfile(user) {
+  if (!user?.id) {
+    return null;
+  }
+
+  const existing = await getProfile(
+    user.id
+  );
+
+  if (existing) {
+    return existing;
+  }
+
+  const fullName =
+    user.user_metadata?.full_name ||
+    user.email?.split("@")[0] ||
+    "User";
+
+  const avatarUrl =
+    user.user_metadata?.avatar_url ||
+    null;
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("profiles")
+    .insert({
+      id: user.id,
+      full_name: fullName,
+      email: user.email || null,
+      avatar_url: avatarUrl
+    })
+    .select("*")
+    .maybeSingle();
+
+  if (error) {
+    console.error(
+      "Profile creation error:",
+      error
+    );
+
+    return null;
+  }
+
+  return data || null;
+}
+
+
+/* =========================================================
+   AUTH UI
+========================================================= */
 
 function renderAuthUI() {
   const loginButton = $("loginButton");
+  const existingProfileArea = $("profileArea");
 
   if (!loginButton) return;
 
   if (!state.user) {
     loginButton.textContent =
-      translations[state.language]?.login || "Login";
+      translations[state.language]?.login ||
+      "Login";
 
-    loginButton.classList.remove("user-account-button");
+    loginButton.classList.remove(
+      "user-account-button"
+    );
 
-    const oldProfile = $("profileMenu");
+    loginButton.innerHTML =
+      translations[state.language]?.login ||
+      "Login";
+
+    $("profileArea")?.classList.add("hidden");
+
+    const oldProfile =
+      $("profileMenu");
+
     oldProfile?.remove();
 
     return;
@@ -377,87 +537,165 @@ function renderAuthUI() {
     state.user.user_metadata?.avatar_url ||
     "";
 
-  loginButton.classList.add("user-account-button");
+  /*
+   * Hide the original profile area from the HTML.
+   * We use the dynamic profile menu below.
+   */
+
+  existingProfileArea?.classList.add(
+    "hidden"
+  );
+
+  loginButton.classList.add(
+    "user-account-button"
+  );
 
   loginButton.innerHTML = "";
 
-  const avatar = document.createElement("span");
+  const avatar =
+    document.createElement("span");
+
   avatar.className = "user-avatar";
 
   if (avatarUrl) {
-    avatar.innerHTML = `<img src="${escapeAttribute(
-      avatarUrl
-    )}" alt="Profile">`;
+    const image =
+      document.createElement("img");
+
+    image.src = avatarUrl;
+    image.alt = "Profile";
+
+    avatar.appendChild(image);
   } else {
-    avatar.textContent = name.charAt(0).toUpperCase();
+    avatar.textContent =
+      name.charAt(0).toUpperCase();
   }
 
-  const nameSpan = document.createElement("span");
-  nameSpan.className = "user-name";
+  const nameSpan =
+    document.createElement("span");
+
+  nameSpan.className =
+    "user-name";
+
   nameSpan.textContent = name;
 
   loginButton.appendChild(avatar);
   loginButton.appendChild(nameSpan);
 
-  createProfileMenu(name, avatarUrl);
+  createProfileMenu(
+    name,
+    avatarUrl
+  );
 }
 
-function createProfileMenu(name, avatarUrl) {
+
+/* =========================================================
+   PROFILE MENU
+========================================================= */
+
+function createProfileMenu(
+  name,
+  avatarUrl
+) {
   $("profileMenu")?.remove();
 
-  const loginButton = $("loginButton");
+  const loginButton =
+    $("loginButton");
 
-  if (!loginButton?.parentElement) return;
+  if (!loginButton?.parentElement) {
+    return;
+  }
 
-  const menu = document.createElement("div");
+  const menu =
+    document.createElement("div");
 
   menu.id = "profileMenu";
-  menu.className = "profile-menu hidden";
+  menu.className =
+    "profile-menu hidden";
 
-  const lang = translations[state.language] || translations.en;
+  const lang =
+    translations[state.language] ||
+    translations.en;
+
+  const avatarHTML =
+    avatarUrl
+      ? `
+        <img
+          src="${escapeAttribute(avatarUrl)}"
+          alt="Profile"
+        >
+      `
+      : escapeHtml(
+          name.charAt(0).toUpperCase()
+        );
 
   menu.innerHTML = `
     <div class="profile-menu-header">
+
       <div class="profile-menu-avatar">
-        ${
-          avatarUrl
-            ? `<img src="${escapeAttribute(avatarUrl)}" alt="Profile">`
-            : escapeHtml(name.charAt(0).toUpperCase())
-        }
+        ${avatarHTML}
       </div>
 
       <div class="profile-menu-info">
-        <strong>${escapeHtml(name)}</strong>
-        <small>${escapeHtml(state.user?.email || "")}</small>
+
+        <strong>
+          ${escapeHtml(name)}
+        </strong>
+
+        <small>
+          ${escapeHtml(
+            state.user?.email || ""
+          )}
+        </small>
+
       </div>
     </div>
 
-    <button type="button" id="profileMenuButton">
+    <button
+      type="button"
+      id="profileMenuButton"
+    >
       <span>👤</span>
       <span>${lang.my_profile}</span>
     </button>
 
-    <button type="button" id="logoutButton" class="logout-menu-button">
+    <button
+      type="button"
+      id="logoutButton"
+      class="logout-menu-button"
+    >
       <span>↪</span>
       <span>${lang.logout}</span>
     </button>
   `;
 
-  loginButton.parentElement.appendChild(menu);
+  loginButton.parentElement.appendChild(
+    menu
+  );
 
-  $("profileMenuButton")?.addEventListener("click", () => {
-    menu.classList.add("hidden");
+  loginButton.onclick = () => {
+    toggleProfileMenu();
+  };
 
-    showProfileModal();
-  });
+  $("profileMenuButton")?.addEventListener(
+    "click",
+    () => {
+      menu.classList.add("hidden");
 
-  $("logoutButton")?.addEventListener("click", async () => {
-    await logoutUser();
-  });
+      showProfileModal();
+    }
+  );
+
+  $("logoutButton")?.addEventListener(
+    "click",
+    async () => {
+      await logoutUser();
+    }
+  );
 }
 
 function toggleProfileMenu() {
-  const menu = $("profileMenu");
+  const menu =
+    $("profileMenu");
 
   if (!menu) {
     const name =
@@ -474,14 +712,29 @@ function toggleProfileMenu() {
     );
   }
 
-  $("profileMenu")?.classList.toggle("hidden");
+  $("profileMenu")?.classList.toggle(
+    "hidden"
+  );
 }
 
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
 async function logoutUser() {
-  const { error } = await supabaseClient.auth.signOut();
+  const {
+    error
+  } = await supabaseClient.auth.signOut();
 
   if (error) {
+    console.error(
+      "Logout error:",
+      error
+    );
+
     showToast(error.message);
+
     return;
   }
 
@@ -489,7 +742,10 @@ async function logoutUser() {
   state.profile = null;
   state.journal = [];
 
+  $("profileMenu")?.remove();
+
   renderAuthUI();
+
   renderJournal([]);
 
   showToast(
@@ -505,10 +761,15 @@ async function logoutUser() {
 ========================================================= */
 
 function showProfileModal() {
-  document.querySelector("#profileModal")?.remove();
+  document
+    .querySelector("#profileModal")
+    ?.remove();
 
-  const profile = state.profile;
-  const user = state.user;
+  const profile =
+    state.profile;
+
+  const user =
+    state.user;
 
   if (!user) return;
 
@@ -523,87 +784,163 @@ function showProfileModal() {
     user.user_metadata?.avatar_url ||
     "";
 
-  const lang = translations[state.language] || translations.en;
+  const lang =
+    translations[state.language] ||
+    translations.en;
 
-  const modal = document.createElement("div");
+  const modal =
+    document.createElement("div");
 
   modal.id = "profileModal";
   modal.className = "modal";
+
+  const avatarHTML =
+    avatarUrl
+      ? `
+        <img
+          src="${escapeAttribute(avatarUrl)}"
+          alt="Profile"
+        >
+      `
+      : escapeHtml(
+          name.charAt(0).toUpperCase()
+        );
 
   modal.innerHTML = `
     <div class="modal-overlay"></div>
 
     <div class="modal-box profile-modal-box">
-      <button class="modal-close" id="profileModalClose">×</button>
+
+      <button
+        class="modal-close"
+        id="profileModalClose"
+        type="button"
+      >
+        ×
+      </button>
 
       <div class="profile-large-avatar">
-        ${
-          avatarUrl
-            ? `<img src="${escapeAttribute(avatarUrl)}" alt="Profile">`
-            : escapeHtml(name.charAt(0).toUpperCase())
-        }
+        ${avatarHTML}
       </div>
 
-      <h2>${lang.my_profile}</h2>
+      <h2>
+        ${lang.my_profile}
+      </h2>
 
       <p class="profile-email">
-        ${escapeHtml(user.email || "")}
+        ${escapeHtml(
+          user.email || ""
+        )}
       </p>
 
       <form id="profileForm">
 
         <label>
-          <span>${lang.full_name}</span>
+          <span>
+            ${lang.full_name}
+          </span>
+
           <input
             id="profileFullName"
             type="text"
             value="${escapeAttribute(name)}"
+            minlength="2"
+            maxlength="80"
             required
           >
         </label>
 
         <label>
-          <span>Avatar URL</span>
+          <span>
+            Avatar URL
+          </span>
+
           <input
-            id="profileAvatar"
+            id="profileAvatarUrl"
             type="url"
             value="${escapeAttribute(avatarUrl)}"
             placeholder="https://..."
           >
         </label>
 
-        <button class="primary-btn full" type="submit">
-          ${lang.profile_updated}
+        <button
+          class="primary-btn full"
+          type="submit"
+        >
+          ${state.language === "ar"
+            ? "حفظ التغييرات"
+            : "Save Changes"}
         </button>
 
       </form>
 
-      <div class="form-message" id="profileMessage"></div>
+      <div
+        class="form-message"
+        id="profileMessage"
+      ></div>
+
     </div>
   `;
 
   document.body.appendChild(modal);
 
-  $("profileModalClose")?.addEventListener("click", () => {
-    modal.remove();
-  });
+  $("profileModalClose")?.addEventListener(
+    "click",
+    () => {
+      modal.remove();
+    }
+  );
 
-  modal.querySelector(".modal-overlay")?.addEventListener("click", () => {
-    modal.remove();
-  });
+  modal
+    .querySelector(".modal-overlay")
+    ?.addEventListener(
+      "click",
+      () => {
+        modal.remove();
+      }
+    );
 
-  $("profileForm")?.addEventListener("submit", updateProfile);
+  $("profileForm")?.addEventListener(
+    "submit",
+    updateProfile
+  );
 }
+
+
+/* =========================================================
+   UPDATE PROFILE
+========================================================= */
 
 async function updateProfile(event) {
   event.preventDefault();
 
-  const fullName = $("profileFullName")?.value.trim();
-  const avatarUrl = $("profileAvatar")?.value.trim();
+  if (!state.user) {
+    return;
+  }
 
-  if (!state.user) return;
+  const fullName =
+    $("profileFullName")
+      ?.value
+      .trim();
 
-  const message = $("profileMessage");
+  const avatarUrl =
+    $("profileAvatarUrl")
+      ?.value
+      .trim();
+
+  const message =
+    $("profileMessage");
+
+  if (!fullName) {
+    setMessage(
+      "profileMessage",
+      state.language === "ar"
+        ? "اكتب اسمك الكامل."
+        : "Please enter your full name."
+    );
+
+    return;
+  }
 
   if (message) {
     message.textContent =
@@ -612,31 +949,60 @@ async function updateProfile(event) {
         : "Saving...";
   }
 
-  const { error } = await supabaseClient
+  const {
+    error
+  } = await supabaseClient
     .from("profiles")
-    .upsert({
-      id: state.user.id,
-      full_name: fullName,
-      email: state.user.email,
-      avatar_url: avatarUrl || null
-    });
+    .upsert(
+      {
+        id: state.user.id,
+        full_name: fullName,
+        email: state.user.email || null,
+        avatar_url:
+          avatarUrl || null
+      },
+      {
+        onConflict: "id"
+      }
+    );
 
   if (error) {
-    if (message) {
-      message.textContent = error.message;
-    }
+    console.error(
+      "Profile update error:",
+      error
+    );
+
+    setMessage(
+      "profileMessage",
+      error.message
+    );
 
     return;
   }
 
-  await supabaseClient.auth.updateUser({
-    data: {
-      full_name: fullName,
-      avatar_url: avatarUrl || null
+  const {
+    error: authError
+  } = await supabaseClient.auth.updateUser(
+    {
+      data: {
+        full_name: fullName,
+        avatar_url:
+          avatarUrl || null
+      }
     }
-  });
+  );
 
-  state.profile = await getProfile(state.user.id);
+  if (authError) {
+    console.error(
+      "Auth metadata update error:",
+      authError
+    );
+  }
+
+  state.profile =
+    await getProfile(
+      state.user.id
+    );
 
   renderAuthUI();
 
@@ -662,8 +1028,25 @@ async function updateProfile(event) {
 async function loginUser(event) {
   event.preventDefault();
 
-  const email = $("loginEmail")?.value.trim();
-  const password = $("loginPassword")?.value;
+  const email =
+    $("loginEmail")
+      ?.value
+      .trim();
+
+  const password =
+    $("loginPassword")
+      ?.value;
+
+  if (!email || !password) {
+    setMessage(
+      "loginMessage",
+      state.language === "ar"
+        ? "أدخل البريد الإلكتروني وكلمة المرور."
+        : "Enter your email and password."
+    );
+
+    return;
+  }
 
   setMessage(
     "loginMessage",
@@ -672,22 +1055,54 @@ async function loginUser(event) {
       : "Logging in..."
   );
 
-  const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.signInWithPassword(
+      {
+        email,
+        password
+      }
+    );
 
   if (error) {
-    setMessage("loginMessage", error.message);
+    console.error(
+      "Login error:",
+      error
+    );
+
+    setMessage(
+      "loginMessage",
+      error.message
+    );
+
     return;
   }
 
-  state.user = data?.user || null;
+  state.user =
+    data?.user || null;
+
+  if (!state.user) {
+    setMessage(
+      "loginMessage",
+      state.language === "ar"
+        ? "تعذر الحصول على بيانات الحساب."
+        : "Could not load account information."
+    );
+
+    return;
+  }
+
+  await ensureProfile(
+    state.user
+  );
 
   await refreshAuthUI();
 
   closeModal("loginModal");
+
+  $("loginForm")?.reset();
 
   await loadJournal();
 
@@ -706,9 +1121,26 @@ async function loginUser(event) {
 async function registerUser(event) {
   event.preventDefault();
 
-  const fullName = $("registerFullName")?.value.trim();
-  const email = $("registerEmail")?.value.trim();
-  const password = $("registerPassword")?.value;
+  /*
+   * IMPORTANT:
+   * The HTML must use:
+   * id="registerFullName"
+   */
+
+  const fullName =
+    $("registerFullName")
+      ?.value
+      .trim();
+
+  const email =
+    $("registerEmail")
+      ?.value
+      .trim()
+      .toLowerCase();
+
+  const password =
+    $("registerPassword")
+      ?.value;
 
   if (!fullName) {
     setMessage(
@@ -721,6 +1153,50 @@ async function registerUser(event) {
     return;
   }
 
+  if (fullName.length < 2) {
+    setMessage(
+      "registerMessage",
+      state.language === "ar"
+        ? "الاسم يجب أن يحتوي على حرفين على الأقل."
+        : "Your name must contain at least 2 characters."
+    );
+
+    return;
+  }
+
+  if (!email) {
+    setMessage(
+      "registerMessage",
+      state.language === "ar"
+        ? "اكتب بريدك الإلكتروني."
+        : "Please enter your email."
+    );
+
+    return;
+  }
+
+  if (!password) {
+    setMessage(
+      "registerMessage",
+      state.language === "ar"
+        ? "اكتب كلمة المرور."
+        : "Please enter a password."
+    );
+
+    return;
+  }
+
+  if (password.length < 6) {
+    setMessage(
+      "registerMessage",
+      state.language === "ar"
+        ? "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
+        : "Password must be at least 6 characters."
+    );
+
+    return;
+  }
+
   setMessage(
     "registerMessage",
     state.language === "ar"
@@ -728,37 +1204,63 @@ async function registerUser(event) {
       : "Creating account..."
   );
 
-  const { data, error } =
-    await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName
-        },
-        emailRedirectTo:
-          "https://yazanhabboub888-ui.github.io/habboub-trade/"
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.signUp(
+      {
+        email,
+        password,
+
+        options: {
+          data: {
+            full_name: fullName
+          },
+
+          emailRedirectTo:
+            "https://yazanhabboub888-ui.github.io/habboub-trade/"
+        }
       }
-    });
+    );
 
   if (error) {
-    setMessage("registerMessage", error.message);
+    console.error(
+      "Register error:",
+      error
+    );
+
+    setMessage(
+      "registerMessage",
+      error.message
+    );
+
     return;
   }
 
   /*
-   * If email confirmation is disabled,
-   * Supabase may return an active session.
-   * The database trigger handles profile creation
-   * even when email confirmation is enabled.
+   * If Supabase email confirmation is disabled,
+   * session will normally exist immediately.
    */
 
-  if (data?.session) {
-    state.user = data.user;
+  if (data?.session && data?.user) {
+    state.user =
+      data.user;
+
+    /*
+     * Create profile immediately.
+     */
+    await ensureProfile(
+      data.user
+    );
 
     await refreshAuthUI();
 
-    closeModal("registerModal");
+    closeModal(
+      "registerModal"
+    );
+
+    $("registerForm")?.reset();
 
     showToast(
       state.language === "ar"
@@ -769,51 +1271,84 @@ async function registerUser(event) {
     return;
   }
 
+  /*
+   * Email confirmation is probably enabled.
+   */
+
   setMessage(
     "registerMessage",
     state.language === "ar"
-      ? "تم إنشاء الحساب. افحص بريدك الإلكتروني لتأكيد الحساب."
-      : "Account created. Check your email to confirm your account."
+      ? "تم إنشاء الحساب. افحص بريدك الإلكتروني واضغط رابط التأكيد."
+      : "Account created. Check your email and click the confirmation link."
   );
 }
 
 
 /* =========================================================
-   JOURNAL
+   JOURNAL — LOAD
 ========================================================= */
 
 async function loadJournal() {
-  const user = await getCurrentUser();
+  const user =
+    await getCurrentUser();
 
   if (!user) {
     state.journal = [];
+
     renderJournal([]);
+
     return;
   }
 
-  const { data, error } = await supabaseClient
-    .from("trading_journal")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", {
-      ascending: false
-    });
+  /*
+   * SECURITY:
+   * We explicitly filter by the logged-in user's ID.
+   * RLS also protects this on the database level.
+   */
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("trading_journal")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", {
+        ascending: false
+      });
 
   if (error) {
-    console.error("Journal load error:", error);
+    console.error(
+      "Journal load error:",
+      error
+    );
+
+    state.journal = [];
+
     renderJournal([]);
+
     return;
   }
 
-  state.journal = data || [];
+  state.journal =
+    data || [];
 
-  renderJournal(state.journal);
+  renderJournal(
+    state.journal
+  );
 }
+
+
+/* =========================================================
+   JOURNAL — SAVE
+========================================================= */
 
 async function saveJournalTrade(event) {
   event.preventDefault();
 
-  const user = await getCurrentUser();
+  const user =
+    await getCurrentUser();
 
   if (!user) {
     setMessage(
@@ -826,27 +1361,109 @@ async function saveJournalTrade(event) {
     return;
   }
 
-  const symbol = $("tradeSymbol")?.value.trim() || "XAUUSD";
-  const setup = $("tradeSetup")?.value.trim() || "";
-  const result = $("tradeResult")?.value || "win";
-  const rResult = Number($("tradeR")?.value || 0);
-  const notes = $("tradeNotes")?.value.trim() || "";
+  const symbol =
+    $("tradeSymbol")
+      ?.value
+      .trim()
+      .toUpperCase() ||
+    "XAUUSD";
 
-  const { error } = await supabaseClient
-    .from("trading_journal")
-    .insert({
-      user_id: user.id,
-      symbol,
-      setup,
-      result,
-      r_result: rResult,
-      notes
-    });
+  const setup =
+    $("tradeSetup")
+      ?.value
+      .trim() ||
+    "";
 
-  if (error) {
-    setMessage("journalMessage", error.message);
+  const result =
+    $("tradeResult")
+      ?.value ||
+    "win";
+
+  const rResult =
+    Number(
+      $("tradeR")
+        ?.value || 0
+    );
+
+  const notes =
+    $("tradeNotes")
+      ?.value
+      .trim() ||
+    "";
+
+  if (!symbol) {
+    setMessage(
+      "journalMessage",
+      state.language === "ar"
+        ? "أدخل الرمز."
+        : "Enter a symbol."
+    );
+
     return;
   }
+
+  if (
+    Number.isNaN(rResult)
+  ) {
+    setMessage(
+      "journalMessage",
+      state.language === "ar"
+        ? "قيمة R غير صحيحة."
+        : "Invalid R result."
+    );
+
+    return;
+  }
+
+  setMessage(
+    "journalMessage",
+    state.language === "ar"
+      ? "جاري حفظ الصفقة..."
+      : "Saving trade..."
+  );
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("trading_journal")
+      .insert({
+        user_id: user.id,
+        journal_type: "manual",
+        symbol,
+        direction:
+          result === "win"
+            ? "WIN"
+            : result === "loss"
+            ? "LOSS"
+            : "BREAKEVEN",
+        setup,
+        result,
+        r_result: rResult,
+        notes
+      })
+      .select("*")
+      .maybeSingle();
+
+  if (error) {
+    console.error(
+      "Journal save error:",
+      error
+    );
+
+    setMessage(
+      "journalMessage",
+      error.message
+    );
+
+    return;
+  }
+
+  console.log(
+    "Trade saved:",
+    data
+  );
 
   setMessage(
     "journalMessage",
@@ -858,7 +1475,8 @@ async function saveJournalTrade(event) {
   $("journalForm")?.reset();
 
   if ($("tradeSymbol")) {
-    $("tradeSymbol").value = "XAUUSD";
+    $("tradeSymbol").value =
+      "XAUUSD";
   }
 
   if ($("tradeR")) {
@@ -867,137 +1485,390 @@ async function saveJournalTrade(event) {
 
   await loadJournal();
 
+  showToast(
+    state.language === "ar"
+      ? "تم حفظ الصفقة بنجاح."
+      : "Trade saved successfully."
+  );
+
   setTimeout(() => {
-    closeModal("journalModal");
+    closeModal(
+      "journalModal"
+    );
   }, 500);
 }
 
-function renderJournal(trades) {
-  const container = $("journalTable");
 
-  if (!container) return;
+/* =========================================================
+   JOURNAL — DELETE
+========================================================= */
+
+async function deleteJournalTrade(
+  tradeId
+) {
+  if (!tradeId) {
+    return;
+  }
+
+  const user =
+    await getCurrentUser();
+
+  if (!user) {
+    return;
+  }
+
+  const confirmText =
+    state.language === "ar"
+      ? "هل أنت متأكد أنك تريد حذف هذه الصفقة؟"
+      : "Are you sure you want to delete this trade?";
+
+  if (!window.confirm(confirmText)) {
+    return;
+  }
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("trading_journal")
+      .delete()
+      .eq("id", tradeId)
+      .eq("user_id", user.id);
+
+  if (error) {
+    console.error(
+      "Journal delete error:",
+      error
+    );
+
+    showToast(
+      error.message
+    );
+
+    return;
+  }
+
+  await loadJournal();
+
+  showToast(
+    state.language === "ar"
+      ? "تم حذف الصفقة."
+      : "Trade deleted."
+  );
+}
+
+
+/* =========================================================
+   JOURNAL — RENDER
+========================================================= */
+
+function renderJournal(trades) {
+  const container =
+    $("journalTable");
+
+  if (!container) {
+    return;
+  }
 
   if (!trades?.length) {
     container.innerHTML = `
       <div class="empty-state">
         <span>▤</span>
-        <strong>No trades yet</strong>
-        <p>Add your first trade to start building your journal.</p>
+
+        <strong>
+          ${
+            state.language === "ar"
+              ? "لا توجد صفقات بعد"
+              : "No trades yet"
+          }
+        </strong>
+
+        <p>
+          ${
+            state.language === "ar"
+              ? "أضف أول صفقة للبدء ببناء سجلك."
+              : "Add your first trade to start building your journal."
+          }
+        </p>
       </div>
     `;
 
-    $("journalWinRate").textContent = "--";
-    $("journalProfitFactor").textContent = "--";
-    $("journalAverageR").textContent = "--";
-    $("journalDrawdown").textContent = "--";
-    $("journalTrades").textContent = "0";
+    setText(
+      "journalWinRate",
+      "--"
+    );
+
+    setText(
+      "journalProfitFactor",
+      "--"
+    );
+
+    setText(
+      "journalAverageR",
+      "--"
+    );
+
+    setText(
+      "journalDrawdown",
+      "--"
+    );
+
+    setText(
+      "journalTrades",
+      "0"
+    );
 
     return;
   }
 
-  const wins = trades.filter((trade) => trade.result === "win").length;
+  const wins =
+    trades.filter(
+      (trade) =>
+        trade.result === "win"
+    ).length;
 
-  const losses = trades.filter(
-    (trade) => trade.result === "loss"
-  ).length;
+  const losses =
+    trades.filter(
+      (trade) =>
+        trade.result === "loss"
+    ).length;
 
   const winRate =
     trades.length > 0
-      ? ((wins / trades.length) * 100).toFixed(1)
-      : 0;
+      ? (
+          (wins /
+            trades.length) *
+          100
+        ).toFixed(1)
+      : "0.0";
 
-  const totalR = trades.reduce(
-    (sum, trade) => sum + Number(trade.r_result || 0),
-    0
-  );
-
-  const averageR =
-    trades.length > 0
-      ? (totalR / trades.length).toFixed(2)
-      : "0.00";
-
-  const grossProfit = trades
-    .filter((trade) => Number(trade.r_result || 0) > 0)
-    .reduce(
-      (sum, trade) => sum + Number(trade.r_result || 0),
+  const totalR =
+    trades.reduce(
+      (sum, trade) =>
+        sum +
+        Number(
+          trade.r_result || 0
+        ),
       0
     );
 
-  const grossLoss = Math.abs(
+  const averageR =
+    trades.length > 0
+      ? (
+          totalR /
+          trades.length
+        ).toFixed(2)
+      : "0.00";
+
+  const grossProfit =
     trades
-      .filter((trade) => Number(trade.r_result || 0) < 0)
-      .reduce(
-        (sum, trade) => sum + Number(trade.r_result || 0),
-        0
+      .filter(
+        (trade) =>
+          Number(
+            trade.r_result || 0
+          ) > 0
       )
-  );
+      .reduce(
+        (sum, trade) =>
+          sum +
+          Number(
+            trade.r_result || 0
+          ),
+        0
+      );
+
+  const grossLoss =
+    Math.abs(
+      trades
+        .filter(
+          (trade) =>
+            Number(
+              trade.r_result || 0
+            ) < 0
+        )
+        .reduce(
+          (sum, trade) =>
+            sum +
+            Number(
+              trade.r_result || 0
+            ),
+          0
+        )
+    );
 
   const profitFactor =
     grossLoss > 0
-      ? (grossProfit / grossLoss).toFixed(2)
+      ? (
+          grossProfit /
+          grossLoss
+        ).toFixed(2)
       : "--";
+
+  /*
+   * Calculate maximum drawdown
+   * from chronological order.
+   */
 
   let cumulative = 0;
   let peak = 0;
   let maxDrawdown = 0;
 
-  [...trades].reverse().forEach((trade) => {
-    cumulative += Number(trade.r_result || 0);
+  [...trades]
+    .reverse()
+    .forEach((trade) => {
+      cumulative +=
+        Number(
+          trade.r_result || 0
+        );
 
-    peak = Math.max(peak, cumulative);
+      peak = Math.max(
+        peak,
+        cumulative
+      );
 
-    maxDrawdown = Math.max(
-      maxDrawdown,
-      peak - cumulative
-    );
-  });
+      maxDrawdown =
+        Math.max(
+          maxDrawdown,
+          peak - cumulative
+        );
+    });
 
-  $("journalWinRate").textContent = `${winRate}%`;
-  $("journalProfitFactor").textContent = profitFactor;
-  $("journalAverageR").textContent = averageR;
-  $("journalDrawdown").textContent =
-    maxDrawdown > 0 ? `-${maxDrawdown.toFixed(2)}R` : "0R";
-  $("journalTrades").textContent = trades.length;
+  setText(
+    "journalWinRate",
+    `${winRate}%`
+  );
 
-  container.innerHTML = trades
-    .map((trade) => {
-      const resultClass =
-        trade.result === "win"
-          ? "positive"
-          : trade.result === "loss"
-          ? "negative"
-          : "neutral";
+  setText(
+    "journalProfitFactor",
+    profitFactor
+  );
 
-      return `
-        <div class="journal-row">
+  setText(
+    "journalAverageR",
+    averageR
+  );
 
-          <div>
-            <strong>${escapeHtml(trade.symbol || "XAUUSD")}</strong>
-            <small>${escapeHtml(trade.setup || "—")}</small>
+  setText(
+    "journalDrawdown",
+    maxDrawdown > 0
+      ? `-${maxDrawdown.toFixed(2)}R`
+      : "0R"
+  );
+
+  setText(
+    "journalTrades",
+    trades.length
+  );
+
+  container.innerHTML =
+    trades
+      .map((trade) => {
+        const resultClass =
+          trade.result === "win"
+            ? "positive"
+            : trade.result === "loss"
+            ? "negative"
+            : "neutral";
+
+        const resultLabel =
+          trade.result === "win"
+            ? state.language === "ar"
+              ? "ربح"
+              : "Win"
+            : trade.result === "loss"
+            ? state.language === "ar"
+              ? "خسارة"
+              : "Loss"
+            : state.language === "ar"
+            ? "تعادل"
+            : "Breakeven";
+
+        return `
+          <div class="journal-row">
+
+            <div>
+              <strong>
+                ${escapeHtml(
+                  trade.symbol ||
+                    "XAUUSD"
+                )}
+              </strong>
+
+              <small>
+                ${escapeHtml(
+                  trade.setup ||
+                    "—"
+                )}
+              </small>
+            </div>
+
+            <div>
+              <span
+                class="${resultClass}"
+              >
+                ${resultLabel}
+              </span>
+            </div>
+
+            <div>
+              <strong>
+                ${Number(
+                  trade.r_result ||
+                    0
+                ).toFixed(2)}R
+              </strong>
+            </div>
+
+            <div>
+              <small>
+                ${escapeHtml(
+                  trade.notes ||
+                    ""
+                )}
+              </small>
+            </div>
+
+            <div>
+              <button
+                type="button"
+                class="text-btn journal-delete-btn"
+                data-delete-trade="${escapeAttribute(
+                  trade.id
+                )}"
+              >
+                ${
+                  state.language ===
+                  "ar"
+                    ? "حذف"
+                    : "Delete"
+                }
+              </button>
+            </div>
+
           </div>
+        `;
+      })
+      .join("");
 
-          <div>
-            <span class="${resultClass}">
-              ${escapeHtml(trade.result || "—")}
-            </span>
-          </div>
+  /*
+   * Delete buttons.
+   */
 
-          <div>
-            <strong>${Number(
-              trade.r_result || 0
-            ).toFixed(2)}R</strong>
-          </div>
-
-          <div>
-            <small>${escapeHtml(
-              trade.notes || ""
-            )}</small>
-          </div>
-
-        </div>
-      `;
-    })
-    .join("");
+  container
+    .querySelectorAll(
+      "[data-delete-trade]"
+    )
+    .forEach((button) => {
+      button.addEventListener(
+        "click",
+        () => {
+          deleteJournalTrade(
+            button.dataset
+              .deleteTrade
+          );
+        }
+      );
+    });
 }
 
 
@@ -1006,39 +1877,67 @@ function renderJournal(trades) {
 ========================================================= */
 
 async function loadMarketAnalysis() {
-  const { data, error } = await supabaseClient
-    .from("market_analysis")
-    .select("*")
-    .order("created_at", {
-      ascending: false
-    })
-    .limit(1)
-    .maybeSingle();
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("market_analysis")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      })
+      .limit(1)
+      .maybeSingle();
 
   if (error) {
-    console.error("Market analysis error:", error);
+    console.error(
+      "Market analysis error:",
+      error
+    );
+
     return;
   }
 
-  if (!data) return;
+  if (!data) {
+    return;
+  }
 
-  state.analysis = data;
+  state.analysis =
+    data;
 
-  renderAnalysis(data);
+  state.lastUpdated =
+    data.created_at ||
+    null;
+
+  renderAnalysis(
+    data
+  );
+
+  setText(
+    "lastUpdated",
+    data.created_at
+      ? formatDate(
+          data.created_at
+        )
+      : "--"
+  );
 }
 
 function renderAnalysis(data) {
-  const score = Number(
-    data.score ??
-      data.habboub_score ??
-      0
-  );
+  const score =
+    Number(
+      data.score ??
+        data.habboub_score ??
+        0
+    );
 
-  const confidence = Number(
-    data.confidence ??
-      data.market_confidence ??
-      0
-  );
+  const confidence =
+    Number(
+      data.confidence ??
+        data.market_confidence ??
+        0
+    );
 
   const condition =
     data.market_condition ||
@@ -1051,23 +1950,48 @@ function renderAnalysis(data) {
     data.risk_level ||
     "--";
 
-  setText("heroScore", score || "--");
-  setText("sessionScore", score || "--");
+  setText(
+    "heroScore",
+    Number.isFinite(score)
+      ? score
+      : "--"
+  );
 
-  setText("heroCondition", condition);
-  setText("marketCondition", condition);
+  setText(
+    "sessionScore",
+    Number.isFinite(score)
+      ? score
+      : "--"
+  );
 
-  setText("heroRisk", risk);
-  setText("marketRisk", risk);
+  setText(
+    "heroCondition",
+    condition
+  );
+
+  setText(
+    "marketCondition",
+    condition
+  );
+
+  setText(
+    "heroRisk",
+    risk
+  );
+
+  setText(
+    "marketRisk",
+    risk
+  );
 
   setText(
     "marketConfidence",
-    `${confidence || 0}%`
+    `${Number.isFinite(confidence) ? confidence : 0}%`
   );
 
   setText(
     "analysisConfidenceLarge",
-    `${confidence || 0}%`
+    `${Number.isFinite(confidence) ? confidence : 0}%`
   );
 
   setText(
@@ -1094,132 +2018,158 @@ function renderAnalysis(data) {
 
   setText(
     "analysisStatus",
-    data.status || "LIVE"
+    data.status ||
+      "LIVE"
   );
 
   setText(
     "analysisSymbol",
-    data.symbol || "XAUUSD"
+    data.symbol ||
+      "XAUUSD"
   );
 
   setText(
     "analysisSymbolLarge",
-    data.symbol || "XAUUSD"
+    data.symbol ||
+      "XAUUSD"
   );
 
   setText(
     "htfBias",
-    data.htf_bias || "--"
+    data.htf_bias ||
+      "--"
   );
 
   setText(
     "sessionBias",
-    data.htf_bias || "--"
+    data.htf_bias ||
+      "--"
   );
 
   setText(
     "intelBias",
-    data.htf_bias || "--"
+    data.htf_bias ||
+      "--"
   );
 
   setText(
     "liquidity",
-    data.liquidity || "--"
+    data.liquidity ||
+      "--"
   );
 
   setText(
     "sessionLiquidity",
-    data.liquidity || "--"
+    data.liquidity ||
+      "--"
   );
 
   setText(
     "intelLiquidity",
-    data.liquidity || "--"
+    data.liquidity ||
+      "--"
   );
 
   setText(
     "mss",
-    data.mss || "--"
+    data.mss ||
+      "--"
   );
 
   setText(
     "sessionMSS",
-    data.mss || "--"
+    data.mss ||
+      "--"
   );
 
   setText(
     "intelMSS",
-    data.mss || "--"
+    data.mss ||
+      "--"
   );
 
   setText(
     "fvg",
-    data.fvg || "--"
+    data.fvg ||
+      "--"
   );
 
   setText(
     "sessionFVG",
-    data.fvg || "--"
+    data.fvg ||
+      "--"
   );
 
   setText(
     "intelFVG",
-    data.fvg || "--"
+    data.fvg ||
+      "--"
   );
 
   setText(
     "cotCommercial",
-    data.cot_commercial || "--"
+    data.cot_commercial ||
+      "--"
   );
 
   setText(
     "intelCommercial",
-    data.cot_commercial || "--"
+    data.cot_commercial ||
+      "--"
   );
 
   setText(
     "cotManaged",
-    data.cot_managed || "--"
+    data.cot_managed ||
+      "--"
   );
 
   setText(
     "intelManaged",
-    data.cot_managed || "--"
+    data.cot_managed ||
+      "--"
   );
 
   setText(
     "cotNet",
-    data.cot_net || "--"
+    data.cot_net ||
+      "--"
   );
 
   setText(
     "intelNet",
-    data.cot_net || "--"
+    data.cot_net ||
+      "--"
   );
 
   setText(
     "cotBias",
-    data.cot_bias || "--"
+    data.cot_bias ||
+      "--"
   );
 
   setText(
     "intelCotBias",
-    data.cot_bias || "--"
+    data.cot_bias ||
+      "--"
   );
 
   setText(
     "regimeTrend",
-    data.trend || "--"
+    data.trend ||
+      "--"
   );
 
   setText(
     "regimeVolatility",
-    data.volatility || "--"
+    data.volatility ||
+      "--"
   );
 
   setText(
     "regimeLiquidity",
-    data.liquidity || "--"
+    data.liquidity ||
+      "--"
   );
 
   setText(
@@ -1227,100 +2177,245 @@ function renderAnalysis(data) {
     risk
   );
 
-  updateScoreVisuals(score, confidence, risk);
-  renderScoreReasons(data);
+  updateScoreVisuals(
+    score,
+    confidence,
+    risk
+  );
+
+  renderScoreReasons(
+    data
+  );
 }
 
-function updateScoreVisuals(score, confidence, risk) {
-  const heroRing = $("heroScoreRing");
-  const sessionBar = $("sessionScoreBar");
-  const confidenceBar = $("confidenceBar");
-  const riskMeter = $("riskMeter");
+
+/* =========================================================
+   SCORE VISUALS
+========================================================= */
+
+function updateScoreVisuals(
+  score,
+  confidence,
+  risk
+) {
+  const safeScore =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Number(score) || 0
+      )
+    );
+
+  const safeConfidence =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Number(confidence) || 0
+      )
+    );
+
+  const heroRing =
+    $("heroScoreRing");
+
+  const sessionBar =
+    $("sessionScoreBar");
+
+  const confidenceBar =
+    $("confidenceBar");
+
+  const riskMeter =
+    $("riskMeter");
 
   if (heroRing) {
     heroRing.style.setProperty(
       "--score",
-      `${Math.max(0, Math.min(100, score))}%`
+      `${safeScore}%`
     );
   }
 
   if (sessionBar) {
     sessionBar.style.width =
-      `${Math.max(0, Math.min(100, score))}%`;
+      `${safeScore}%`;
   }
 
   if (confidenceBar) {
     confidenceBar.style.width =
-      `${Math.max(0, Math.min(100, confidence))}%`;
+      `${safeConfidence}%`;
   }
 
   if (riskMeter) {
     const riskValue =
-      typeof risk === "number"
-        ? risk
-        : riskToNumber(risk);
+      riskToNumber(
+        risk
+      );
 
-    riskMeter.querySelector("span")?.style.setProperty(
-      "width",
-      `${riskValue}%`
-    );
+    const meter =
+      riskMeter.querySelector(
+        "span"
+      );
+
+    if (meter) {
+      meter.style.width =
+        `${riskValue}%`;
+    }
   }
 
   const stateText =
-    score >= 80
+    safeScore >= 80
       ? "STRONG ENVIRONMENT"
-      : score >= 60
+      : safeScore >= 60
       ? "FAVORABLE ENVIRONMENT"
-      : score >= 40
+      : safeScore >= 40
       ? "MIXED ENVIRONMENT"
-      : score >= 20
+      : safeScore >= 20
       ? "HIGH RISK ENVIRONMENT"
       : "EXTREME RISK";
 
-  setText("heroScoreState", stateText);
-  setText("sessionScoreState", stateText);
+  setText(
+    "heroScoreState",
+    stateText
+  );
+
+  setText(
+    "sessionScoreState",
+    stateText
+  );
 }
 
 function riskToNumber(risk) {
-  const text = String(risk).toLowerCase();
+  if (
+    typeof risk ===
+    "number"
+  ) {
+    return Math.max(
+      0,
+      Math.min(
+        100,
+        risk
+      )
+    );
+  }
 
-  if (text.includes("extreme")) return 90;
-  if (text.includes("high")) return 75;
-  if (text.includes("medium")) return 50;
-  if (text.includes("low")) return 25;
+  const text =
+    String(risk)
+      .toLowerCase();
+
+  if (
+    text.includes(
+      "extreme"
+    )
+  ) {
+    return 90;
+  }
+
+  if (
+    text.includes("high")
+  ) {
+    return 75;
+  }
+
+  if (
+    text.includes(
+      "medium"
+    )
+  ) {
+    return 50;
+  }
+
+  if (
+    text.includes("low")
+  ) {
+    return 25;
+  }
 
   return 50;
 }
 
-function renderScoreReasons(data) {
-  const container = $("scoreReasons");
 
-  if (!container) return;
+/* =========================================================
+   SCORE REASONS
+========================================================= */
+
+function renderScoreReasons(
+  data
+) {
+  const container =
+    $("scoreReasons");
+
+  if (!container) {
+    return;
+  }
 
   const reasons = [
-    ["HTF Bias", data.htf_bias],
-    ["Liquidity", data.liquidity],
-    ["MSS", data.mss],
-    ["FVG", data.fvg],
-    ["COT", data.cot_bias],
-    ["Risk", data.risk]
-  ].filter((item) => item[1]);
+    [
+      "HTF Bias",
+      data.htf_bias
+    ],
+    [
+      "Liquidity",
+      data.liquidity
+    ],
+    [
+      "MSS",
+      data.mss
+    ],
+    [
+      "FVG",
+      data.fvg
+    ],
+    [
+      "COT",
+      data.cot_bias
+    ],
+    [
+      "Risk",
+      data.risk
+    ]
+  ].filter(
+    (item) =>
+      item[1] !==
+        null &&
+      item[1] !==
+        undefined &&
+      String(
+        item[1]
+      ).trim() !== ""
+  );
 
-  if (!reasons.length) return;
+  if (!reasons.length) {
+    return;
+  }
 
-  container.innerHTML = reasons
-    .map(
-      ([title, value]) => `
-        <div class="reason neutral">
-          <span>◌</span>
-          <div>
-            <strong>${escapeHtml(title)}</strong>
-            <p>${escapeHtml(String(value))}</p>
+  container.innerHTML =
+    reasons
+      .map(
+        ([title, value]) => `
+          <div class="reason neutral">
+
+            <span>◌</span>
+
+            <div>
+
+              <strong>
+                ${escapeHtml(
+                  title
+                )}
+              </strong>
+
+              <p>
+                ${escapeHtml(
+                  String(value)
+                )}
+              </p>
+
+            </div>
+
           </div>
-        </div>
-      `
-    )
-    .join("");
+        `
+      )
+      .join("");
 }
 
 
@@ -1329,64 +2424,107 @@ function renderScoreReasons(data) {
 ========================================================= */
 
 async function loadNews() {
-  const { data, error } = await supabaseClient
-    .from("news")
-    .select("*")
-    .order("event_time", {
-      ascending: true
-    });
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("news")
+      .select("*")
+      .order(
+        "event_time",
+        {
+          ascending: true
+        }
+      );
 
   if (error) {
-    console.error("News load error:", error);
+    console.error(
+      "News load error:",
+      error
+    );
+
     return;
   }
 
-  state.news = data || [];
+  state.news =
+    data || [];
 
-  renderNews(state.news);
+  renderNews(
+    state.news
+  );
 }
 
 function renderNews(news) {
-  const container = $("newsContainer");
+  const container =
+    $("newsContainer");
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   if (!news?.length) {
     container.innerHTML = `
       <div class="empty-state">
+
         <span>◌</span>
-        <strong>No news available</strong>
+
+        <strong>
+          ${
+            state.language ===
+            "ar"
+              ? "لا توجد أخبار"
+              : "No news available"
+          }
+        </strong>
+
       </div>
     `;
 
     return;
   }
 
-  container.innerHTML = news
-    .map(
-      (item) => `
-        <article class="news-card">
-          <div>
-            <span class="news-impact">
-              ${escapeHtml(item.impact || "Medium")}
-            </span>
+  container.innerHTML =
+    news
+      .map(
+        (item) => `
+          <article class="news-card">
 
-            <h3>${escapeHtml(
-              item.title || "Economic Event"
-            )}</h3>
+            <div>
 
-            <p>${escapeHtml(
-              item.description || ""
-            )}</p>
-          </div>
+              <span class="news-impact">
+                ${escapeHtml(
+                  item.impact ||
+                    "Medium"
+                )}
+              </span>
 
-          <time>
-            ${formatDate(item.event_time)}
-          </time>
-        </article>
-      `
-    )
-    .join("");
+              <h3>
+                ${escapeHtml(
+                  item.title ||
+                    "Economic Event"
+                )}
+              </h3>
+
+              <p>
+                ${escapeHtml(
+                  item.description ||
+                    ""
+                )}
+              </p>
+
+            </div>
+
+            <time>
+              ${formatDate(
+                item.event_time
+              )}
+            </time>
+
+          </article>
+        `
+      )
+      .join("");
 }
 
 
@@ -1395,64 +2533,105 @@ function renderNews(news) {
 ========================================================= */
 
 async function loadAnnouncements() {
-  const { data, error } = await supabaseClient
-    .from("announcements")
-    .select("*")
-    .order("created_at", {
-      ascending: false
-    });
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("announcements")
+      .select("*")
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
 
   if (error) {
-    console.error("Announcements error:", error);
+    console.error(
+      "Announcements error:",
+      error
+    );
+
     return;
   }
 
-  state.announcements = data || [];
+  state.announcements =
+    data || [];
 
-  renderAnnouncements(state.announcements);
+  renderAnnouncements(
+    state.announcements
+  );
 }
 
-function renderAnnouncements(items) {
-  const container = $("announcementsContainer");
+function renderAnnouncements(
+  items
+) {
+  const container =
+    $("announcementsContainer");
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   if (!items.length) {
     container.innerHTML = `
       <div class="empty-state">
+
         <span>◆</span>
-        <strong>No announcements yet</strong>
+
+        <strong>
+          ${
+            state.language ===
+            "ar"
+              ? "لا توجد إعلانات بعد"
+              : "No announcements yet"
+          }
+        </strong>
+
       </div>
     `;
 
     return;
   }
 
-  container.innerHTML = items
-    .map(
-      (item) => `
-        <article class="announcement-card">
-          <span>◆</span>
+  container.innerHTML =
+    items
+      .map(
+        (item) => `
+          <article class="announcement-card">
 
-          <div>
-            <h3>${escapeHtml(
-              item.title || "Announcement"
-            )}</h3>
+            <span>◆</span>
 
-            <p>${escapeHtml(
-              item.content ||
-                item.description ||
-                ""
-            )}</p>
+            <div>
 
-            <small>${formatDate(
-              item.created_at
-            )}</small>
-          </div>
-        </article>
-      `
-    )
-    .join("");
+              <h3>
+                ${escapeHtml(
+                  item.title ||
+                    "Announcement"
+                )}
+              </h3>
+
+              <p>
+                ${escapeHtml(
+                  item.content ||
+                    item.description ||
+                    ""
+                )}
+              </p>
+
+              <small>
+                ${formatDate(
+                  item.created_at
+                )}
+              </small>
+
+            </div>
+
+          </article>
+        `
+      )
+      .join("");
 }
 
 
@@ -1461,63 +2640,108 @@ function renderAnnouncements(items) {
 ========================================================= */
 
 async function loadCourses() {
-  const { data, error } = await supabaseClient
-    .from("courses")
-    .select("*")
-    .order("created_at", {
-      ascending: false
-    });
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("courses")
+      .select("*")
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
 
   if (error) {
-    console.error("Courses error:", error);
+    console.error(
+      "Courses error:",
+      error
+    );
+
     return;
   }
 
-  state.courses = data || [];
+  state.courses =
+    data || [];
 
-  renderCourses(state.courses);
+  renderCourses(
+    state.courses
+  );
 }
 
-function renderCourses(courses) {
-  const container = $("courseContainer");
+function renderCourses(
+  courses
+) {
+  const container =
+    $("courseContainer");
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   if (!courses.length) {
     container.innerHTML = `
       <div class="empty-state">
+
         <span>◇</span>
-        <strong>No courses available yet</strong>
+
+        <strong>
+          ${
+            state.language ===
+            "ar"
+              ? "لا توجد دورات متاحة حالياً"
+              : "No courses available yet"
+          }
+        </strong>
+
       </div>
     `;
 
     return;
   }
 
-  container.innerHTML = courses
-    .map(
-      (course) => `
-        <article class="course-card">
-          <div class="course-icon">◇</div>
+  container.innerHTML =
+    courses
+      .map(
+        (course) => `
+          <article class="course-card">
 
-          <h3>${escapeHtml(
-            course.title || "Course"
-          )}</h3>
+            <div class="course-icon">
+              ◇
+            </div>
 
-          <p>${escapeHtml(
-            course.description || ""
-          )}</p>
+            <h3>
+              ${escapeHtml(
+                course.title ||
+                  "Course"
+              )}
+            </h3>
 
-          <button
-            class="secondary-btn"
-            type="button"
-          >
-            Open Course
-          </button>
-        </article>
-      `
-    )
-    .join("");
+            <p>
+              ${escapeHtml(
+                course.description ||
+                  ""
+              )}
+            </p>
+
+            <button
+              class="secondary-btn"
+              type="button"
+            >
+              ${
+                state.language ===
+                "ar"
+                  ? "فتح الدورة"
+                  : "Open Course"
+              }
+            </button>
+
+          </article>
+        `
+      )
+      .join("");
 }
 
 
@@ -1526,40 +2750,62 @@ function renderCourses(courses) {
 ========================================================= */
 
 async function loadLive() {
-  const { data, error } = await supabaseClient
-    .from("live_sessions")
-    .select("*")
-    .order("created_at", {
-      ascending: false
-    })
-    .limit(1)
-    .maybeSingle();
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("live_sessions")
+      .select("*")
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      )
+      .limit(1)
+      .maybeSingle();
 
   if (error) {
-    console.error("Live error:", error);
+    console.error(
+      "Live error:",
+      error
+    );
+
     return;
   }
 
-  state.live = data;
+  state.live =
+    data;
 
-  renderLive(data);
+  renderLive(
+    data
+  );
 }
 
 function renderLive(data) {
-  const indicator = $("liveIndicator");
-  const title = $("liveTitleDisplay");
-  const description = $("liveDescriptionDisplay");
+  const indicator =
+    $("liveIndicator");
+
+  const title =
+    $("liveTitleDisplay");
+
+  const description =
+    $("liveDescriptionDisplay");
 
   const isLive =
     data &&
     (
       data.is_live === true ||
-      data.status === "live"
+      data.status ===
+        "live"
     );
 
   if (indicator) {
     indicator.textContent =
-      isLive ? "LIVE" : "OFFLINE";
+      isLive
+        ? "LIVE"
+        : "OFFLINE";
 
     indicator.classList.toggle(
       "offline",
@@ -1575,14 +2821,22 @@ function renderLive(data) {
   if (title) {
     title.textContent =
       isLive
-        ? data.title || "Habboub Live"
+        ? data.title ||
+          "Habboub Live"
+        : state.language ===
+          "ar"
+        ? "لا توجد جلسة مباشرة الآن"
         : "No live session right now";
   }
 
   if (description) {
     description.textContent =
       isLive
-        ? data.description || ""
+        ? data.description ||
+          ""
+        : state.language ===
+          "ar"
+        ? "ستظهر جلسة البث هنا عندما يبدأ المشرف جلسة."
         : "The live room will appear here when the admin starts a session.";
   }
 }
@@ -1594,7 +2848,10 @@ function renderLive(data) {
 
 function subscribeToUpdates() {
   supabaseClient
-    .channel("habboub-realtime")
+    .channel(
+      "habboub-realtime"
+    )
+
     .on(
       "postgres_changes",
       {
@@ -1606,6 +2863,7 @@ function subscribeToUpdates() {
         loadMarketAnalysis();
       }
     )
+
     .on(
       "postgres_changes",
       {
@@ -1617,6 +2875,7 @@ function subscribeToUpdates() {
         loadAnnouncements();
       }
     )
+
     .on(
       "postgres_changes",
       {
@@ -1628,6 +2887,7 @@ function subscribeToUpdates() {
         loadCourses();
       }
     )
+
     .on(
       "postgres_changes",
       {
@@ -1639,6 +2899,21 @@ function subscribeToUpdates() {
         loadLive();
       }
     )
+
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "trading_journal"
+      },
+      async () => {
+        if (state.user) {
+          await loadJournal();
+        }
+      }
+    )
+
     .subscribe();
 }
 
@@ -1648,86 +2923,154 @@ function subscribeToUpdates() {
 ========================================================= */
 
 function setupAI() {
-  $("openAIButton")?.addEventListener("click", () => {
-    $("aiWindow")?.classList.remove("hidden");
-  });
+  $("openAIButton")?.addEventListener(
+    "click",
+    () => {
+      $("aiWindow")
+        ?.classList.remove(
+          "hidden"
+        );
+    }
+  );
 
-  $("floatingAI")?.addEventListener("click", () => {
-    $("aiWindow")?.classList.toggle("hidden");
-  });
+  $("floatingAI")?.addEventListener(
+    "click",
+    () => {
+      $("aiWindow")
+        ?.classList.toggle(
+          "hidden"
+        );
+    }
+  );
 
-  $("closeAIButton")?.addEventListener("click", () => {
-    $("aiWindow")?.classList.add("hidden");
-  });
+  $("closeAIButton")?.addEventListener(
+    "click",
+    () => {
+      $("aiWindow")
+        ?.classList.add(
+          "hidden"
+        );
+    }
+  );
 
-  $("aiForm")?.addEventListener("submit", handleAI);
+  $("aiForm")?.addEventListener(
+    "submit",
+    handleAI
+  );
 }
 
 async function handleAI(event) {
   event.preventDefault();
 
-  const input = $("aiInput");
-  const messages = $("aiMessages");
+  const input =
+    $("aiInput");
 
-  if (!input || !messages) return;
+  const messages =
+    $("aiMessages");
 
-  const message = input.value.trim();
+  if (!input || !messages) {
+    return;
+  }
 
-  if (!message) return;
+  const message =
+    input.value.trim();
 
-  addAIMessage("user", message);
+  if (!message) {
+    return;
+  }
+
+  addAIMessage(
+    "user",
+    message
+  );
 
   input.value = "";
 
-  const response = buildLocalAIResponse(message);
+  const response =
+    buildLocalAIResponse(
+      message
+    );
 
   setTimeout(() => {
-    addAIMessage("bot", response);
+    addAIMessage(
+      "bot",
+      response
+    );
   }, 400);
 }
 
-function addAIMessage(type, text) {
-  const container = $("aiMessages");
+function addAIMessage(
+  type,
+  text
+) {
+  const container =
+    $("aiMessages");
 
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
-  const message = document.createElement("div");
+  const message =
+    document.createElement(
+      "div"
+    );
 
   message.className =
     `ai-message ${type}`;
 
   message.innerHTML = `
     <strong>
-      ${type === "bot" ? "Habboub" : "You"}
+      ${
+        type === "bot"
+          ? "Habboub"
+          : "You"
+      }
     </strong>
 
-    <p>${escapeHtml(text)}</p>
+    <p>
+      ${escapeHtml(
+        text
+      )}
+    </p>
   `;
 
-  container.appendChild(message);
+  container.appendChild(
+    message
+  );
 
   container.scrollTop =
     container.scrollHeight;
 }
 
-function buildLocalAIResponse(message) {
-  const text = message.toLowerCase();
+function buildLocalAIResponse(
+  message
+) {
+  const text =
+    message.toLowerCase();
 
   const score =
     state.analysis?.score ??
-    state.analysis?.habboub_score;
+    state.analysis
+      ?.habboub_score;
 
   const condition =
-    state.analysis?.market_condition ||
-    state.analysis?.condition;
+    state.analysis
+      ?.market_condition ||
+    state.analysis
+      ?.condition;
 
   const risk =
     state.analysis?.risk ||
-    state.analysis?.risk_level;
+    state.analysis
+      ?.risk_level;
 
   if (
-    text.includes("score") ||
-    text.includes("درجة")
+    text.includes(
+      "score"
+    ) ||
+    text.includes(
+      "درجة"
+    )
   ) {
     return `Current Habboub Score: ${
       score ?? "--"
@@ -1735,9 +3078,15 @@ function buildLocalAIResponse(message) {
   }
 
   if (
-    text.includes("risk") ||
-    text.includes("خطر") ||
-    text.includes("مخاطرة")
+    text.includes(
+      "risk"
+    ) ||
+    text.includes(
+      "خطر"
+    ) ||
+    text.includes(
+      "مخاطرة"
+    )
   ) {
     return `Current risk environment: ${
       risk ?? "--"
@@ -1745,8 +3094,15 @@ function buildLocalAIResponse(message) {
   }
 
   if (
-    text.includes("gold") ||
-    text.includes("xau")
+    text.includes(
+      "gold"
+    ) ||
+    text.includes(
+      "xau"
+    ) ||
+    text.includes(
+      "ذهب"
+    )
   ) {
     return `XAUUSD is currently being monitored through the Habboub market context. Current environment: ${
       condition ?? "--"
@@ -1762,46 +3118,89 @@ function buildLocalAIResponse(message) {
 ========================================================= */
 
 function updateClock() {
-  const now = new Date();
+  const now =
+    new Date();
 
-  const time = now.toLocaleTimeString(
-    "en-GB",
-    {
-      hour12: false
-    }
+  const time =
+    now.toLocaleTimeString(
+      "en-GB",
+      {
+        hour12: false
+      }
+    );
+
+  setText(
+    "sessionClock",
+    time
   );
 
-  setText("sessionClock", time);
+  const hour =
+    now.getUTCHours();
 
-  const hour = now.getUTCHours();
+  let session =
+    "Asia";
 
-  let session = "Asia";
-
-  if (hour >= 8 && hour < 13) {
-    session = "London";
-  } else if (hour >= 13 && hour < 21) {
-    session = "New York";
+  if (
+    hour >= 8 &&
+    hour < 13
+  ) {
+    session =
+      "London";
+  } else if (
+    hour >= 13 &&
+    hour < 21
+  ) {
+    session =
+      "New York";
   }
 
-  setText("sessionName", session);
+  setText(
+    "sessionName",
+    session
+  );
 }
 
 function updateSessionTimeline() {
-  const now = new Date();
-  const hour = now.getUTCHours();
+  const now =
+    new Date();
+
+  const hour =
+    now.getUTCHours();
 
   document
-    .querySelectorAll(".timeline-item")
+    .querySelectorAll(
+      ".timeline-item"
+    )
     .forEach((item) => {
-      item.classList.remove("current");
+      item.classList.remove(
+        "current"
+      );
     });
 
-  if (hour >= 0 && hour < 8) {
-    $("asiaSession")?.classList.add("current");
-  } else if (hour >= 8 && hour < 13) {
-    $("londonSession")?.classList.add("current");
-  } else if (hour >= 13 && hour < 21) {
-    $("newYorkSession")?.classList.add("current");
+  if (
+    hour >= 0 &&
+    hour < 8
+  ) {
+    $("asiaSession")
+      ?.classList.add(
+        "current"
+      );
+  } else if (
+    hour >= 8 &&
+    hour < 13
+  ) {
+    $("londonSession")
+      ?.classList.add(
+        "current"
+      );
+  } else if (
+    hour >= 13 &&
+    hour < 21
+  ) {
+    $("newYorkSession")
+      ?.classList.add(
+        "current"
+      );
   }
 }
 
@@ -1810,8 +3209,12 @@ function updateSessionTimeline() {
    HELPERS
 ========================================================= */
 
-function setText(id, value) {
-  const element = $(id);
+function setText(
+  id,
+  value
+) {
+  const element =
+    $(id);
 
   if (element) {
     element.textContent =
@@ -1822,63 +3225,121 @@ function setText(id, value) {
   }
 }
 
-function setMessage(id, message) {
-  const element = $(id);
+function setMessage(
+  id,
+  message
+) {
+  const element =
+    $(id);
 
   if (element) {
-    element.textContent = message || "";
+    element.textContent =
+      message || "";
   }
 }
 
-function showToast(message) {
-  const toast = $("toast");
+function clearMessage(id) {
+  setMessage(
+    id,
+    ""
+  );
+}
 
-  if (!toast) return;
+function showToast(
+  message
+) {
+  const toast =
+    $("toast");
 
-  toast.textContent = message;
+  if (!toast) {
+    return;
+  }
 
-  toast.classList.add("show");
+  toast.textContent =
+    message;
+
+  toast.classList.add(
+    "show"
+  );
 
   clearTimeout(
     showToast.timeout
   );
 
-  showToast.timeout = setTimeout(() => {
-    toast.classList.remove("show");
-  }, 3000);
+  showToast.timeout =
+    setTimeout(() => {
+      toast.classList.remove(
+        "show"
+      );
+    }, 3000);
 }
 
-function formatDate(value) {
-  if (!value) return "--";
+function formatDate(
+  value
+) {
+  if (!value) {
+    return "--";
+  }
 
-  const date = new Date(value);
+  const date =
+    new Date(value);
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return "--";
   }
 
   return date.toLocaleString(
-    state.language === "ar"
+    state.language ===
+      "ar"
       ? "ar"
       : "en",
     {
-      dateStyle: "medium",
-      timeStyle: "short"
+      dateStyle:
+        "medium",
+      timeStyle:
+        "short"
     }
   );
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+function escapeHtml(
+  value
+) {
+  return String(
+    value ?? ""
+  )
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
 }
 
-function escapeAttribute(value) {
-  return escapeHtml(value);
+function escapeAttribute(
+  value
+) {
+  return escapeHtml(
+    value
+  );
 }
 
 
