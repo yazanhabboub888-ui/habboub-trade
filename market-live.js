@@ -1,17 +1,17 @@
 /* =========================================================
    HABBOUB — MARKET WATCH LIVE FEEDS
    CFD / Futures selector
-   Lightweight live polling through the Vercel server proxy
+   Robust live polling through the Vercel market proxy
 ========================================================= */
 
 "use strict";
 
 (function () {
   const REFRESH_MS = 5000;
-  const QUOTE_PROXY = "/api/market-quote?symbol=";
   const SOURCE_KEY = "habboub_market_source";
   const SESSION_MARKET_KEY = "habboub_trading_session_symbol";
   const DEFAULT_SOURCE = "cfd";
+  const VERCEL_API_ORIGIN = "https://habboub-trade-ten.vercel.app";
 
   const SOURCES = {
     cfd: {
@@ -43,6 +43,15 @@
 
   function currentSymbol(market) {
     return SOURCES[getSource()][market.symbol];
+  }
+
+  function getQuoteUrl(symbol) {
+    const encoded = encodeURIComponent(symbol);
+    const sameOrigin = `${location.origin}/api/market-quote?symbol=${encoded}`;
+    const isStaticHost = /(^|\.)github\.io$/i.test(location.hostname) || location.protocol === "file:";
+    return isStaticHost
+      ? `${VERCEL_API_ORIGIN}/api/market-quote?symbol=${encoded}`
+      : sameOrigin;
   }
 
   function setText(id, value) {
@@ -158,9 +167,19 @@
 
   async function fetchQuote(market) {
     const symbol = currentSymbol(market);
-    const response = await fetch(`${QUOTE_PROXY}${encodeURIComponent(symbol)}&t=${Date.now()}`, { cache: "no-store", headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error(`${market.symbol} HTTP ${response.status}`);
-    const payload = await response.json();
+    const url = `${getQuoteUrl(symbol)}&t=${Date.now()}`;
+    const response = await fetch(url, { cache: "no-store", headers: { Accept: "application/json" } });
+    const raw = await response.text();
+
+    if (!response.ok) throw new Error(`${market.symbol} HTTP ${response.status}: ${raw.slice(0, 180)}`);
+
+    let payload;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      throw new Error(`${market.symbol} returned invalid JSON`);
+    }
+
     const meta = payload?.chart?.result?.[0]?.meta;
     if (!meta) throw new Error(`${market.symbol} returned no quote data`);
 
@@ -169,7 +188,8 @@
     if (!Number.isFinite(price)) throw new Error(`${market.symbol} returned invalid price`);
 
     const change = Number.isFinite(previous) && previous !== 0 ? ((price - previous) / previous) * 100 : NaN;
-    return { price, change, marketState: String(meta.marketState || "CLOSED").toUpperCase() };
+    const age = Number(meta.quoteAgeSeconds);
+    return { price, change, marketState: String(meta.marketState || "CLOSED").toUpperCase(), quoteAgeSeconds: Number.isFinite(age) ? age : null };
   }
 
   function render(market, quote) {
@@ -186,7 +206,9 @@
     });
 
     const live = ["REGULAR", "PRE", "POST"].includes(quote.marketState);
-    setStatus(market, live ? `● LIVE ${SOURCES[getSource()].label}` : "● MARKET CLOSED", live ? "live" : "closed");
+    const label = SOURCES[getSource()].label;
+    if (live) setStatus(market, `● LIVE ${label}`, "live");
+    else setStatus(market, `● MARKET CLOSED · ${label}`, "closed");
   }
 
   async function refresh(force = false) {
@@ -200,8 +222,9 @@
     const sourceAtStart = getSource();
 
     await Promise.all(MARKETS.map(async (market) => {
-      try { render(market, await fetchQuote(market)); }
-      catch (error) {
+      try {
+        render(market, await fetchQuote(market));
+      } catch (error) {
         setStatus(market, `● ${SOURCES[sourceAtStart].label} FEED ERROR`, "error");
         console.warn(`Habboub ${market.symbol} ${sourceAtStart} feed unavailable:`, error);
       }
