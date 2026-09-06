@@ -1,4 +1,5 @@
 /* ECONOVA — visible brand only. Internal Habboub identifiers remain unchanged. */
+/* Pages rebuild trigger: 2026-09-06 */
 (() => {
   "use strict";
   const BRAND = "ECONOVA";
