@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#05070a">
+  <title>ECONOVA — Member Access</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#05070a;--panel:#0b1017;--line:#202b38;--muted:#8491a2;--text:#f4f7fb;--accent:#36d9ff;--accent2:#7c6cff;--danger:#ff7d8b;--ok:#67e8a5}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at 15% 0%,rgba(54,217,255,.12),transparent 32%),radial-gradient(circle at 90% 10%,rgba(124,108,255,.12),transparent 30%),var(--bg);display:grid;place-items:center;padding:24px}
+    .shell{width:min(980px,100%);display:grid;grid-template-columns:1.1fr .9fr;border:1px solid var(--line);border-radius:26px;overflow:hidden;background:rgba(11,16,23,.88);box-shadow:0 35px 100px rgba(0,0,0,.45);backdrop-filter:blur(18px)}
+    .pitch{padding:52px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.mark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#fff;color:#05070a;font-weight:900}.brand strong{display:block;letter-spacing:.08em}.brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:.18em;margin-top:3px}.kicker{margin-top:60px;color:var(--accent);font-size:11px;letter-spacing:.18em;font-weight:800}.pitch h1{font-size:clamp(38px,5vw,64px);line-height:.98;margin:14px 0 20px;letter-spacing:-.05em}.pitch h1 span{display:block;background:linear-gradient(90deg,#fff,#9aa9bb);-webkit-background-clip:text;background-clip:text;color:transparent}.pitch p{max-width:520px;color:var(--muted);line-height:1.8;margin:0}.points{display:grid;gap:12px;margin-top:30px}.point{border-top:1px solid var(--line);padding-top:12px;color:#c7d0dc;font-size:13px}.point b{color:#fff}.panel{padding:38px;background:rgba(5,7,10,.45)}.panel h2{margin:0;font-size:28px}.panel>p{color:var(--muted);line-height:1.6;font-size:13px}.tabs{display:grid;grid-template-columns:1fr 1fr;padding:4px;border:1px solid var(--line);border-radius:12px;background:#070a0f;margin:24px 0}.tabs button{border:0;background:transparent;color:var(--muted);padding:11px;border-radius:9px;cursor:pointer;font-weight:800}.tabs button.active{background:#151d27;color:#fff}.field{margin:14px 0}.field label{display:block;font-size:12px;color:#9aa7b7;margin-bottom:7px}.field input{width:100%;border:1px solid var(--line);border-radius:11px;background:#070a0f;color:#fff;padding:13px 14px;outline:none}.field input:focus{border-color:#3b7485}.submit{width:100%;border:0;border-radius:11px;padding:14px;background:linear-gradient(90deg,#fff,#dce7f0);color:#05070a;font-weight:900;cursor:pointer;margin-top:8px}.submit:disabled{opacity:.55;cursor:wait}.message{min-height:44px;margin-top:15px;font-size:13px;line-height:1.5}.message.ok{color:var(--ok)}.message.err{color:var(--danger)}.back{display:block;text-align:center;margin-top:18px;color:var(--muted);font-size:12px;text-decoration:none}.back:hover{color:#fff}.legal{margin-top:24px;color:#667386;font-size:10px;line-height:1.6;text-align:center}@media(max-width:760px){.shell{grid-template-columns:1fr}.pitch{display:none}.panel{padding:30px 24px}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="pitch">
+      <a class="brand" href="visitor.html"><span class="mark">E</span><span><strong>ECONOVA</strong><small>AI ECONOMIC INTELLIGENCE</small></span></a>
+      <span class="kicker">MEMBER ENVIRONMENT</span>
+      <h1>Work with the market.<span>Not the noise.</span></h1>
+      <p>Access your ECONOVA workspace for market context, intelligence, journaling and the tools you have access to.</p>
+      <div class="points"><div class="point"><b>01</b> — Your workspace stays separate from the public experience.</div><div class="point"><b>02</b> — Tools are organized around the trading workflow.</div><div class="point"><b>03</b> — Access can later be tied to your active membership.</div></div>
+    </section>
+    <section class="panel">
+      <h2 id="title">Welcome back.</h2>
+      <p id="subtitle">Sign in to continue to your ECONOVA member environment.</p>
+      <div class="tabs"><button id="loginTab" class="active" type="button">Sign in</button><button id="registerTab" type="button">Create account</button></div>
+      <form id="authForm">
+        <div class="field"><label>Email</label><input id="email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" minlength="6" required placeholder="••••••••"></div>
+        <div class="field" id="confirmWrap" hidden><label>Confirm password</label><input id="confirm" type="password" autocomplete="new-password" minlength="6" placeholder="••••••••"></div>
+        <button class="submit" id="submit" type="submit">Sign in</button>
+      </form>
+      <div id="message" class="message"></div>
+      <a class="back" href="visitor.html">← Back to ECONOVA</a>
+      <div class="legal">ECONOVA is a decision-support environment and does not provide financial advice or guaranteed outcomes.</div>
+    </section>
+  </div>
+<script>
+const SUPABASE_URL='https://feoyjasuvrqxzhskqzye.supabase.co';
+const SUPABASE_KEY='sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0';
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id); let mode='login';
+function setMode(next){mode=next;const reg=mode==='register';$('loginTab').classList.toggle('active',!reg);$('registerTab').classList.toggle('active',reg);$('title').textContent=reg?'Create your ECONOVA account.':'Welcome back.';$('subtitle').textContent=reg?'Create your member account. Email verification may be required before access.':'Sign in to continue to your ECONOVA member environment.';$('confirmWrap').hidden=!reg;$('confirm').required=reg;$('submit').textContent=reg?'Create account':'Sign in';$('message').textContent='';$('message').className='message';}
+$('loginTab').onclick=()=>setMode('login');$('registerTab').onclick=()=>setMode('register');
+$('authForm').addEventListener('submit',async e=>{e.preventDefault();const email=$('email').value.trim();const password=$('password').value;const button=$('submit');const msg=$('message');button.disabled=true;msg.textContent='';msg.className='message';try{if(mode==='register'){if(password!==$('confirm').value)throw new Error('Passwords do not match.');const {data,error}=await client.auth.signUp({email,password});if(error)throw error;if(data.session){sessionStorage.removeItem('econova_member_check');location.href='index.html';return;}msg.textContent='Account created. Check your email to verify your account, then sign in.';msg.className='message ok';setMode('login');}else{const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;if(!data.session)throw new Error('No active session was created.');sessionStorage.removeItem('econova_member_check');location.href='index.html';}}catch(err){msg.textContent=err?.message||'Something went wrong. Please try again.';msg.className='message err';}finally{button.disabled=false;}});
+client.auth.getSession().then(({data})=>{if(data?.session?.user){location.replace('index.html');}});
+</script>
+</body>
+</html>
