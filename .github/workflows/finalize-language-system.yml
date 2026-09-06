@@ -20,18 +20,10 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-
-          # The public translator owns the public homepage. Remove the unused
-          # selector-based layer so two translators cannot fight over the same DOM.
           s = s.replace('  <script src="econova-language.js?v=20260906-1"></script>\n', '')
-
-          # Force browsers to fetch the current deterministic translator.
           s = s.replace('econova-public-i18n.js?v=20260906-1', 'econova-public-i18n.js?v=20260906-3')
-
-          # Member application gets the full dictionary only after authentication.
-          if 'i18n.js?v=20260906-1' not in s:
-              s = s.replace('</body>', '  <script src="i18n.js?v=20260906-1"></script>\n</body>', 1)
-
+          # i18n.js is loaded by visitor-gate.js only for authenticated members.
+          s = s.replace('  <script src="i18n.js?v=20260906-1"></script>\n', '')
           p.write_text(s, encoding='utf-8')
           PY
       - name: Commit
@@ -41,5 +33,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Finalize ECONOVA bilingual language system"
+          git commit -m "Keep public and member language systems isolated"
           git push
