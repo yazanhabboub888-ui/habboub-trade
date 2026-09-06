@@ -1,0 +1,37 @@
+name: Upgrade ECONOVA tools UI
+on:
+  push:
+    paths:
+      - 'econova-tools-upgrade.css'
+      - '.github/workflows/upgrade-tools.yml'
+permissions:
+  contents: write
+jobs:
+  patch-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch public tools cards
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          link='<link rel="stylesheet" href="econova-tools-upgrade.css?v=20260906-1">'
+          if link not in s:
+              s=s.replace('<link rel="stylesheet" href="visitor.css?v=20260906-5">','<link rel="stylesheet" href="visitor.css?v=20260906-5">'+link,1)
+          old='<div class="v-grid"><a class="v-card" href="service.html?product=livestream"><div class="v-card-icon">●</div><h3>Live Stream</h3><p>Follow live market sessions, commentary and context in a focused environment.</p><span class="v-card-link">Explore →</span></a><a class="v-card" href="service.html?product=journal"><div class="v-card-icon">▤</div><h3>Daily Journal</h3><p>Record daily trades or backtests quickly, keep context and build a useful performance record.</p><span class="v-card-link">Explore →</span></a><a class="v-card" href="service.html?product=decision"><div class="v-card-icon">✦</div><h3>Decision Support</h3><p>Organize market context before execution without turning ECONOVA into a signal service.</p><span class="v-card-link">Explore →</span></a><a class="v-card" href="service.html?product=intelligence"><div class="v-card-icon">◈</div><h3>Market Intelligence</h3><p>Market structure, institutional positioning, macro events and AI context in one layer.</p><span class="v-card-link">Explore →</span></a></div>'
+          new='''<div class="v-grid"><a class="v-card" href="service.html?product=livestream"><div class="tools-visual"><span class="tools-badge">LIVE</span><div class="tools-orb"></div><div class="tools-wave"></div><div class="tools-bars"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="tools-content"><span class="tools-eyebrow">01 · LIVE MARKET</span><h3>Live Stream</h3><p>جلسات مباشرة تجمع حركة السوق مع التعليق والسياق في تجربة واحدة هادئة ومركّزة.</p><span class="v-card-link">اكتشف الأداة →</span></div></a><a class="v-card" href="service.html?product=journal"><div class="tools-visual"><span class="tools-badge">REVIEW</span><div class="tools-orb"></div><div class="tools-wave"></div><div class="tools-bars"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="tools-content"><span class="tools-eyebrow">02 · PERFORMANCE</span><h3>Daily Journal</h3><p>سجّل صفقاتك والباك تست والسياق حولها، وابنِ سجلًا يرجع له أداؤك مع الوقت.</p><span class="v-card-link">اكتشف الأداة →</span></div></a><a class="v-card" href="service.html?product=decision"><div class="tools-visual"><span class="tools-badge">CONTEXT</span><div class="tools-orb"></div><div class="tools-wave"></div><div class="tools-bars"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="tools-content"><span class="tools-eyebrow">03 · DECISION</span><h3>Decision Support</h3><p>رتّب أهم معلومات السوق قبل التنفيذ، وخلّي قرارك مبنيًا على سياق بدل الضوضاء.</p><span class="v-card-link">اكتشف الأداة →</span></div></a><a class="v-card" href="service.html?product=intelligence"><div class="tools-visual"><span class="tools-badge">AI</span><div class="tools-orb"></div><div class="tools-wave"></div><div class="tools-bars"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="tools-content"><span class="tools-eyebrow">04 · INTELLIGENCE</span><h3>Market Intelligence</h3><p>Market Structure وPositioning وEconomic Events وAI Intelligence في طبقة واحدة.</p><span class="v-card-link">اكتشف الأداة →</span></div></a></div>'''
+          if old in s:
+              s=s.replace(old,new,1)
+          elif 'tools-visual' not in s:
+              raise SystemExit('Expected tools card markup was not found; refusing unsafe edit.')
+          p.write_text(s)
+          PY
+      - name: Commit generated patch
+        run: |
+          git config user.name 'ECONOVA Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Upgrade ECONOVA tools cards [skip ci]'
+          git push
