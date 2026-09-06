@@ -5,12 +5,13 @@
   window.__ECONOVA_HERO__=true;
 
   const copy={
-    en:{kicker:'ECONOVA MARKET INTELLIGENCE',title1:'Don’t trade like everyone else.',title2:'Understand the market differently.',lead:'Some see a candle. Some see a move. The few see the environment that created both. ECONOVA brings price action, market structure, economic news, institutional positioning and AI-assisted intelligence into one living view — for traders who refuse to stop at what is visible.',primary:'Explore ECONOVA',secondary:'See how it works',proof:['Market Condition 0–100','Live market intelligence','Context before conviction'],eyebrow:'LIVE MARKET CONDITION',label:'Market Condition',state:'The environment matters.',note:'Price, structure, macro, positioning and intelligence — brought together.',assets:['XAUUSD','NAS100','S&P 500'],condition:'CONDITION SCORE',live:'LIVE'},
-    ar:{kicker:'ECONOVA — استخبارات السوق',title1:'لا تتداول مثل الجميع.',title2:'افهم السوق على مستوى مختلف.',lead:'هناك من يرى شمعة. هناك من يرى حركة. وهناك من يرى البيئة التي صنعت الاثنين. ECONOVA تجمع حركة السعر، هيكل السوق، الأخبار الاقتصادية، تمركز المؤسسات والذكاء الاصطناعي في صورة حيّة واحدة — للمتداول الذي لا يكتفي بما هو ظاهر.',primary:'اكتشف ECONOVA',secondary:'شاهد كيف تعمل',proof:['حالة السوق من 0–100','استخبارات سوقية لحظية','السياق قبل القرار'],eyebrow:'حالة السوق الآن',label:'حالة السوق',state:'البيئة هي الأساس.',note:'السعر، الهيكل، الماكرو، التموضع والاستخبارات — في صورة واحدة.',assets:['XAUUSD','NAS100','S&P 500'],condition:'مؤشر الحالة',live:'مباشر'}
+    en:{kicker:'ECONOVA — MARKET INTELLIGENCE',title1:'Don’t trade like everyone else.',title2:'Understand the market differently.',lead:'Some see a candle. Some see a move. The few see the environment that created both. ECONOVA is for the trader who doesn’t settle for seeing the market — but wants to understand it.',primary:'Explore ECONOVA',secondary:'See how it works',proof:['Market Condition 0–100','Live market intelligence','Context before conviction'],eyebrow:'LIVE MARKET CONDITION',label:'Market Condition',state:'The environment matters.',note:'Price, structure, macro, positioning and intelligence — brought together.',assets:['XAUUSD','NAS100','S&P 500'],condition:'CONDITION SCORE',live:'LIVE'},
+    ar:{kicker:'ECONOVA — استخبارات السوق',title1:'لا تتداول مثل الجميع.',title2:'افهم السوق على مستوى مختلف.',lead:'هناك من يرى شمعة.\nهناك من يرى حركة.\nوهناك من يرى البيئة التي صنعت الاثنين.\n\nECONOVA للمتداول الذي لا يكتفي بأن يرى السوق — بل يريد أن يفهمه.',primary:'اكتشف ECONOVA',secondary:'شاهد كيف تعمل',proof:['حالة السوق من 0–100','استخبارات سوقية لحظية','السياق قبل القرار'],eyebrow:'حالة السوق الآن',label:'حالة السوق',state:'البيئة هي الأساس.',note:'السعر، الهيكل، الماكرو، التموضع والاستخبارات — في صورة واحدة.',assets:['XAUUSD','NAS100','S&P 500'],condition:'مؤشر الحالة',live:'مباشر'}
   };
 
   function lang(){return localStorage.getItem('habboub_language')==='ar'?'ar':'en'}
   function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  function formatLead(s){return esc(s).replace(/\n/g,'<br>')}
 
   function render(){
     const hero=document.querySelector('#econova-public-site .v-hero');
@@ -22,7 +23,7 @@
       <div class="econova-hero-copy">
         <span class="v-kicker econova-hero-kicker"><i></i>${esc(c.kicker)}</span>
         <h1>${esc(c.title1)}<br><span class="v-gradient">${esc(c.title2)}</span></h1>
-        <p class="v-lead">${esc(c.lead)}</p>
+        <p class="v-lead">${formatLead(c.lead)}</p>
         <div class="v-hero-actions">
           <a class="v-primary" href="auth.html">${esc(c.primary)}</a>
           <a class="v-secondary" href="#how-it-works">${esc(c.secondary)}</a>
@@ -33,9 +34,7 @@
         <div class="econova-condition-card">
           <div class="econova-condition-head"><span>${esc(c.eyebrow)}</span><span class="econova-live-dot"><i></i>${esc(c.live)}</span></div>
           <div class="econova-condition-body">
-            <div class="econova-condition-ring" style="--condition:76">
-              <div class="econova-ring-inner"><strong>76</strong><span>/100</span></div>
-            </div>
+            <div class="econova-condition-ring" style="--condition:76"><div class="econova-ring-inner"><strong>76</strong><span>/100</span></div></div>
             <div class="econova-condition-copy"><span>${esc(c.condition)}</span><h3>${esc(c.label)}</h3><strong>${esc(c.state)}</strong><p>${esc(c.note)}</p></div>
           </div>
           <div class="econova-condition-chart" aria-hidden="true"><span style="--h:24%"></span><span style="--h:31%"></span><span style="--h:27%"></span><span style="--h:43%"></span><span style="--h:39%"></span><span style="--h:54%"></span><span style="--h:49%"></span><span style="--h:68%"></span><span style="--h:61%"></span><span style="--h:78%"></span><span style="--h:72%"></span><span style="--h:86%"></span></div>
