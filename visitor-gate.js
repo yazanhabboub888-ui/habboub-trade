@@ -15,24 +15,6 @@
   const supabaseUrl='https://feoyjasuvrqxzhskqzye.supabase.co';
   const supabaseKey='sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0';
 
-  function loadPublicPolish(){
-    if(document.getElementById('econova-public-polish'))return;
-    const link=document.createElement('link');
-    link.id='econova-public-polish';
-    link.rel='stylesheet';
-    link.href='visitor-pro.css?v=20260906-2';
-    document.head.appendChild(link);
-  }
-
-  function loadMemberI18n(){
-    if(document.getElementById('econova-member-i18n'))return;
-    const s=document.createElement('script');
-    s.id='econova-member-i18n';
-    s.src='i18n.js?v=20260906-2';
-    s.async=false;
-    document.head.appendChild(s);
-  }
-
   function applyPublicTheme(){
     const light=localStorage.getItem('econova_theme')==='light';
     document.body.classList.toggle('v-light',light);
@@ -53,10 +35,7 @@
         return;
       }
       const lang=e.target.closest('#publicLang');
-      if(lang){
-        e.preventDefault();
-        if(window.EconovaPublicI18n?.toggleLanguage)window.EconovaPublicI18n.toggleLanguage();
-      }
+      if(lang){e.preventDefault();e.stopImmediatePropagation();if(window.EconovaPublicI18n?.toggleLanguage)window.EconovaPublicI18n.toggleLanguage();}
     },true);
     applyPublicTheme();
   }
@@ -68,7 +47,6 @@
       style.textContent='body.econova-public-mode>.topbar,body.econova-public-mode>#mobileNav,body.econova-public-mode>#loader,body.econova-public-mode>main>.page-section{display:none!important}body.econova-public-mode>main{display:block!important;max-width:none!important;margin:0!important;padding:0!important}body.econova-public-mode #econova-public-site{display:block!important}';
       document.head.appendChild(style);
     }
-    loadPublicPolish();
     document.body.classList.add('econova-public-mode');
     document.documentElement.classList.remove('econova-gating');
     installPublicControls();
@@ -79,21 +57,13 @@
   function memberMode(){
     document.body.classList.remove('econova-public-mode');
     document.documentElement.classList.remove('econova-gating');
-    loadMemberI18n();
+    const s=document.createElement('script');s.id='econova-member-i18n';s.src='i18n.js?v=20260906-2';s.async=false;document.head.appendChild(s);
   }
 
   async function boot(){
     if(!window.supabase?.createClient)return setTimeout(boot,25);
-    try{
-      const client=window.supabase.createClient(supabaseUrl,supabaseKey);
-      const {data}=await client.auth.getSession();
-      if(data?.session?.user)memberMode();else publicMode();
-    }catch(_){publicMode();}
+    try{const client=window.supabase.createClient(supabaseUrl,supabaseKey);const {data}=await client.auth.getSession();if(data?.session?.user)memberMode();else publicMode();}catch(_){publicMode();}
   }
-
-  function waitForBody(){
-    if(!document.body)return setTimeout(waitForBody,10);
-    boot();
-  }
+  function waitForBody(){if(!document.body)return setTimeout(waitForBody,10);boot();}
   waitForBody();
 })();
