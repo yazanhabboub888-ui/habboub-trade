@@ -1,55 +1,28 @@
-/* ECONOVA public/member gate.
-   Visitors stay on index.html and see the public homepage.
-   Authenticated users keep the existing trading application. */
+/* ECONOVA public/member routing gate. UX routing only; real authorization belongs in Supabase RLS. */
 (function(){
-  'use strict';
   if (window.__ECONOVA_GATE__) return;
   window.__ECONOVA_GATE__ = true;
-  const path = location.pathname.replace(/\/+$/, '');
-  const isApp = /(^|\/)index\.html$/.test(path) || path.endsWith('/habboub-trade');
+  const path = location.pathname.replace(/\\/+$/, '');
+  const isApp = /(^|\\/)index\\.html$/.test(path) || path.endsWith('/habboub-trade');
   if (!isApp) return;
 
+  const visitor = 'visitor.html';
   const supabaseUrl = 'https://feoyjasuvrqxzhskqzye.supabase.co';
   const supabaseKey = 'sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0';
 
-  function publicMode(){
-    if (!document.getElementById('econova-public-gate-style')) {
-      const style = document.createElement('style');
-      style.id = 'econova-public-gate-style';
-      style.textContent = `
-        body.econova-public-mode > .topbar,
-        body.econova-public-mode > #mobileNav,
-        body.econova-public-mode > #loader,
-        body.econova-public-mode > main > .page-section { display:none !important; }
-        body.econova-public-mode > main { display:block !important; max-width:none !important; margin:0 !important; padding:0 !important; }
-        body.econova-public-mode #econova-public-site { display:block !important; }
-      `;
-      document.head.appendChild(style);
-    }
-    document.body.classList.add('econova-public-mode');
-    document.documentElement.classList.remove('econova-gating');
-    window.EconovaPublicI18n?.apply(window.EconovaPublicI18n.getLang());
+  function redirect(){
+    if (!location.pathname.endsWith('/visitor.html')) location.replace(visitor);
   }
 
-  function memberMode(){
-    document.body.classList.remove('econova-public-mode');
-    document.documentElement.classList.remove('econova-gating');
-  }
-
-  async function boot(){
+  function boot(){
     if (!window.supabase?.createClient) return setTimeout(boot, 50);
     try {
       const client = window.supabase.createClient(supabaseUrl, supabaseKey);
-      const {data} = await client.auth.getSession();
-      if (data?.session?.user) memberMode();
-      else publicMode();
-    } catch (_) { publicMode(); }
+      client.auth.getSession().then(({data}) => {
+        if (data?.session?.user) return;
+        redirect();
+      }).catch(redirect);
+    } catch(e){ redirect(); }
   }
-
-  function waitForBody(){
-    if (!document.body) return setTimeout(waitForBody, 20);
-    document.documentElement.classList.add('econova-gating');
-    boot();
-  }
-  waitForBody();
+  boot();
 })();
