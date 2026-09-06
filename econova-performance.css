@@ -1,11 +1,14 @@
 /* ECONOVA — fast, calm first paint */
 html,body{overflow-x:hidden}
 html{background:#080b12}
-body{background:#080b12}
+body{background:#080b12;visibility:visible!important;opacity:1!important}
 
 /* Kill every legacy full-screen loading layer immediately. */
 #loader,#preloader,.loader,.loading-screen,.loading-overlay,.page-loader,.splash-screen,[data-loader],[data-preloader]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important}
-body.loading,body.is-loading,body.preloading,body.page-loading{overflow:auto!important}
+body.loading,body.is-loading,body.preloading,body.page-loading{overflow:auto!important;visibility:visible!important;opacity:1!important}
+
+/* The visitor homepage is the first paint. Never let an old app rule hide it. */
+#econova-public-site,.econova-public-site{display:block!important;visibility:visible!important;opacity:1!important}
 
 /* Keep the public page usable even if an old loader class remains on body. */
 body.loading::before,body.loading::after,body.is-loading::before,body.is-loading::after,body.preloading::before,body.preloading::after,body.page-loading::before,body.page-loading::after{display:none!important;content:none!important}
