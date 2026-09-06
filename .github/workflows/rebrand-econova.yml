@@ -1,0 +1,63 @@
+name: Rebrand Habboub to Econova
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rebrand:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply Econova brand
+        run: |
+          set -e
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          files = [
+              Path('index.html'),
+              Path('login.html'),
+              Path('admin.html'),
+              Path('script.js'),
+              Path('i18n.js'),
+              Path('profile-pro.js'),
+              Path('README.md'),
+          ]
+
+          for path in files:
+              if not path.exists():
+                  continue
+              text = path.read_text(encoding='utf-8')
+              text = re.sub(r'\bHABBOUB\b', 'ECONOVA', text)
+              text = re.sub(r'\bHabboub\b', 'Econova', text)
+              path.write_text(text, encoding='utf-8')
+
+          # Keep the lightweight storage/database identifiers untouched.
+          # Add the new visual brand asset to the main site when possible.
+          index = Path('index.html')
+          if index.exists():
+              text = index.read_text(encoding='utf-8')
+              if 'econova-brand.svg' not in text:
+                  marker = '<link rel="stylesheet" href="style.css">'
+                  if marker in text:
+                      text = text.replace(marker, marker + '\n  <link rel="preload" as="image" href="econova-brand.svg">', 1)
+              text = text.replace('class="brand-mark">E</span>', 'class="brand-mark econova-mark">E</span>')
+              index.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit rebrand
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html login.html admin.html script.js i18n.js profile-pro.js README.md econova-brand.svg
+          git diff --cached --quiet && exit 0
+          git commit -m "feat: rebrand platform as Econova"
+          git push
