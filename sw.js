@@ -1,13 +1,8 @@
-const CACHE = 'econova-shell-v1';
-const SHELL = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './econova-icon.svg'
-];
+const CACHE = 'econova-shell-v2';
+const SHELL = ['./','./index.html','./manifest.webmanifest','./econova-icon.svg'];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', event => {
@@ -23,16 +18,17 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  // Always prefer the network for HTML/navigation so stale black-screen markup cannot persist.
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => caches.match('./index.html')));
+    event.respondWith(fetch(request, {cache:'no-store'}).catch(() => caches.match('./index.html')));
     return;
   }
 
   event.respondWith(
     fetch(request).then(response => {
-      if (response.ok && ['style', 'script', 'image', 'font'].includes(request.destination)) {
+      if (response.ok && ['style','script','image','font'].includes(request.destination)) {
         const copy = response.clone();
-        caches.open(CACHE).then(cache => cache.put(request, copy));
+        caches.open(CACHE).then(cache => cache.put(request, copy)).catch(()=>{});
       }
       return response;
     }).catch(() => caches.match(request))
