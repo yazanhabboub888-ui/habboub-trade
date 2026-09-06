@@ -1,4 +1,4 @@
-/* ECONOVA — complete public EN/AR language switcher. */
+/* ECONOVA — complete public EN/AR language + theme switcher. */
 (() => {
   'use strict';
   if (window.__ECONOVA_PUBLIC_I18N__) return;
@@ -38,28 +38,59 @@
     'Trading Journal & Review':'سجل التداول والمراجعة','Build a consistent process for reviewing trades, ideas and market context.':'ابنِ طريقة ثابتة لمراجعة الصفقات والأفكار وسياق السوق.',
     'READY WHEN YOU ARE':'جاهز عندما تكون مستعدًا','Build a clearer trading workflow.':'ابنِ طريقة تداول أوضح.',
     'Explore the public experience, then create your account when you are ready to enter ECONOVA.':'استكشف التجربة العامة، ثم أنشئ حسابك عندما تكون مستعدًا للدخول إلى ECONOVA.',
-    'View membership':'عرض الاشتراك','Decision support, not financial advice.':'أداة لدعم القرار وليست نصيحة مالية.',
-    '© 2026 ECONOVA — AI ECONOMIC INTELLIGENCE':'© 2026 ECONOVA — الذكاء الاقتصادي بالذكاء الاصطناعي',
-    'Decision support, not financial advice.':'أداة لدعم القرار وليست نصيحة مالية.'
+    'View membership':'عرض الاشتراك','Decision support, not financial advice.':'أداة لدعم القرار وليست نصيحة مالية.','© 2026 ECONOVA — AI ECONOMIC INTELLIGENCE':'© 2026 ECONOVA — الذكاء الاقتصادي بالذكاء الاصطناعي'
   };
   const originals=new WeakMap();
   const root=()=>document.getElementById('econova-public-site');
+  function injectPublicStyle(){
+    if(document.getElementById('econova-public-ui-fix'))return;
+    const s=document.createElement('style');s.id='econova-public-ui-fix';
+    s.textContent=`
+      .econova-public-site .v-nav-inner{direction:ltr!important}
+      .econova-public-site .v-brand{margin-right:auto!important;margin-left:0!important;direction:ltr!important;white-space:nowrap!important}
+      .econova-public-site .v-links{direction:ltr!important;white-space:nowrap!important}
+      .econova-public-site .v-actions{direction:ltr!important;display:flex!important;align-items:center!important;gap:8px!important;white-space:nowrap!important}
+      .econova-public-site .v-actions .v-lang{min-width:46px!important;height:38px!important;padding:0 12px!important;border:1px solid var(--line)!important;border-radius:11px!important;background:var(--panel)!important;color:var(--text)!important;font-weight:800!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;box-shadow:0 6px 18px rgba(0,0,0,.12)!important;transition:.18s ease!important}
+      .econova-public-site .v-actions .v-lang:hover{border-color:rgba(54,217,255,.42)!important;background:rgba(54,217,255,.08)!important;color:var(--cyan)!important;transform:translateY(-1px)!important}
+      .econova-public-site .v-actions #publicTheme{font-size:17px!important;min-width:42px!important;padding:0!important}
+      html[dir="rtl"] .econova-public-site{direction:rtl!important}
+      html[dir="rtl"] .econova-public-site .v-nav-inner{direction:ltr!important}
+      html[dir="rtl"] .econova-public-site .v-links>a,html[dir="rtl"] .econova-public-site .v-drop>a{direction:rtl!important;text-align:right!important;unicode-bidi:isolate!important;white-space:nowrap!important}
+      html[dir="rtl"] .econova-public-site .v-drop-menu,html[dir="rtl"] .econova-public-site .v-drop-item{direction:rtl!important;text-align:right!important}
+      html[dir="rtl"] .econova-public-site .v-hero,html[dir="rtl"] .econova-public-site .v-section,html[dir="rtl"] .econova-public-site .v-cta{direction:rtl!important}
+      html[dir="rtl"] .econova-public-site .v-dashboard{direction:ltr!important;text-align:left!important}
+      html[dir="rtl"] .econova-public-site .v-section-head,html[dir="rtl"] .econova-public-site .v-card,html[dir="rtl"] .econova-public-site .v-cta{text-align:right!important}
+      body.v-light .econova-public-site .v-nav{background:rgba(255,255,255,.92)!important}
+      body.v-light .econova-public-site .v-actions .v-lang,body.v-light .econova-public-site .v-actions .v-login{color:#243244!important}
+      @media(max-width:900px){.econova-public-site .v-actions{gap:6px!important}.econova-public-site .v-actions .v-lang{min-width:42px!important;height:36px!important;padding:0 9px!important}.econova-public-site .v-actions .v-login,.econova-public-site .v-actions .v-start{display:none!important}.econova-public-site .v-menu-toggle{display:inline-flex!important}}
+      @media(max-width:700px){.econova-public-site .v-wrap{width:min(calc(100% - 28px),var(--max))!important}.econova-public-site .v-nav{height:68px!important}}
+    `;document.head.appendChild(s);
+  }
+  function applyTheme(){
+    let light=false;try{light=localStorage.getItem('econova_theme')==='light'}catch(_){ }
+    document.body.classList.toggle('v-light',light);document.body.classList.toggle('v-dark',!light);
+    const b=document.getElementById('publicTheme');
+    if(b){b.textContent=light?'☾':'☀';b.setAttribute('aria-label',light?'Switch to dark mode':'Switch to light mode');b.setAttribute('title',light?'Switch to dark mode':'Switch to light mode');}
+  }
   function translate(lang){
-    const r=root(); if(!r)return;
-    const ar=lang==='ar';
+    const r=root();if(!r)return;const ar=lang==='ar';
     const walker=document.createTreeWalker(r,NodeFilter.SHOW_TEXT,{acceptNode(n){const p=n.parentElement;if(!p||p.closest('script,style,noscript,template')||!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});
     const nodes=[];let n;while((n=walker.nextNode()))nodes.push(n);
     nodes.forEach(node=>{if(!originals.has(node))originals.set(node,node.nodeValue);const original=originals.get(node),clean=original.trim(),translated=T[clean];node.nodeValue=ar&&translated?original.replace(clean,translated):original;});
-    document.documentElement.lang=ar?'ar':'en';
-    document.documentElement.dir=ar?'rtl':'ltr';
-    document.body.classList.toggle('econova-ar',ar);document.body.classList.toggle('econova-en',!ar);
+    document.documentElement.lang=ar?'ar':'en';document.documentElement.dir=ar?'rtl':'ltr';document.body.classList.toggle('econova-ar',ar);document.body.classList.toggle('econova-en',!ar);
     document.querySelectorAll('#publicLang').forEach(b=>{b.textContent=ar?'EN':'عربي';b.setAttribute('aria-label',ar?'Switch to English':'التبديل إلى العربية');b.setAttribute('title',ar?'Switch to English':'التبديل إلى العربية');});
   }
   function getLang(){try{return localStorage.getItem('habboub_language')==='ar'?'ar':'en'}catch(_){return'en'}}
-  function setLang(lang){const l=lang==='ar'?'ar':'en';try{localStorage.setItem('habboub_language',l)}catch(_){}translate(l)}
-  document.addEventListener('click',e=>{const b=e.target.closest('#publicLang');if(!b)return;e.preventDefault();e.stopImmediatePropagation();setLang(getLang()==='ar'?'en':'ar')},true);
-  const observer=new MutationObserver(()=>{if(window.__ECONOVA_I18N_LOCK__)return;window.__ECONOVA_I18N_LOCK__=true;requestAnimationFrame(()=>{window.__ECONOVA_I18N_LOCK__=false;translate(getLang())})});
-  function boot(){translate(getLang());const r=root();if(r)observer.observe(r,{childList:true,subtree:true})}
-  window.EconovaPublicI18n={apply:translate,getLang,setLang,toggleLanguage:()=>setLang(getLang()==='ar'?'en':'ar')};
+  function setLang(lang){const l=lang==='ar'?'ar':'en';try{localStorage.setItem('habboub_language',l)}catch(_){}translate(l);applyTheme()}
+  function bindControls(){
+    if(window.__ECONOVA_PUBLIC_CONTROLS__)return;window.__ECONOVA_PUBLIC_CONTROLS__=true;
+    document.addEventListener('click',e=>{
+      const lang=e.target.closest('#publicLang');if(lang){e.preventDefault();e.stopImmediatePropagation();setLang(getLang()==='ar'?'en':'ar');return}
+      const theme=e.target.closest('#publicTheme');if(theme){e.preventDefault();e.stopImmediatePropagation();try{localStorage.setItem('econova_theme',document.body.classList.contains('v-light')?'dark':'light')}catch(_){document.body.classList.toggle('v-light')}applyTheme();return}
+    },true);
+  }
+  const observer=new MutationObserver(()=>{if(window.__ECONOVA_I18N_LOCK__)return;window.__ECONOVA_I18N_LOCK__=true;requestAnimationFrame(()=>{window.__ECONOVA_I18N_LOCK__=false;translate(getLang());applyTheme()})});
+  function boot(){injectPublicStyle();bindControls();translate(getLang());applyTheme();const r=root();if(r)observer.observe(r,{childList:true,subtree:true})}
+  window.EconovaPublicI18n={apply:translate,getLang,setLang,toggleLanguage:()=>setLang(getLang()==='ar'?'en':'ar'),applyTheme};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
