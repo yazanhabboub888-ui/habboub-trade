@@ -19,7 +19,7 @@
     if(document.getElementById('econova-tools-enhancer'))return;
     const s=document.createElement('script');
     s.id='econova-tools-enhancer';
-    s.src='econova-tools-enhancer.js?v=20260906-2';
+    s.src='econova-tools-enhancer.js?v=20260906-3';
     s.async=false;
     document.head.appendChild(s);
   }
