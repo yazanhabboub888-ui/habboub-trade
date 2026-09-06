@@ -20,7 +20,7 @@
     const link=document.createElement('link');
     link.id='econova-public-polish';
     link.rel='stylesheet';
-    link.href='visitor-pro.css?v=20260906-1';
+    link.href='visitor-pro.css?v=20260906-2';
     document.head.appendChild(link);
   }
 
@@ -33,6 +33,34 @@
     document.head.appendChild(s);
   }
 
+  function applyPublicTheme(){
+    const light=localStorage.getItem('econova_theme')==='light';
+    document.body.classList.toggle('v-light',light);
+    document.body.classList.toggle('v-dark',!light);
+    const b=document.getElementById('publicTheme');
+    if(b){b.textContent=light?'☾':'☀';b.setAttribute('aria-label',light?'Switch to dark mode':'Switch to light mode');b.setAttribute('title',light?'Switch to dark mode':'Switch to light mode');}
+  }
+
+  function installPublicControls(){
+    if(window.__ECONOVA_PUBLIC_CONTROLS__)return;
+    window.__ECONOVA_PUBLIC_CONTROLS__=true;
+    document.addEventListener('click',e=>{
+      const theme=e.target.closest('#publicTheme');
+      if(theme){
+        e.preventDefault();e.stopImmediatePropagation();
+        try{localStorage.setItem('econova_theme',document.body.classList.contains('v-light')?'dark':'light')}catch(_){document.body.classList.toggle('v-light')}
+        applyPublicTheme();
+        return;
+      }
+      const lang=e.target.closest('#publicLang');
+      if(lang){
+        e.preventDefault();
+        if(window.EconovaPublicI18n?.toggleLanguage)window.EconovaPublicI18n.toggleLanguage();
+      }
+    },true);
+    applyPublicTheme();
+  }
+
   function publicMode(){
     if(!document.getElementById('econova-public-gate-style')){
       const style=document.createElement('style');
@@ -43,7 +71,9 @@
     loadPublicPolish();
     document.body.classList.add('econova-public-mode');
     document.documentElement.classList.remove('econova-gating');
+    installPublicControls();
     window.EconovaPublicI18n?.apply(window.EconovaPublicI18n.getLang());
+    applyPublicTheme();
   }
 
   function memberMode(){
