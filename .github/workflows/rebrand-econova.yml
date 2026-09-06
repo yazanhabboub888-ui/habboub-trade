@@ -24,7 +24,16 @@ jobs:
           from pathlib import Path
           import re
 
-          files = [Path('index.html'), Path('login.html'), Path('admin.html'), Path('script.js'), Path('i18n.js'), Path('profile-pro.js'), Path('README.md')]
+          files = [
+              Path('index.html'),
+              Path('login.html'),
+              Path('admin.html'),
+              Path('script.js'),
+              Path('i18n.js'),
+              Path('profile-pro.js'),
+              Path('README.md'),
+          ]
+
           for path in files:
               if not path.exists():
                   continue
@@ -40,6 +49,15 @@ jobs:
                   marker = '<link rel="stylesheet" href="style.css">'
                   if marker in text:
                       text = text.replace(marker, marker + '\n  <link rel="preload" as="image" href="econova-brand.svg">', 1)
+              if 'econova-brand.css' not in text:
+                  marker = '<link rel="stylesheet" href="style.css">'
+                  if marker in text:
+                      text = text.replace(marker, marker + '\n  <link rel="stylesheet" href="econova-brand.css">', 1)
+              if 'econova-brand.js' not in text:
+                  marker = '<script src="script.js"></script>'
+                  if marker in text:
+                      text = text.replace(marker, marker + '\n  <script src="econova-brand.js"></script>', 1)
+              text = text.replace('class="brand-mark">E</span>', 'class="brand-mark econova-mark">E</span>')
               index.write_text(text, encoding='utf-8')
           PY
 
@@ -47,7 +65,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html login.html admin.html script.js i18n.js profile-pro.js README.md econova-brand.svg
+          git add index.html login.html admin.html script.js i18n.js profile-pro.js README.md econova-brand.svg econova-brand.css econova-brand.js
           git diff --cached --quiet && exit 0
           git commit -m "feat: rebrand platform as Econova"
           git push
