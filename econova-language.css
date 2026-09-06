@@ -1,0 +1,26 @@
+html[dir="rtl"] .econova-public-site,
+body.econova-ar .econova-public-site{font-family:Inter,"Noto Sans Arabic","Noto Sans",Arial,sans-serif}
+html[dir="rtl"] .econova-public-site .v-nav-inner{direction:rtl}
+html[dir="rtl"] .econova-public-site .v-links{direction:rtl}
+html[dir="rtl"] .econova-public-site .v-actions{direction:rtl}
+html[dir="rtl"] .econova-public-site .v-hero,
+html[dir="rtl"] .econova-public-site .v-section-head,
+html[dir="rtl"] .econova-public-site .v-card,
+html[dir="rtl"] .econova-public-site .v-cta{direction:rtl;text-align:right}
+html[dir="rtl"] .econova-public-site .v-hero-actions,
+html[dir="rtl"] .econova-public-site .v-proof{direction:rtl}
+html[dir="rtl"] .econova-public-site .v-proof{justify-content:flex-start}
+html[dir="rtl"] .econova-public-site .v-drop-menu{right:0;left:auto}
+html[dir="rtl"] .econova-public-site .v-drop-item{text-align:right;direction:rtl}
+html[dir="rtl"] .econova-public-site .v-drop-icon{margin-left:0;margin-right:0}
+html[dir="rtl"] .econova-public-site .v-card-link{direction:rtl}
+html[dir="rtl"] .econova-public-site .v-ring{direction:ltr}
+html[dir="rtl"] .econova-public-site .v-dashboard,
+html[dir="rtl"] .econova-public-site .v-mini-grid{direction:rtl}
+html[dir="rtl"] .econova-public-site .v-nav-tool span{display:inline-block}
+html[dir="rtl"] .econova-public-site h1{letter-spacing:0}
+html[dir="rtl"] .econova-public-site p,
+html[dir="rtl"] .econova-public-site h1,
+html[dir="rtl"] .econova-public-site h2,
+html[dir="rtl"] .econova-public-site h3{unicode-bidi:plaintext}
+html[dir="rtl"] .econova-public-site .v-footer-inner{direction:rtl}
