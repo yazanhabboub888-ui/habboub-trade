@@ -4,10 +4,18 @@
   if(window.__ECONOVA_GATE__) return;
   window.__ECONOVA_GATE__=true;
 
-  /* Critical rule: the visitor homepage must paint immediately. Only hide legacy chrome. */
+  /* Critical first-paint guard: the public homepage must be visible even if another legacy rule or auth script is slow. */
   const earlyStyle=document.createElement('style');
   earlyStyle.id='econova-gate-early-style';
-  earlyStyle.textContent='html.econova-gating body>.topbar,html.econova-gating body>#mobileNav,html.econova-gating body>#loader{display:none!important}';
+  earlyStyle.textContent=`
+    html.econova-gating body{visibility:visible!important;opacity:1!important}
+    html.econova-gating body>.topbar,
+    html.econova-gating body>#mobileNav,
+    html.econova-gating body>#loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+    body.econova-public-mode{visibility:visible!important;opacity:1!important}
+    body.econova-public-mode #loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+    body.econova-public-mode .econova-public-site{display:block!important;visibility:visible!important;opacity:1!important}
+  `;
   document.head.appendChild(earlyStyle);
 
   function installPWA(){
@@ -58,11 +66,10 @@
   function publicMode(){
     document.body.classList.add('econova-public-mode');
     document.documentElement.classList.remove('econova-gating');
-    /* Do not hide main sections: the public homepage is allowed to render naturally. */
     if(!document.getElementById('econova-public-gate-style')){
       const style=document.createElement('style');
       style.id='econova-public-gate-style';
-      style.textContent='body.econova-public-mode>.topbar,body.econova-public-mode>#mobileNav,body.econova-public-mode>#loader{display:none!important}';
+      style.textContent='body.econova-public-mode>.topbar,body.econova-public-mode>#mobileNav,body.econova-public-mode>#loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}body.econova-public-mode .econova-public-site{display:block!important;visibility:visible!important;opacity:1!important}';
       document.head.appendChild(style);
     }
     loadToolsEnhancer();
