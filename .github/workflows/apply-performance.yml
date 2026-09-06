@@ -1,12 +1,13 @@
 name: Apply ECONOVA performance fixes
+
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+
 permissions:
   contents: write
+
 jobs:
   patch:
-    if: ${{ !contains(github.event.head_commit.message, '[perf-fix]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +23,6 @@ jobs:
           if perf not in s:
               anchor='<link rel="stylesheet" href="style.css">'
               s=s.replace(anchor, anchor+tag, 1)
-          # Remove accidental duplicate copies of the public i18n script.
           import re
           pattern=r'\s*<script src="econova-public-i18n\.js\?v=20260906-4"></script>'
           matches=re.findall(pattern,s)
@@ -37,4 +37,4 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git diff --cached --quiet || git commit -m 'Improve ECONOVA first paint and loading [perf-fix]'
-          git push
+          git diff --cached --quiet || git push
