@@ -1,24 +1,28 @@
-/* ECONOVA public/member routing gate. */
+/* ECONOVA public/member routing gate. UX routing only; real authorization belongs in Supabase RLS. */
 (function(){
   if (window.__ECONOVA_GATE__) return;
   window.__ECONOVA_GATE__ = true;
-  const isApp = /(?:^|\/)index\.html(?:$|#|\?)/.test(location.pathname + location.search + location.hash) || location.pathname.endsWith('/habboub-trade/') || location.pathname.endsWith('/habboub-trade');
+  const path = location.pathname.replace(/\\/+$/, '');
+  const isApp = /(^|\\/)index\\.html$/.test(path) || path.endsWith('/habboub-trade');
   if (!isApp) return;
+
   const visitor = 'visitor.html';
-  const url = location.href;
-  if (sessionStorage.getItem('econova_member_check') === '1') return;
-  const load = () => {
-    if (!window.supabase?.createClient) return setTimeout(load, 50);
+  const supabaseUrl = 'https://feoyjasuvrqxzhskqzye.supabase.co';
+  const supabaseKey = 'sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0';
+
+  function redirect(){
+    if (!location.pathname.endsWith('/visitor.html')) location.replace(visitor);
+  }
+
+  function boot(){
+    if (!window.supabase?.createClient) return setTimeout(boot, 50);
     try {
-      const client = window.supabase.createClient('https://feoyjasuvrqxzhskqzye.supabase.co','sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0');
+      const client = window.supabase.createClient(supabaseUrl, supabaseKey);
       client.auth.getSession().then(({data}) => {
-        if (data?.session?.user) {
-          sessionStorage.setItem('econova_member_check','1');
-        } else {
-          location.replace(visitor);
-        }
-      }).catch(() => location.replace(visitor));
-    } catch(e) { location.replace(visitor); }
-  };
-  load();
+        if (data?.session?.user) return;
+        redirect();
+      }).catch(redirect);
+    } catch(e){ redirect(); }
+  }
+  boot();
 })();
