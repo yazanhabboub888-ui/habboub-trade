@@ -1,0 +1,21 @@
+{
+  "name": "ECONOVA — AI Economic Intelligence",
+  "short_name": "ECONOVA",
+  "description": "AI-powered economic and market intelligence workspace.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080b12",
+  "theme_color": "#080b12",
+  "icons": [
+    {
+      "src": "./econova-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
