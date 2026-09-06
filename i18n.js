@@ -24,14 +24,14 @@
       nav_markets: "Markets", nav_intelligence: "Intelligence", nav_news: "News", nav_journal: "Journal",
       nav_live: "Live", nav_academy: "Academy", system_online: "ECONOVA INTELLIGENCE ONLINE",
       hero_title_1: "Understand the market.", hero_title_2: "Trade with context.",
-      hero_description: "Econova combines market structure, ICT context, COT positioning, economic events and AI intelligence into one clear trading environment.",
+      hero_description: "Econova combines market structure, Market Structure, Institutional Positioning, economic events and AI intelligence into one clear trading environment.",
       open_session: "Open Trading Session", view_markets: "View Markets", current_score: "CURRENT ECONOVA SCORE",
       market_condition: "Market Condition", risk: "Risk", overview: "OVERVIEW", market_overview: "Market Overview",
       ai_context: "AI Context", click_intelligence: "Open Intelligence →", session: "SESSION", trading_session: "Trading Session",
       session_subtitle: "Everything you need for one trading session, in one place.", habboub_score: "Econova Score",
       score_explanation: "Score reflects the overall market environment, not a BUY/SELL command.", market_context: "Market Context",
       symbol: "Symbol", htf_bias: "HTF Bias", liquidity: "Liquidity", mss: "MSS", fvg: "FVG", environment: "Environment",
-      confidence: "Confidence", ict_context: "ICT Context", cot_positioning: "COT Positioning", session_timeline: "Session Timeline",
+      confidence: "Confidence", ict_context: "Market Structure", cot_positioning: "Institutional Positioning", session_timeline: "Session Timeline",
       why_score: "Why is the score here?", full_analysis: "Full Analysis →", waiting: "Waiting for data",
       waiting_analysis: "Econova will display the main factors here.", markets: "MARKETS", markets_title: "Market Watch",
       markets_subtitle: "Monitor the assets that matter.", intelligence_title: "Market Intelligence",
@@ -106,14 +106,14 @@
   const legacyText = {
     "Home": "nav_home", "Trading Session": "nav_session", "Markets": "nav_markets", "Intelligence": "nav_intelligence",
     "News": "nav_news", "Journal": "nav_journal", "Live": "nav_live", "Academy": "nav_academy",
-    "TRADING INTELLIGENCE": "nav_intelligence", "ECONOVA INTELLIGENCE ONLINE": "system_online",
+    "AI ECONOMIC INTELLIGENCE": "nav_intelligence", "ECONOVA INTELLIGENCE ONLINE": "system_online",
     "Understand the market.": "hero_title_1", "Trade with context.": "hero_title_2", "Open Trading Session": "open_session",
     "View Markets": "view_markets", "CURRENT ECONOVA SCORE": "current_score", "Market Condition": "market_condition",
     "Risk": "risk", "OVERVIEW": "overview", "Market Overview": "market_overview", "AI Context": "ai_context",
     "Open Intelligence →": "click_intelligence", "SESSION": "session", "Trading Session": "trading_session",
     "Econova Score": "habboub_score", "Market Context": "market_context", "Symbol": "symbol", "HTF Bias": "htf_bias",
     "Liquidity": "liquidity", "MSS": "mss", "FVG": "fvg", "Environment": "environment", "Confidence": "confidence",
-    "ICT Context": "ict_context", "COT Positioning": "cot_positioning", "Session Timeline": "session_timeline",
+    "Market Structure": "ict_context", "Institutional Positioning": "cot_positioning", "Session Timeline": "session_timeline",
     "Why is the score here?": "why_score", "Full Analysis →": "full_analysis", "Waiting for data": "waiting",
     "Market Watch": "markets_title", "Monitor the assets that matter.": "markets_subtitle", "Gold": "gold",
     "Nasdaq 100": "nasdaq_100", "Euro / Dollar": "euro_dollar", "Bitcoin": "bitcoin", "External feed": "external_feed",
@@ -155,7 +155,7 @@
       if (dictionary[lang][key] !== undefined) el.setAttribute("placeholder", dictionary[lang][key]);
     });
 
-    const title = lang === "ar" ? "Econova — ذكاء التداول" : "Econova — Trading Intelligence";
+    const title = lang === "ar" ? "Econova — ذكاء التداول" : "Econova — AI ECONOMIC INTELLIGENCE";
     document.title = title;
 
     document.querySelectorAll("#langEN, #langAR").forEach((btn) => {
