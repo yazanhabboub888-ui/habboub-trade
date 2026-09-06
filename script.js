@@ -1,5 +1,5 @@
 /* =========================================================
-   HABBOUB — MAIN SCRIPT
+   ECONOVA — MAIN SCRIPT
    Stable frontend + Supabase
    Loader-safe version
 ========================================================= */
@@ -35,15 +35,15 @@ try {
         SUPABASE_KEY
       );
 
-    console.log("Habboub: Supabase initialized.");
+    console.log("Econova: Supabase initialized.");
   } else {
     console.warn(
-      "Habboub: Supabase CDN was not loaded."
+      "Econova: Supabase CDN was not loaded."
     );
   }
 } catch (error) {
   console.error(
-    "Habboub: Supabase initialization failed:",
+    "Econova: Supabase initialization failed:",
     error
   );
 }
@@ -177,7 +177,7 @@ const translations = {
       "Enter your account to continue.",
 
     register_subtitle:
-      "Join Habboub Intelligence.",
+      "Join Econova Intelligence.",
 
     full_name:
       "Full Name",
@@ -262,7 +262,7 @@ const translations = {
       "أدخل بيانات حسابك للمتابعة.",
 
     register_subtitle:
-      "انضم إلى Habboub Intelligence.",
+      "انضم إلى Econova Intelligence.",
 
     full_name:
       "الاسم الكامل",
@@ -447,7 +447,7 @@ async function init() {
     if (!supabaseClient) {
 
       console.warn(
-        "Habboub: Running without Supabase."
+        "Econova: Running without Supabase."
       );
 
       return;
@@ -487,7 +487,7 @@ async function init() {
     ]).then(() => {
 
       console.log(
-        "Habboub: Background data loading finished."
+        "Econova: Background data loading finished."
       );
 
     }).catch((error) => {
@@ -515,7 +515,7 @@ async function init() {
   } catch (error) {
 
     console.error(
-      "Habboub initialization error:",
+      "Econova initialization error:",
       error
     );
 
@@ -1049,7 +1049,7 @@ function setupAuthUI() {
         ) => {
 
           console.log(
-            "Habboub Auth Event:",
+            "Econova Auth Event:",
             event
           );
 

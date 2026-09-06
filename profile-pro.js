@@ -1,4 +1,4 @@
-/* Habboub — Premium Profile UI
+/* Econova — Premium Profile UI
    Lightweight by design: email/phone/avatar stay references in Auth/Profile.
 */
 (() => {
