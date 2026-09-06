@@ -1,23 +1,22 @@
-/* ECONOVA — fast, calm first paint */
+/* ECONOVA — public-first rendering / no black screen */
 html,body{overflow-x:hidden}
-html{background:#080b12}
-body{background:#080b12;visibility:visible!important;opacity:1!important}
+html{background:#080b12!important}
+body{background:#080b12!important;visibility:visible!important;opacity:1!important}
 
-/* Kill every legacy full-screen loading layer immediately. */
+/* Legacy loader can never cover the public homepage. */
 #loader,#preloader,.loader,.loading-screen,.loading-overlay,.page-loader,.splash-screen,[data-loader],[data-preloader]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important}
 body.loading,body.is-loading,body.preloading,body.page-loading{overflow:auto!important;visibility:visible!important;opacity:1!important}
-
-/* The visitor homepage is the first paint. Never let an old app rule hide it. */
-#econova-public-site,.econova-public-site{display:block!important;visibility:visible!important;opacity:1!important}
-
-/* Keep the public page usable even if an old loader class remains on body. */
 body.loading::before,body.loading::after,body.is-loading::before,body.is-loading::after,body.preloading::before,body.preloading::after,body.page-loading::before,body.page-loading::after{display:none!important;content:none!important}
 
-/* Do not slow first paint with blanket animations. Only tune the expensive Tools visuals. */
+/* Critical: the new public ECONOVA shell is independent of the old app section system. */
+#econova-public-site,.econova-public-site{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:1!important}
+body.econova-app-page>main{display:block!important;visibility:visible!important;opacity:1!important}
+body.econova-public-mode>.topbar,body.econova-public-mode>#mobileNav,body.econova-public-mode>#loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+
+/* Keep first paint cheap. */
 #tools .tools-orb,#tools .tools-wave,#tools .tools-bars,#tools .tools-badge{animation-duration:2.4s!important}
 #tools .tools-visual::after{animation-duration:8s!important}
 
-/* Reduce expensive effects on phones while preserving the premium look. */
 @media(max-width:700px){
   #tools .tools-visual::after{animation:none!important}
   #tools .v-card{box-shadow:0 10px 30px rgba(0,0,0,.18)!important}
