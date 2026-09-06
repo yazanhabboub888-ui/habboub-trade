@@ -1,6 +1,8 @@
 /* ECONOVA — complete public EN/AR language switcher. */
 (() => {
   'use strict';
+  if (window.__ECONOVA_PUBLIC_I18N__) return;
+  window.__ECONOVA_PUBLIC_I18N__ = true;
   const T={
     'Tools':'الأدوات','How it works':'كيف يعمل','Membership':'الاشتراك','Stories':'التجارب','Education':'التعليم','Log in':'تسجيل الدخول','Get started':'ابدأ الآن',
     'AI ECONOMIC INTELLIGENCE':'الذكاء الاقتصادي بالذكاء الاصطناعي','ECONOVA INTELLIGENCE':'ذكاء ECONOVA','See the market.':'شوف السوق.','Before you trade.':'قبل ما تتداول.',
@@ -51,7 +53,7 @@
     document.documentElement.lang=ar?'ar':'en';
     document.documentElement.dir=ar?'rtl':'ltr';
     document.body.classList.toggle('econova-ar',ar);document.body.classList.toggle('econova-en',!ar);
-    document.querySelectorAll('#publicLang').forEach(b=>{b.textContent=ar?'EN':'عربي';b.setAttribute('aria-label',ar?'Switch to English':'التبديل إلى العربية');});
+    document.querySelectorAll('#publicLang').forEach(b=>{b.textContent=ar?'EN':'عربي';b.setAttribute('aria-label',ar?'Switch to English':'التبديل إلى العربية');b.setAttribute('title',ar?'Switch to English':'التبديل إلى العربية');});
   }
   function getLang(){try{return localStorage.getItem('habboub_language')==='ar'?'ar':'en'}catch(_){return'en'}}
   function setLang(lang){const l=lang==='ar'?'ar':'en';try{localStorage.setItem('habboub_language',l)}catch(_){}translate(l)}
