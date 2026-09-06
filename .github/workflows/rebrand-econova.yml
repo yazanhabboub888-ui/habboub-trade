@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Apply Econova brand
+      - name: Apply Econova brand and interface
         run: |
           set -e
           python3 - <<'PY'
@@ -40,32 +40,37 @@ jobs:
               text = path.read_text(encoding='utf-8')
               text = re.sub(r'\bHABBOUB\b', 'ECONOVA', text)
               text = re.sub(r'\bHabboub\b', 'Econova', text)
+              text = re.sub(r'\bTRADING INTELLIGENCE\b', 'AI ECONOMIC INTELLIGENCE', text, flags=re.I)
+              text = re.sub(r'\bICT Context\b', 'Market Structure', text, flags=re.I)
+              text = re.sub(r'\bCOT Positioning\b', 'Institutional Positioning', text, flags=re.I)
               path.write_text(text, encoding='utf-8')
 
           index = Path('index.html')
           if index.exists():
               text = index.read_text(encoding='utf-8')
-              if 'econova-brand.svg' not in text:
-                  marker = '<link rel="stylesheet" href="style.css">'
-                  if marker in text:
-                      text = text.replace(marker, marker + '\n  <link rel="preload" as="image" href="econova-brand.svg">', 1)
-              if 'econova-brand.css' not in text:
-                  marker = '<link rel="stylesheet" href="style.css">'
-                  if marker in text:
-                      text = text.replace(marker, marker + '\n  <link rel="stylesheet" href="econova-brand.css">', 1)
-              if 'econova-brand.js' not in text:
-                  marker = '<script src="script.js"></script>'
-                  if marker in text:
-                      text = text.replace(marker, marker + '\n  <script src="econova-brand.js"></script>', 1)
+              marker = '<link rel="stylesheet" href="style.css">'
+              if 'econova-brand.css' not in text and marker in text:
+                  text = text.replace(marker, marker + '\n  <link rel="stylesheet" href="econova-brand.css">', 1)
+              if 'econova-home.css' not in text and marker in text:
+                  text = text.replace(marker, marker + '\n  <link rel="stylesheet" href="econova-home.css?v=20260906">', 1)
+              script_marker = '<script src="script.js"></script>'
+              if 'econova-brand.js' not in text and script_marker in text:
+                  text = text.replace(script_marker, script_marker + '\n<script src="econova-brand.js"></script>', 1)
+              if 'econova-interface.js' not in text and script_marker in text:
+                  text = text.replace(script_marker, script_marker + '\n<script src="econova-interface.js?v=20260906"></script>', 1)
+              text = text.replace('class="brand-mark">H</span>', 'class="brand-mark econova-mark">E</span>')
               text = text.replace('class="brand-mark">E</span>', 'class="brand-mark econova-mark">E</span>')
+              text = text.replace('>HABBOUB INTELLIGENCE ONLINE<', '>ECONOVA INTELLIGENCE ONLINE<')
+              text = text.replace('CURRENT HABBOUB SCORE', 'CURRENT ECONOVA SCORE')
+              text = text.replace('Habboub Score', 'Econova Score')
               index.write_text(text, encoding='utf-8')
           PY
 
-      - name: Commit rebrand
+      - name: Commit interface changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html login.html admin.html script.js i18n.js profile-pro.js README.md econova-brand.svg econova-brand.css econova-brand.js
+          git add index.html login.html admin.html script.js i18n.js profile-pro.js README.md econova-brand.svg econova-brand.css econova-brand.js econova-home.css econova-interface.js
           git diff --cached --quiet && exit 0
-          git commit -m "feat: rebrand platform as Econova"
+          git commit -m "feat: polish Econova interface and terminology"
           git push
