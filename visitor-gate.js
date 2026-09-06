@@ -8,6 +8,44 @@
   earlyStyle.id='econova-gate-early-style';
   earlyStyle.textContent='html.econova-gating body>.topbar,html.econova-gating body>#mobileNav,html.econova-gating body>#loader,html.econova-gating body>main>.page-section{display:none!important}';
   document.head.appendChild(earlyStyle);
+
+  // ECONOVA PWA / Add to Home Screen setup.
+  // Kept here so it loads before the public/member gate finishes and works on GitHub Pages paths.
+  function installPWA(){
+    if(!document.querySelector('link[rel="manifest"]')){
+      const manifest=document.createElement('link');
+      manifest.rel='manifest';
+      manifest.href='manifest.webmanifest?v=20260906-1';
+      document.head.appendChild(manifest);
+    }
+    if(!document.querySelector('link[rel="apple-touch-icon"]')){
+      const appleIcon=document.createElement('link');
+      appleIcon.rel='apple-touch-icon';
+      appleIcon.href='econova-icon.svg?v=20260906-1';
+      document.head.appendChild(appleIcon);
+    }
+    const metas=[
+      ['mobile-web-app-capable','yes'],
+      ['apple-mobile-web-app-capable','yes'],
+      ['apple-mobile-web-app-status-bar-style','black-translucent'],
+      ['apple-mobile-web-app-title','ECONOVA']
+    ];
+    metas.forEach(([name,content])=>{
+      if(!document.querySelector(`meta[name="${name}"]`)){
+        const meta=document.createElement('meta');
+        meta.name=name;
+        meta.content=content;
+        document.head.appendChild(meta);
+      }
+    });
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(()=>{});
+      },{once:true});
+    }
+  }
+  installPWA();
+
   const path=location.pathname.replace(/\/+$/,'');
   const isApp=/(^|\/)index\.html$/.test(path)||path.endsWith('/habboub-trade');
   if(!isApp)return;
