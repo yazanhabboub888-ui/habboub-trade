@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 140" role="img" aria-labelledby="title desc">
+  <title id="title">ECONOVA</title>
+  <desc id="desc">ECONOVA AI Economic Intelligence logo</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#36d9ff"/>
+      <stop offset="1" stop-color="#477dff"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(8 8)">
+    <rect width="124" height="124" rx="30" fill="#0b1016" stroke="url(#g)" stroke-width="3"/>
+    <path d="M82 33H51c-13 0-24 11-24 24s11 24 24 24h31" fill="none" stroke="url(#g)" stroke-width="12" stroke-linecap="round" filter="url(#glow)"/>
+    <path d="M42 81V43m0 38 34-38v38" fill="none" stroke="#f5f7fa" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="88" cy="91" r="7" fill="#29d391" filter="url(#glow)"/>
+  </g>
+  <g transform="translate(158 43)">
+    <text x="0" y="38" fill="#f5f7fa" font-family="Inter,Arial,sans-serif" font-size="48" font-weight="800" letter-spacing="4">ECONOVA</text>
+    <text x="3" y="67" fill="#8d98a6" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="600" letter-spacing="3">AI ECONOMIC INTELLIGENCE</text>
+  </g>
+</svg>
