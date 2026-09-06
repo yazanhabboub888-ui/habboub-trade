@@ -39,6 +39,7 @@ jobs:
               text = text.replace(marker, marker + '\n  ' + tag, 1)
 
           add_after('<link rel="stylesheet" href="style.css">', '<link rel="stylesheet" href="mobile-polish.css">')
+          add_after('<link rel="stylesheet" href="mobile-polish.css">', '<link rel="stylesheet" href="profile-pro.css">')
           add_after('<script src="script.js"></script>', '<script src="news-intelligence.js"></script>')
           add_after('<script src="news-intelligence.js"></script>', '<script src="news-consensus.js"></script>')
           add_after('<script src="news-consensus.js"></script>', '<script src="trading-session-market.js"></script>')
