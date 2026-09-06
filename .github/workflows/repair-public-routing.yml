@@ -1,0 +1,76 @@
+name: Repair ECONOVA public routing
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Repair static entry files
+        shell: bash
+        run: |
+          set -e
+          changed=0
+
+          # Remove accidental Markdown fences that can turn index.html into invalid HTML.
+          if [ -f index.html ]; then
+            sed -i '1{/^```html[[:space:]]*$/d;}' index.html
+            sed -i '${/^```[[:space:]]*$/d;}' index.html
+          fi
+
+          # Public visitors must reach member auth, not the gated app route.
+          if [ -f visitor.html ]; then
+            sed -i 's#href="index.html"#href="auth.html"#g' visitor.html
+          fi
+
+          # Do not trust a stale per-tab auth cache. The gate checks Supabase every time.
+          cat > visitor-gate.js <<'EOF'
+          /* ECONOVA public/member routing gate. UX routing only; real authorization belongs in Supabase RLS. */
+          (function(){
+            if (window.__ECONOVA_GATE__) return;
+            window.__ECONOVA_GATE__ = true;
+            const path = location.pathname.replace(/\\/+$/, '');
+            const isApp = /(^|\\/)index\\.html$/.test(path) || path.endsWith('/habboub-trade');
+            if (!isApp) return;
+
+            const visitor = 'visitor.html';
+            const supabaseUrl = 'https://feoyjasuvrqxzhskqzye.supabase.co';
+            const supabaseKey = 'sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0';
+
+            function redirect(){
+              if (!location.pathname.endsWith('/visitor.html')) location.replace(visitor);
+            }
+
+            function boot(){
+              if (!window.supabase?.createClient) return setTimeout(boot, 50);
+              try {
+                const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+                client.auth.getSession().then(({data}) => {
+                  if (data?.session?.user) return;
+                  redirect();
+                }).catch(redirect);
+              } catch(e){ redirect(); }
+            }
+            boot();
+          })();
+          EOF
+
+          git diff --quiet || changed=1
+          if [ "$changed" -eq 1 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add index.html visitor.html visitor-gate.js
+            git commit -m "Fix ECONOVA public and member routing"
+            git push
+          else
+            echo "No routing repair needed."
+          fi
