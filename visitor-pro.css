@@ -6,31 +6,42 @@
 .econova-public-mode .v-mark{width:40px;height:40px;border-radius:12px;box-shadow:0 8px 25px rgba(54,217,255,.14);font-size:16px}
 .econova-public-mode .v-brand strong{font-size:14px;letter-spacing:1.8px}
 .econova-public-mode .v-brand small{font-size:8px;letter-spacing:1.55px;margin-top:1px}
-.econova-public-mode .v-links{gap:4px;margin:auto}
-.econova-public-mode .v-links>a,.econova-public-mode .v-drop>a{padding:10px 13px;border:1px solid transparent;border-radius:11px;color:#9da9b8;font-size:12px;font-weight:700;transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease}
+.econova-public-mode .v-links{gap:4px;margin:auto;direction:ltr}
+.econova-public-mode .v-links>a,.econova-public-mode .v-drop>a{padding:10px 13px;border:1px solid transparent;border-radius:11px;color:#9da9b8;font-size:12px;font-weight:700;transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;direction:ltr;white-space:nowrap}
 .econova-public-mode .v-links>a:hover,.econova-public-mode .v-drop:hover>a{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.08);color:#f4f7fb;transform:translateY(-1px)}
-.econova-public-mode .v-actions{gap:8px}
-.econova-public-mode .v-lang{height:40px;min-width:40px;padding:0 11px;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:rgba(255,255,255,.035);color:#b5c0ce;transition:.18s ease}
-.econova-public-mode .v-lang:hover{background:rgba(255,255,255,.07);border-color:rgba(54,217,255,.22);color:#fff}
-.econova-public-mode .v-login{height:40px;display:flex;align-items:center;padding:0 15px;border:1px solid rgba(255,255,255,.09);border-radius:11px;color:#d8e0ea;font-size:12px;font-weight:800;transition:.18s ease}
-.econova-public-mode .v-login:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16)}
-.econova-public-mode .v-start{height:40px;display:flex;align-items:center;padding:0 17px;border-radius:11px;background:linear-gradient(135deg,#36d9ff,#477dff);box-shadow:0 8px 24px rgba(54,217,255,.14);font-size:12px;letter-spacing:.01em;transition:transform .18s ease,box-shadow .18s ease}
+.econova-public-mode .v-actions{gap:8px;direction:ltr;flex-shrink:0}
+.econova-public-mode .v-lang{height:40px;min-width:42px;padding:0 12px;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:rgba(255,255,255,.035);color:#b5c0ce;transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;font:700 11px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.econova-public-mode .v-lang:hover{background:rgba(255,255,255,.07);border-color:rgba(54,217,255,.22);color:#fff;transform:translateY(-1px)}
+.econova-public-mode #publicLang{min-width:66px;letter-spacing:.02em}
+.econova-public-mode #publicTheme{min-width:42px;font-size:14px}
+.econova-public-mode .v-login{height:40px;display:flex;align-items:center;padding:0 15px;border:1px solid rgba(255,255,255,.09);border-radius:11px;color:#d8e0ea;font-size:12px;font-weight:800;transition:.18s ease;white-space:nowrap}
+.econova-public-mode .v-login:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.16);transform:translateY(-1px)}
+.econova-public-mode .v-start{height:40px;display:flex;align-items:center;padding:0 17px;border-radius:11px;background:linear-gradient(135deg,#36d9ff,#477dff);box-shadow:0 8px 24px rgba(54,217,255,.14);font-size:12px;letter-spacing:.01em;transition:transform .18s ease,box-shadow .18s ease;white-space:nowrap}
 .econova-public-mode .v-start:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(54,217,255,.22)}
-.econova-public-mode .v-drop-menu{top:calc(100% + 12px);width:350px;padding:8px;background:rgba(10,15,22,.97);border-color:rgba(255,255,255,.09);box-shadow:0 25px 70px rgba(0,0,0,.52);backdrop-filter:blur(18px)}
-.econova-public-mode .v-drop-item{padding:12px;border-radius:12px;transition:.16s ease}
+.econova-public-mode .v-drop-menu{top:calc(100% + 12px);width:350px;padding:8px;background:rgba(10,15,22,.97);border-color:rgba(255,255,255,.09);box-shadow:0 25px 70px rgba(0,0,0,.52);backdrop-filter:blur(18px);direction:ltr}
+.econova-public-mode .v-drop-item{padding:12px;border-radius:12px;transition:.16s ease;direction:ltr}
 .econova-public-mode .v-drop-item:hover{background:rgba(54,217,255,.055)}
 .econova-public-mode .v-drop-item strong{font-size:12px}
 .econova-public-mode .v-drop-item small{font-size:10px}
 .econova-public-mode .v-drop-icon{width:32px;height:32px;flex-basis:32px}
 .econova-public-mode .v-mobile-menu{top:var(--econova-nav-h);border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.45)}
+/* Arabic changes text alignment only; the public navbar geometry stays LTR and stable. */
+html[dir="rtl"] .econova-public-mode .v-nav,html[dir="rtl"] .econova-public-mode .v-nav-inner,html[dir="rtl"] .econova-public-mode .v-brand,html[dir="rtl"] .econova-public-mode .v-links,html[dir="rtl"] .econova-public-mode .v-actions{direction:ltr!important}
+html[dir="rtl"] .econova-public-mode .v-nav{unicode-bidi:isolate}
+html[dir="rtl"] .econova-public-mode .v-brand strong,html[dir="rtl"] .econova-public-mode .v-brand small{direction:ltr!important;unicode-bidi:isolate}
+html[dir="rtl"] .econova-public-mode .v-drop-menu{direction:ltr!important}
+html[dir="rtl"] .econova-public-mode .v-drop-item strong,html[dir="rtl"] .econova-public-mode .v-drop-item small{direction:rtl!important;text-align:right;unicode-bidi:isolate}
+html[dir="rtl"] .econova-public-mode .v-nav a,html[dir="rtl"] .econova-public-mode .v-nav button{unicode-bidi:isolate}
 /* Prevent expensive hover motion on touch devices */
-@media (hover:none){.econova-public-mode .v-card:hover,.econova-public-mode .v-start:hover,.econova-public-mode .v-login:hover{transform:none;box-shadow:none}}
+@media (hover:none){.econova-public-mode .v-card:hover,.econova-public-mode .v-start:hover,.econova-public-mode .v-login:hover,.econova-public-mode .v-lang:hover{transform:none;box-shadow:none}}
 /* Smaller screens: keep the bar clean rather than squeezing links */
 @media(max-width:1100px){.econova-public-mode .v-brand{min-width:auto}.econova-public-mode .v-brand small{display:none}.econova-public-mode .v-links>a,.econova-public-mode .v-drop>a{padding-left:9px;padding-right:9px}.econova-public-mode .v-login{padding:0 11px}.econova-public-mode .v-start{padding:0 12px}}
 @media(max-width:900px){.econova-public-mode .v-nav{height:72px}.econova-public-mode .v-nav-inner{width:min(calc(100% - 28px),1380px)}.econova-public-mode .v-actions{margin-left:auto}.econova-public-mode .v-actions .v-login,.econova-public-mode .v-actions .v-start{display:none}.econova-public-mode .v-menu-toggle{display:flex;align-items:center;justify-content:center}.econova-public-mode .v-mobile-menu{top:72px;left:14px;right:14px}}
-@media(max-width:520px){.econova-public-mode .v-nav-inner{width:calc(100% - 20px)}.econova-public-mode .v-mark{width:36px;height:36px}.econova-public-mode .v-brand strong{font-size:13px}.econova-public-mode .v-lang{height:36px;min-width:36px;padding:0 9px}.econova-public-mode .v-hero{padding-top:52px}.econova-public-mode .v-section{padding-top:65px;padding-bottom:65px}}
+@media(max-width:520px){.econova-public-mode .v-nav-inner{width:calc(100% - 20px)}.econova-public-mode .v-mark{width:36px;height:36px}.econova-public-mode .v-brand strong{font-size:13px}.econova-public-mode .v-lang{height:36px;min-width:36px;padding:0 9px}.econova-public-mode #publicLang{min-width:58px}.econova-public-mode .v-hero{padding-top:52px}.econova-public-mode .v-section{padding-top:65px;padding-bottom:65px}}
 /* Light theme navigation */
-body.v-light.econova-public-mode .v-nav{background:rgba(255,255,255,.78);border-bottom-color:rgba(10,20,35,.09);box-shadow:0 10px 30px rgba(20,35,55,.06)}
+body.v-light.econova-public-mode .v-nav{background:rgba(255,255,255,.86);border-bottom-color:rgba(10,20,35,.09);box-shadow:0 10px 30px rgba(20,35,55,.06)}
 body.v-light.econova-public-mode .v-links>a,body.v-light.econova-public-mode .v-drop>a{color:#526174}
 body.v-light.econova-public-mode .v-links>a:hover,body.v-light.econova-public-mode .v-drop:hover>a{background:rgba(10,20,35,.045);border-color:rgba(10,20,35,.08);color:#101827}
 body.v-light.econova-public-mode .v-lang,body.v-light.econova-public-mode .v-login{background:rgba(10,20,35,.025);border-color:rgba(10,20,35,.1);color:#405067}
+body.v-light.econova-public-mode .v-drop-menu{background:rgba(255,255,255,.98);border-color:rgba(10,20,35,.09);box-shadow:0 25px 70px rgba(20,35,55,.14)}
+body.v-light.econova-public-mode .v-drop-item:hover{background:rgba(10,20,35,.045)}
