@@ -1,6 +1,8 @@
 name: Rebrand Habboub to Econova
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -22,16 +24,7 @@ jobs:
           from pathlib import Path
           import re
 
-          files = [
-              Path('index.html'),
-              Path('login.html'),
-              Path('admin.html'),
-              Path('script.js'),
-              Path('i18n.js'),
-              Path('profile-pro.js'),
-              Path('README.md'),
-          ]
-
+          files = [Path('index.html'), Path('login.html'), Path('admin.html'), Path('script.js'), Path('i18n.js'), Path('profile-pro.js'), Path('README.md')]
           for path in files:
               if not path.exists():
                   continue
@@ -40,8 +33,6 @@ jobs:
               text = re.sub(r'\bHabboub\b', 'Econova', text)
               path.write_text(text, encoding='utf-8')
 
-          # Keep the lightweight storage/database identifiers untouched.
-          # Add the new visual brand asset to the main site when possible.
           index = Path('index.html')
           if index.exists():
               text = index.read_text(encoding='utf-8')
@@ -49,7 +40,6 @@ jobs:
                   marker = '<link rel="stylesheet" href="style.css">'
                   if marker in text:
                       text = text.replace(marker, marker + '\n  <link rel="preload" as="image" href="econova-brand.svg">', 1)
-              text = text.replace('class="brand-mark">E</span>', 'class="brand-mark econova-mark">E</span>')
               index.write_text(text, encoding='utf-8')
           PY
 
