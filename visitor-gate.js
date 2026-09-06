@@ -4,14 +4,11 @@
   if(window.__ECONOVA_GATE__) return;
   window.__ECONOVA_GATE__=true;
 
-  /* Critical first-paint guard: the public homepage must be visible even if another legacy rule or auth script is slow. */
   const earlyStyle=document.createElement('style');
   earlyStyle.id='econova-gate-early-style';
   earlyStyle.textContent=`
     html.econova-gating body{visibility:visible!important;opacity:1!important}
-    html.econova-gating body>.topbar,
-    html.econova-gating body>#mobileNav,
-    html.econova-gating body>#loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+    html.econova-gating body>.topbar,html.econova-gating body>#mobileNav,html.econova-gating body>#loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
     body.econova-public-mode{visibility:visible!important;opacity:1!important}
     body.econova-public-mode #loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
     body.econova-public-mode .econova-public-site{display:block!important;visibility:visible!important;opacity:1!important}
@@ -34,7 +31,8 @@
   installMobileMenu();
 
   const path=location.pathname.replace(/\/+$/,'');
-  const isApp=/(^|\/)index\.html$/.test(path)||path.endsWith('/habboub-trade');
+  /* Root '/' is the public homepage too. The old check skipped publicMode on Vercel/GitHub Pages root URLs. */
+  const isApp=path===''||path==='/'||/(^|\/)index\.html$/.test(path)||path.endsWith('/habboub-trade');
   if(!isApp)return;
 
   const supabaseUrl='https://feoyjasuvrqxzhskqzye.supabase.co';
@@ -45,8 +43,7 @@
 
   function applyPublicTheme(){
     const light=localStorage.getItem('econova_theme')==='light';
-    document.body.classList.toggle('v-light',light);
-    document.body.classList.toggle('v-dark',!light);
+    document.body.classList.toggle('v-light',light);document.body.classList.toggle('v-dark',!light);
     const b=document.getElementById('publicTheme');
     if(b){b.textContent=light?'☾':'☀';b.setAttribute('aria-label',light?'Switch to dark mode':'Switch to light mode');b.setAttribute('title',light?'Switch to dark mode':'Switch to light mode');}
   }
@@ -67,42 +64,25 @@
     document.body.classList.add('econova-public-mode');
     document.documentElement.classList.remove('econova-gating');
     if(!document.getElementById('econova-public-gate-style')){
-      const style=document.createElement('style');
-      style.id='econova-public-gate-style';
+      const style=document.createElement('style');style.id='econova-public-gate-style';
       style.textContent='body.econova-public-mode>.topbar,body.econova-public-mode>#mobileNav,body.econova-public-mode>#loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}body.econova-public-mode .econova-public-site{display:block!important;visibility:visible!important;opacity:1!important}';
       document.head.appendChild(style);
     }
-    loadToolsEnhancer();
-    loadHeroEnhancer();
-    installPublicControls();
-    window.EconovaPublicI18n?.apply(window.EconovaPublicI18n.getLang());
-    applyPublicTheme();
+    loadToolsEnhancer();loadHeroEnhancer();installPublicControls();
+    window.EconovaPublicI18n?.apply(window.EconovaPublicI18n.getLang());applyPublicTheme();
     setTimeout(()=>window.EconovaHero?.render?.(),40);
   }
 
   function memberMode(){
-    document.body.classList.remove('econova-public-mode');
-    document.documentElement.classList.remove('econova-gating');
-    const s=document.createElement('script');
-    s.id='econova-member-i18n';
-    s.src='i18n.js?v=20260906-3';
-    s.async=true;
-    document.head.appendChild(s);
+    document.body.classList.remove('econova-public-mode');document.documentElement.classList.remove('econova-gating');
+    const s=document.createElement('script');s.id='econova-member-i18n';s.src='i18n.js?v=20260906-3';s.async=true;document.head.appendChild(s);
   }
 
   async function boot(){
     if(!window.supabase?.createClient)return setTimeout(boot,50);
-    try{
-      const client=window.supabase.createClient(supabaseUrl,supabaseKey);
-      const {data}=await client.auth.getSession();
-      if(data?.session?.user)memberMode();
-    }catch(_){/* Public mode stays visible. */}
+    try{const client=window.supabase.createClient(supabaseUrl,supabaseKey);const {data}=await client.auth.getSession();if(data?.session?.user)memberMode();}catch(_){/* Public mode stays visible. */}
   }
 
-  function waitForBody(){
-    if(!document.body)return setTimeout(waitForBody,10);
-    publicMode();
-    boot();
-  }
+  function waitForBody(){if(!document.body)return setTimeout(waitForBody,10);publicMode();boot();}
   waitForBody();
 })();
