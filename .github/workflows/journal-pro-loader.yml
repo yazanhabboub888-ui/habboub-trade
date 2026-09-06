@@ -1,33 +1,15 @@
 name: Load Journal Pro
+
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+
 permissions:
-  contents: write
+  contents: read
+
 jobs:
-  wire-journal-pro:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      - name: Wire Journal and global UI assets
-        shell: python
-        run: |
-          from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text(encoding='utf-8')
-          for tag in ['<link rel="stylesheet" href="language-toggle.css">','<script src="journal-pro.js"></script>','<script src="journal-trade-ui.js"></script>','<script src="i18n.js"></script>']:
-              if tag not in s:
-                  if tag.startswith('<link'):
-                      s=s.replace('</head>', '  '+tag+'\n</head>', 1)
-                  else:
-                      s=s.replace('</body>', '  '+tag+'\n</body>', 1)
-          p.write_text(s,encoding='utf-8')
-      - name: Commit wiring
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@github.com'
-          git add index.html
-          git diff --cached --quiet || git commit -m 'Show Arabic English language switch'
-          git push
+      - name: Validate journal assets
+        run: test -f index.html
