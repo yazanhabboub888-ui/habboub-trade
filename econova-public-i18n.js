@@ -16,9 +16,9 @@
     '01 · TOOLS':'01 · الأدوات','02 · HOW IT WORKS':'02 · كيف يعمل','03 · MEMBERSHIP':'03 · الاشتراك','04 · STORIES':'04 · التجارب','05 · EDUCATION':'05 · التعليم',
     'From raw data to readable context.':'من البيانات الخام إلى سياق واضح.','ECONOVA organizes multiple layers of market information into a workflow you can actually follow.':'تنظّم ECONOVA عدة طبقات من معلومات السوق ضمن سير عمل يمكنك متابعته فعليًا.',
     '01 · Live Data':'01 · البيانات المباشرة','Prices and market conditions form the real-time foundation.':'الأسعار وحالة السوق تشكّل الأساس اللحظي.',
-    '02 · Market Structure':'02 · هيكل السوق','Structure and price behavior are translated into a clearer market view.':'يتم تحويل سلوك السعر والهيكل إلى رؤية أوضح للسوق.',
+    '02 · Market Structure':'02 · هيكل السوق','Market Structure':'هيكل السوق','Structure and price behavior are translated into a clearer market view.':'يتم تحويل سلوك السعر والهيكل إلى رؤية أوضح للسوق.',
     '03 · Macro & News':'03 · الاقتصاد والأخبار','Economic events and global news add the fundamental context.':'الأحداث الاقتصادية والأخبار العالمية تضيف السياق الأساسي.',
-    '04 · Positioning':'04 · التمركزات','Institutional positioning and COT context add another layer of evidence.':'التمركز المؤسسي وسياق COT يضيفان طبقة أخرى من الأدلة.',
+    '04 · Positioning':'04 · التمركزات','Institutional Positioning':'التمركز المؤسسي','Institutional positioning and COT context add another layer of evidence.':'التمركز المؤسسي وسياق COT يضيفان طبقة أخرى من الأدلة.',
     '05 · AI Intelligence':'05 · ذكاء الذكاء الاصطناعي','AI helps combine the available context without replacing your judgment.':'يساعد الذكاء الاصطناعي في جمع السياق المتاح بدون استبدال حكمك.',
     '06 · Your Workflow':'06 · طريقة عملك','You remain in control of the final decision and execution.':'أنت تبقى صاحب القرار النهائي والتنفيذ.',
     'Choose the workflow that fits you.':'اختَر سير العمل المناسب لك.','Membership plans can grow with your use of the ECONOVA environment.':'يمكن لخطط العضوية أن تتوسع مع استخدامك لبيئة ECONOVA.',
@@ -36,7 +36,9 @@
     'Trading Journal & Review':'سجل التداول والمراجعة','Build a consistent process for reviewing trades, ideas and market context.':'ابنِ طريقة ثابتة لمراجعة الصفقات والأفكار وسياق السوق.',
     'READY WHEN YOU ARE':'جاهز عندما تكون مستعدًا','Build a clearer trading workflow.':'ابنِ طريقة تداول أوضح.',
     'Explore the public experience, then create your account when you are ready to enter ECONOVA.':'استكشف التجربة العامة، ثم أنشئ حسابك عندما تكون مستعدًا للدخول إلى ECONOVA.',
-    'View membership':'عرض الاشتراك','Decision support, not financial advice.':'أداة لدعم القرار وليست نصيحة مالية.'
+    'View membership':'عرض الاشتراك','Decision support, not financial advice.':'أداة لدعم القرار وليست نصيحة مالية.',
+    '© 2026 ECONOVA — AI ECONOMIC INTELLIGENCE':'© 2026 ECONOVA — الذكاء الاقتصادي بالذكاء الاصطناعي',
+    'Decision support, not financial advice.':'أداة لدعم القرار وليست نصيحة مالية.'
   };
   const originals=new WeakMap();
   const root=()=>document.getElementById('econova-public-site');
