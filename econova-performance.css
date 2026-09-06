@@ -1,13 +1,25 @@
 /* ECONOVA — fast, calm first paint */
-html{background:#080b12}
 html,body{overflow-x:hidden}
-/* Never block the first paint with the legacy full-screen loader. */
-#loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
-/* Keep motion subtle and GPU-friendly. */
-.econova-public-site *,#tools .v-card{animation-duration:1.2s!important}
-.econova-public-site .tools-visual::after{animation-duration:7s!important}
+html{background:#080b12}
+body{background:#080b12}
+
+/* Kill every legacy full-screen loading layer immediately. */
+#loader,#preloader,.loader,.loading-screen,.loading-overlay,.page-loader,.splash-screen,[data-loader],[data-preloader]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important}
+body.loading,body.is-loading,body.preloading,body.page-loading{overflow:auto!important}
+
+/* Keep the public page usable even if an old loader class remains on body. */
+body.loading::before,body.loading::after,body.is-loading::before,body.is-loading::after,body.preloading::before,body.preloading::after,body.page-loading::before,body.page-loading::after{display:none!important;content:none!important}
+
+/* Do not slow first paint with blanket animations. Only tune the expensive Tools visuals. */
+#tools .tools-orb,#tools .tools-wave,#tools .tools-bars,#tools .tools-badge{animation-duration:2.4s!important}
+#tools .tools-visual::after{animation-duration:8s!important}
+
+/* Reduce expensive effects on phones while preserving the premium look. */
 @media(max-width:700px){
-  .econova-public-site *,#tools .v-card{animation-duration:1.5s!important}
-  .econova-public-site .tools-visual::after{animation:none!important}
+  #tools .tools-visual::after{animation:none!important}
+  #tools .v-card{box-shadow:0 10px 30px rgba(0,0,0,.18)!important}
 }
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
