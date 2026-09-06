@@ -1,0 +1,13 @@
+/* ECONOVA — fast, calm first paint */
+html{background:#080b12}
+html,body{overflow-x:hidden}
+/* Never block the first paint with the legacy full-screen loader. */
+#loader{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+/* Keep motion subtle and GPU-friendly. */
+.econova-public-site *,#tools .v-card{animation-duration:1.2s!important}
+.econova-public-site .tools-visual::after{animation-duration:7s!important}
+@media(max-width:700px){
+  .econova-public-site *,#tools .v-card{animation-duration:1.5s!important}
+  .econova-public-site .tools-visual::after{animation:none!important}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
