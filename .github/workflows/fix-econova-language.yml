@@ -1,0 +1,37 @@
+name: Fix ECONOVA language and RTL layout
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  language:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inject language assets
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          if 'econova-language.css' not in s:
+              s=s.replace('  <link rel="stylesheet" href="visitor.css?v=20260906-5">','  <link rel="stylesheet" href="visitor.css?v=20260906-5">\n  <link rel="stylesheet" href="econova-language.css?v=20260906-1">',1)
+          if '<script src="econova-language.js?v=20260906-1"></script>' not in s:
+              s=s.replace('  <script src="visitor-gate.js"></script>','  <script src="visitor-gate.js"></script>\n  <script src="econova-language.js?v=20260906-1"></script>',1)
+          p.write_text(s)
+          PY
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Fix ECONOVA bilingual UI and RTL layout"
+          git push
