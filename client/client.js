@@ -1,0 +1,20 @@
+(()=>{'use strict';
+const SUPABASE_URL='https://feoyjasuvrqxzhskqzye.supabase.co';
+const SUPABASE_KEY='sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0';
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+const drawer=document.getElementById('drawer');
+const openDrawer=()=>drawer.classList.add('open');
+const closeDrawer=()=>drawer.classList.remove('open');
+document.getElementById('mobileTools')?.addEventListener('click',openDrawer);
+document.getElementById('drawerClose')?.addEventListener('click',closeDrawer);
+document.getElementById('drawerX')?.addEventListener('click',closeDrawer);
+drawer?.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeDrawer));
+const signOut=async()=>{await client.auth.signOut();window.location.replace('../auth.html');};
+document.getElementById('logout')?.addEventListener('click',signOut);
+document.getElementById('mobileLogout')?.addEventListener('click',signOut);
+function updateActive(){const id=location.hash.replace('#','')||'home';document.querySelectorAll('.tool').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));}
+window.addEventListener('hashchange',updateActive);updateActive();
+const d=new Date();document.getElementById('dateLabel').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}).toUpperCase();
+client.auth.getSession().then(({data,error})=>{if(error||!data?.session){window.location.replace('../auth.html');}});
+client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||!session) window.location.replace('../auth.html');});
+})();
