@@ -11,48 +11,61 @@
 <body>
 <div class="app-shell">
   <aside class="tools-rail" aria-label="Tools">
-    <div class="rail-trigger"><span class="rail-icon">◈</span><span>Tools</span><i>‹</i></div>
+    <div class="rail-trigger"><span class="rail-icon">◈</span><span>Workspace</span><i>‹</i></div>
     <div class="tools-panel">
-      <div class="tools-head"><span>ECONOVA</span><small>WORKSPACE</small></div>
-      <a class="tool active" href="#home"><b>⌂</b><span>Overview<small>Workspace home</small></span></a>
-      <a class="tool" href="#live"><b>◉</b><span>Live Stream<small>Market room</small></span></a>
-      <a class="tool" href="#journal"><b>◫</b><span>Daily Journal<small>Track your decisions</small></span></a>
-      <a class="tool" href="#decision-support"><b>◎</b><span>Decision Support<small>Market context</small></span></a>
-      <a class="tool" href="#market-intelligence"><b>◌</b><span>Market Intelligence<small>News & conditions</small></span></a>
+      <div class="tools-head"><span>ECONOVA</span><small>MARKET INTELLIGENCE WORKSPACE</small></div>
+      <a class="tool active" href="#home"><b>⌂</b><span>Overview<small>Workspace overview</small></span><i>01</i></a>
+      <a class="tool" href="#live"><b>◉</b><span>Live Stream<small>Live market room</small></span><i>02</i></a>
+      <a class="tool" href="#journal"><b>◫</b><span>Daily Journal<small>Trading process</small></span><i>03</i></a>
+      <a class="tool" href="#decision-support"><b>◎</b><span>Decision Support<small>Market conditions</small></span><i>04</i></a>
+      <a class="tool" href="#market-intelligence"><b>◌</b><span>Market Intelligence<small>News & context</small></span><i>05</i></a>
     </div>
   </aside>
 
   <header class="topbar">
-    <a class="brand" href="#home"><img src="../econova-symbol.svg" alt="ECONOVA"><span><strong>ECONOVA</strong><small>MEMBER WORKSPACE</small></span></a>
+    <a class="brand" href="#home"><img src="../econova-symbol.svg" alt="ECONOVA"><span><strong>ECONOVA</strong><small>INTELLIGENCE · DECISION · CONTEXT</small></span></a>
     <div class="top-actions">
-      <span class="status"><i></i> Member session</span>
-      <button class="profile-trigger" id="profileOpen" type="button"><span class="avatar avatar-mini" id="topAvatar">E</span><span class="profile-trigger-copy"><b id="topName">Member</b><small>Profile</small></span><span>⌄</span></button>
-      <button id="mobileTools" aria-label="Open tools" type="button">☰</button>
+      <div class="session-pill"><i></i><span>SECURE SESSION</span></div>
+      <button class="profile-trigger" id="profileOpen" type="button"><span class="avatar avatar-mini" id="topAvatar">E</span><span class="profile-trigger-copy"><b id="topName">Member</b><small>Account</small></span><span class="chevron">⌄</span></button>
+      <button class="mobile-tools-button" id="mobileTools" aria-label="Open workspace" type="button">☰</button>
     </div>
   </header>
 
   <main id="content">
     <section class="hero section-view" id="home">
-      <div class="eyebrow">MEMBER WORKSPACE · <span id="dateLabel">TODAY</span></div>
-      <div class="welcome-line"><div><h1>See the market.<br><em>Think with context.</em></h1><p>Your private ECONOVA workspace for live market context, journaling and decision-support tools.</p></div><button class="profile-card" id="profileOpenHero" type="button"><span class="avatar avatar-large" id="heroAvatar">E</span><span><small>YOUR PROFILE</small><b id="heroName">Member</b><em id="heroEmail">Loading email…</em></span><strong>Manage profile →</strong></button></div>
+      <div class="hero-topline"><div class="eyebrow"><span>ECONOVA / MEMBER</span><i></i><span id="dateLabel">TODAY</span></div><span class="hero-code">PRIVATE WORKSPACE / 01</span></div>
+      <div class="hero-layout">
+        <div class="hero-copy">
+          <div class="hero-kicker">MARKET INTELLIGENCE SYSTEM</div>
+          <h1>Understand the<br><em>market before</em><br>you act.</h1>
+          <p>One workspace for live market context, structured decisions, trading journals and broader intelligence — built around <strong>context, not noise.</strong></p>
+          <div class="hero-meta"><span><i></i> SYSTEM READY</span><span>ECONOVA MEMBER ENVIRONMENT</span></div>
+        </div>
+        <button class="profile-card" id="profileOpenHero" type="button">
+          <div class="profile-card-top"><span class="avatar avatar-large" id="heroAvatar">E</span><span><small>MEMBER PROFILE</small><b id="heroName">Member</b><em id="heroEmail">Loading email…</em></span></div>
+          <div class="profile-card-foot"><span>Account settings</span><strong>Manage profile <b>→</b></strong></div>
+        </button>
+      </div>
+
+      <div class="command-label"><span>YOUR ECONOVA WORKSPACE</span><i></i><small>SELECT AN INTELLIGENCE LAYER</small></div>
       <div class="hero-grid">
-        <a href="#live" class="hero-card featured"><span class="card-index">01</span><b>Live Stream</b><small>Enter the live market room</small><strong>Open →</strong></a>
-        <a href="#journal" class="hero-card"><span class="card-index">02</span><b>Daily Journal</b><small>Review and structure your trading day</small><strong>Open →</strong></a>
-        <a href="#decision-support" class="hero-card"><span class="card-index">03</span><b>Decision Support</b><small>Read market conditions before acting</small><strong>Open →</strong></a>
-        <a href="#market-intelligence" class="hero-card"><span class="card-index">04</span><b>Market Intelligence</b><small>News, context and broader conditions</small><strong>Open →</strong></a>
+        <a href="#live" class="hero-card featured"><span class="card-index">01</span><span class="card-mark">◉</span><div><b>Live Stream</b><small>Enter the live market room and stay connected to the current session.</small></div><strong>OPEN <b>↗</b></strong></a>
+        <a href="#journal" class="hero-card"><span class="card-index">02</span><span class="card-mark">◫</span><div><b>Daily Journal</b><small>Structure your trading day, decisions and observations in one place.</small></div><strong>OPEN <b>↗</b></strong></a>
+        <a href="#decision-support" class="hero-card"><span class="card-index">03</span><span class="card-mark">◎</span><div><b>Decision Support</b><small>Read market conditions and the context behind the environment.</small></div><strong>OPEN <b>↗</b></strong></a>
+        <a href="#market-intelligence" class="hero-card"><span class="card-index">04</span><span class="card-mark">◌</span><div><b>Market Intelligence</b><small>Follow news, conditions and the wider forces shaping markets.</small></div><strong>OPEN <b>↗</b></strong></a>
       </div>
     </section>
 
-    <section class="content-section section-view" id="live"><div class="section-label">01 / LIVE STREAM</div><div class="empty-panel"><span>◉</span><h2>Live Stream</h2><p>The live market room will appear here.</p></div></section>
-    <section class="content-section section-view" id="journal"><div class="section-label">02 / DAILY JOURNAL</div><div class="empty-panel"><span>◫</span><h2>Daily Journal</h2><p>Your journal workspace will appear here.</p></div></section>
-    <section class="content-section section-view" id="decision-support"><div class="section-label">03 / DECISION SUPPORT</div><div class="empty-panel"><span>◎</span><h2>Decision Support</h2><p>Your market-condition workspace will appear here.</p></div></section>
-    <section class="content-section section-view" id="market-intelligence"><div class="section-label">04 / MARKET INTELLIGENCE</div><div class="empty-panel"><span>◌</span><h2>Market Intelligence</h2><p>News and market intelligence will appear here.</p></div></section>
+    <section class="content-section section-view" id="live"><div class="section-label"><span>02</span><i></i> LIVE STREAM</div><div class="section-intro"><div><small>ECONOVA MARKET ROOM</small><h2>Live Stream</h2><p>The live market room will appear here.</p></div><span class="section-status"><i></i> READY</span></div><div class="empty-panel"><span class="empty-mark">◉</span><small>LIVE MARKET ROOM</small><h3>Awaiting live session</h3><p>Your live market experience will appear in this workspace.</p></div></section>
+    <section class="content-section section-view" id="journal"><div class="section-label"><span>03</span><i></i> DAILY JOURNAL</div><div class="section-intro"><div><small>PROCESS & REVIEW</small><h2>Daily Journal</h2><p>Build a clearer record of your trading decisions.</p></div></div><div class="empty-panel"><span class="empty-mark">◫</span><small>TRADING JOURNAL</small><h3>Your journal starts here</h3><p>Your journal workspace will appear here.</p></div></section>
+    <section class="content-section section-view" id="decision-support"><div class="section-label"><span>04</span><i></i> DECISION SUPPORT</div><div class="section-intro"><div><small>MARKET CONDITIONS</small><h2>Decision Support</h2><p>See the conditions surrounding the market before making a decision.</p></div></div><div class="empty-panel"><span class="empty-mark">◎</span><small>CONTEXT ENGINE</small><h3>Decision layer ready</h3><p>Your market-condition workspace will appear here.</p></div></section>
+    <section class="content-section section-view" id="market-intelligence"><div class="section-label"><span>05</span><i></i> MARKET INTELLIGENCE</div><div class="section-intro"><div><small>NEWS & CONTEXT</small><h2>Market Intelligence</h2><p>Bring the wider market picture into focus.</p></div></div><div class="empty-panel"><span class="empty-mark">◌</span><small>INTELLIGENCE LAYER</small><h3>Intelligence is loading</h3><p>News and market intelligence will appear here.</p></div></section>
   </main>
 </div>
 
-<div class="mobile-drawer" id="drawer"><div class="drawer-backdrop" id="drawerClose"></div><nav><div class="drawer-title">TOOLS <button id="drawerX" type="button">×</button></div><a href="#home">⌂ <span>Overview</span></a><a href="#live">◉ <span>Live Stream</span></a><a href="#journal">◫ <span>Daily Journal</span></a><a href="#decision-support">◎ <span>Decision Support</span></a><a href="#market-intelligence">◌ <span>Market Intelligence</span></a><button class="drawer-profile" id="drawerProfile" type="button">◉ <span>Profile</span></button><button class="drawer-logout" id="drawerLogout" type="button">↗ <span>Sign out</span></button></nav></div>
+<div class="mobile-drawer" id="drawer"><div class="drawer-backdrop" id="drawerClose"></div><nav><div class="drawer-brand"><img src="../econova-symbol.svg" alt="ECONOVA"><div><b>ECONOVA</b><small>WORKSPACE</small></div><button id="drawerX" type="button">×</button></div><div class="drawer-section-title">NAVIGATION</div><a href="#home">⌂ <span>Overview</span><b>01</b></a><a href="#live">◉ <span>Live Stream</span><b>02</b></a><a href="#journal">◫ <span>Daily Journal</span><b>03</b></a><a href="#decision-support">◎ <span>Decision Support</span><b>04</b></a><a href="#market-intelligence">◌ <span>Market Intelligence</span><b>05</b></a><div class="drawer-divider"></div><button class="drawer-profile" id="drawerProfile" type="button">◉ <span>Profile</span><b>↗</b></button><button class="drawer-logout" id="drawerLogout" type="button">↗ <span>Sign out</span></button></nav></div>
 
-<div class="profile-drawer" id="profileDrawer" aria-hidden="true"><div class="profile-backdrop" id="profileClose"></div><section class="profile-panel"><div class="profile-head"><div><small>ACCOUNT</small><h2>Your profile</h2></div><button id="profileX" type="button">×</button></div><div class="profile-identity"><label class="avatar-upload"><span class="avatar avatar-profile" id="profileAvatar">E</span><input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp"><span>Change photo</span></label><div><h3 id="profileNamePreview">Member</h3><p id="profileEmailPreview">—</p></div></div><form id="profileForm"><label>Full name<input id="fullName" type="text" maxlength="80" autocomplete="name" placeholder="Your full name"></label><label>Phone number<input id="phone" type="tel" maxlength="30" autocomplete="tel" placeholder="+970 5X XXX XXXX"></label><label>Email<input id="emailProfile" type="email" readonly></label><button class="save-profile" id="saveProfile" type="submit">Save changes</button></form><p class="profile-message" id="profileMessage" role="status"></p><button class="signout-main" id="profileLogout" type="button">Sign out</button></section></div>
+<div class="profile-drawer" id="profileDrawer" aria-hidden="true"><div class="profile-backdrop" id="profileClose"></div><section class="profile-panel"><div class="profile-head"><div><small>ECONOVA / ACCOUNT</small><h2>Your profile</h2><p>Manage your member identity and account details.</p></div><button id="profileX" type="button">×</button></div><div class="profile-identity"><label class="avatar-upload"><span class="avatar avatar-profile" id="profileAvatar">E</span><input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp"><span>Change photo</span></label><div><small>MEMBER</small><h3 id="profileNamePreview">Member</h3><p id="profileEmailPreview">—</p></div></div><form id="profileForm"><label>FULL NAME<input id="fullName" type="text" maxlength="80" autocomplete="name" placeholder="Your full name"></label><label>PHONE NUMBER<input id="phone" type="tel" maxlength="30" autocomplete="tel" placeholder="+970 5X XXX XXXX"></label><label>EMAIL<input id="emailProfile" type="email" readonly></label><button class="save-profile" id="saveProfile" type="submit">SAVE CHANGES <span>→</span></button></form><p class="profile-message" id="profileMessage" role="status"></p><button class="signout-main" id="profileLogout" type="button">SIGN OUT <span>↗</span></button></section></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="client.js"></script>
