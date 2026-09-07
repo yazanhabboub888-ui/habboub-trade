@@ -19,20 +19,22 @@
       <a class="tool" href="#journal"><b>◫</b><span>Daily Journal<small>Track your decisions</small></span></a>
       <a class="tool" href="#decision-support"><b>◎</b><span>Decision Support<small>Market context</small></span></a>
       <a class="tool" href="#market-intelligence"><b>◌</b><span>Market Intelligence<small>News & conditions</small></span></a>
-      <div class="tools-foot"><a href="../index.html">Public ECONOVA</a><button id="logout" type="button">Sign out</button></div>
     </div>
   </aside>
 
   <header class="topbar">
     <a class="brand" href="#home"><img src="../econova-symbol.svg" alt="ECONOVA"><span><strong>ECONOVA</strong><small>MEMBER WORKSPACE</small></span></a>
-    <div class="top-actions"><span class="status"><i></i> Member session</span><button id="mobileTools" aria-label="Open tools">☰</button><button id="mobileLogout" aria-label="Sign out">↗</button></div>
+    <div class="top-actions">
+      <span class="status"><i></i> Member session</span>
+      <button class="profile-trigger" id="profileOpen" type="button"><span class="avatar avatar-mini" id="topAvatar">E</span><span class="profile-trigger-copy"><b id="topName">Member</b><small>Profile</small></span><span>⌄</span></button>
+      <button id="mobileTools" aria-label="Open tools" type="button">☰</button>
+    </div>
   </header>
 
   <main id="content">
     <section class="hero section-view" id="home">
       <div class="eyebrow">MEMBER WORKSPACE · <span id="dateLabel">TODAY</span></div>
-      <h1>See the market.<br><em>Think with context.</em></h1>
-      <p>Your private ECONOVA workspace for live market context, journaling and decision-support tools.</p>
+      <div class="welcome-line"><div><h1>See the market.<br><em>Think with context.</em></h1><p>Your private ECONOVA workspace for live market context, journaling and decision-support tools.</p></div><button class="profile-card" id="profileOpenHero" type="button"><span class="avatar avatar-large" id="heroAvatar">E</span><span><small>YOUR PROFILE</small><b id="heroName">Member</b><em id="heroEmail">Loading email…</em></span><strong>Manage profile →</strong></button></div>
       <div class="hero-grid">
         <a href="#live" class="hero-card featured"><span class="card-index">01</span><b>Live Stream</b><small>Enter the live market room</small><strong>Open →</strong></a>
         <a href="#journal" class="hero-card"><span class="card-index">02</span><b>Daily Journal</b><small>Review and structure your trading day</small><strong>Open →</strong></a>
@@ -47,7 +49,11 @@
     <section class="content-section section-view" id="market-intelligence"><div class="section-label">04 / MARKET INTELLIGENCE</div><div class="empty-panel"><span>◌</span><h2>Market Intelligence</h2><p>News and market intelligence will appear here.</p></div></section>
   </main>
 </div>
-<div class="mobile-drawer" id="drawer"><div class="drawer-backdrop" id="drawerClose"></div><nav><div class="drawer-title">TOOLS <button id="drawerX">×</button></div><a href="#home">⌂ <span>Overview</span></a><a href="#live">◉ <span>Live Stream</span></a><a href="#journal">◫ <span>Daily Journal</span></a><a href="#decision-support">◎ <span>Decision Support</span></a><a href="#market-intelligence">◌ <span>Market Intelligence</span></a></nav></div>
+
+<div class="mobile-drawer" id="drawer"><div class="drawer-backdrop" id="drawerClose"></div><nav><div class="drawer-title">TOOLS <button id="drawerX" type="button">×</button></div><a href="#home">⌂ <span>Overview</span></a><a href="#live">◉ <span>Live Stream</span></a><a href="#journal">◫ <span>Daily Journal</span></a><a href="#decision-support">◎ <span>Decision Support</span></a><a href="#market-intelligence">◌ <span>Market Intelligence</span></a><button class="drawer-profile" id="drawerProfile" type="button">◉ <span>Profile</span></button><button class="drawer-logout" id="drawerLogout" type="button">↗ <span>Sign out</span></button></nav></div>
+
+<div class="profile-drawer" id="profileDrawer" aria-hidden="true"><div class="profile-backdrop" id="profileClose"></div><section class="profile-panel"><div class="profile-head"><div><small>ACCOUNT</small><h2>Your profile</h2></div><button id="profileX" type="button">×</button></div><div class="profile-identity"><label class="avatar-upload"><span class="avatar avatar-profile" id="profileAvatar">E</span><input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp"><span>Change photo</span></label><div><h3 id="profileNamePreview">Member</h3><p id="profileEmailPreview">—</p></div></div><form id="profileForm"><label>Full name<input id="fullName" type="text" maxlength="80" autocomplete="name" placeholder="Your full name"></label><label>Phone number<input id="phone" type="tel" maxlength="30" autocomplete="tel" placeholder="+970 5X XXX XXXX"></label><label>Email<input id="emailProfile" type="email" readonly></label><button class="save-profile" id="saveProfile" type="submit">Save changes</button></form><p class="profile-message" id="profileMessage" role="status"></p><button class="signout-main" id="profileLogout" type="button">Sign out</button></section></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="client.js"></script>
 </body>
