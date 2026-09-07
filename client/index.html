@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070a0f">
+<title>ECONOVA — Client</title>
+<link rel="icon" href="../econova-icon.svg">
+<link rel="stylesheet" href="client.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="tools-rail" aria-label="Tools">
+    <div class="rail-trigger"><span class="rail-icon">◈</span><span>Tools</span><i>‹</i></div>
+    <div class="tools-panel">
+      <div class="tools-head"><span>ECONOVA</span><small>WORKSPACE</small></div>
+      <a class="tool active" href="#home"><b>⌂</b><span>Overview<small>Workspace home</small></span></a>
+      <a class="tool" href="#live"><b>◉</b><span>Live Stream<small>Market room</small></span></a>
+      <a class="tool" href="#journal"><b>◫</b><span>Daily Journal<small>Track your decisions</small></span></a>
+      <a class="tool" href="#decision-support"><b>◎</b><span>Decision Support<small>Market context</small></span></a>
+      <a class="tool" href="#market-intelligence"><b>◌</b><span>Market Intelligence<small>News & conditions</small></span></a>
+      <div class="tools-foot"><a href="../index.html">Public ECONOVA</a><button id="logout" type="button">Sign out</button></div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <a class="brand" href="#home"><img src="../econova-symbol.svg" alt="ECONOVA"><span><strong>ECONOVA</strong><small>MEMBER WORKSPACE</small></span></a>
+    <div class="top-actions"><span class="status"><i></i> Member session</span><button id="mobileTools" aria-label="Open tools">☰</button><button id="mobileLogout" aria-label="Sign out">↗</button></div>
+  </header>
+
+  <main id="content">
+    <section class="hero section-view" id="home">
+      <div class="eyebrow">MEMBER WORKSPACE · <span id="dateLabel">TODAY</span></div>
+      <h1>See the market.<br><em>Think with context.</em></h1>
+      <p>Your private ECONOVA workspace for live market context, journaling and decision-support tools.</p>
+      <div class="hero-grid">
+        <a href="#live" class="hero-card featured"><span class="card-index">01</span><b>Live Stream</b><small>Enter the live market room</small><strong>Open →</strong></a>
+        <a href="#journal" class="hero-card"><span class="card-index">02</span><b>Daily Journal</b><small>Review and structure your trading day</small><strong>Open →</strong></a>
+        <a href="#decision-support" class="hero-card"><span class="card-index">03</span><b>Decision Support</b><small>Read market conditions before acting</small><strong>Open →</strong></a>
+        <a href="#market-intelligence" class="hero-card"><span class="card-index">04</span><b>Market Intelligence</b><small>News, context and broader conditions</small><strong>Open →</strong></a>
+      </div>
+    </section>
+
+    <section class="content-section section-view" id="live"><div class="section-label">01 / LIVE STREAM</div><div class="empty-panel"><span>◉</span><h2>Live Stream</h2><p>The live market room will appear here.</p></div></section>
+    <section class="content-section section-view" id="journal"><div class="section-label">02 / DAILY JOURNAL</div><div class="empty-panel"><span>◫</span><h2>Daily Journal</h2><p>Your journal workspace will appear here.</p></div></section>
+    <section class="content-section section-view" id="decision-support"><div class="section-label">03 / DECISION SUPPORT</div><div class="empty-panel"><span>◎</span><h2>Decision Support</h2><p>Your market-condition workspace will appear here.</p></div></section>
+    <section class="content-section section-view" id="market-intelligence"><div class="section-label">04 / MARKET INTELLIGENCE</div><div class="empty-panel"><span>◌</span><h2>Market Intelligence</h2><p>News and market intelligence will appear here.</p></div></section>
+  </main>
+</div>
+<div class="mobile-drawer" id="drawer"><div class="drawer-backdrop" id="drawerClose"></div><nav><div class="drawer-title">TOOLS <button id="drawerX">×</button></div><a href="#home">⌂ <span>Overview</span></a><a href="#live">◉ <span>Live Stream</span></a><a href="#journal">◫ <span>Daily Journal</span></a><a href="#decision-support">◎ <span>Decision Support</span></a><a href="#market-intelligence">◌ <span>Market Intelligence</span></a></nav></div>
+<script src="client.js"></script>
+</body>
+</html>
