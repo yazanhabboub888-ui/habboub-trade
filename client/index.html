@@ -3,99 +3,81 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#070a0f">
+<meta name="theme-color" content="#0b101d">
 <title>ECONOVA — Client</title>
 <link rel="icon" href="../econova-icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="client.css?v=20260908-1">
+<link rel="stylesheet" href="client.css?v=20260908-2">
 </head>
 <body>
 <div class="app-shell">
-  <header class="topbar">
-    <a class="brand" href="#home"><img src="../econova-symbol.svg" alt="ECONOVA"><span><strong>ECONOVA</strong><small>AI ECONOMIC INTELLIGENCE</small></span></a>
-    <div class="top-actions">
-      <button class="top-control" id="languageToggle" type="button" aria-label="Switch language">عربي</button>
-      <button class="top-control theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">☼</button>
-      <div class="session-pill"><i></i><span data-en="SECURE SESSION" data-ar="جلسة آمنة">SECURE SESSION</span></div>
-      <button class="profile-trigger" id="profileOpen" type="button"><span class="avatar avatar-mini" id="topAvatar">E</span><span class="profile-trigger-copy"><b id="topName">Member</b><small data-en="Account" data-ar="الحساب">Account</small></span><span class="chevron">⌄</span></button>
-      <button class="mobile-tools-button" id="mobileTools" aria-label="Open workspace" type="button">☰</button>
-    </div>
-  </header>
+<header class="topbar">
+  <a class="brand" href="#overview"><img src="../econova-symbol.svg" alt="ECONOVA"><span><strong>ECONOVA</strong><small>AI ECONOMIC INTELLIGENCE</small></span></a>
+  <div class="top-search"><span>⌕</span><input id="marketSearch" type="search" placeholder="Search markets, assets or tools" data-placeholder-en="Search markets, assets or tools" data-placeholder-ar="ابحث عن الأسواق أو الأدوات"><kbd>⌘ K</kbd></div>
+  <div class="top-actions"><div class="live-pill"><i></i><span data-en="LIVE MARKETS" data-ar="أسواق مباشرة">LIVE MARKETS</span></div><time id="clock">00:00:00</time><button class="top-control" id="languageToggle" type="button">عربي</button><button class="top-control" id="themeToggle" type="button">☼</button><button class="profile-trigger" id="profileOpen" type="button"><span class="avatar avatar-mini" id="topAvatar">E</span><span><b id="topName">Member</b><small data-en="Account" data-ar="الحساب">Account</small></span></button><button class="mobile-tools-button" id="mobileTools" type="button">☰</button></div>
+</header>
 
-  <aside class="tools-rail" aria-label="Tools">
-    <div class="rail-trigger"><span class="rail-icon">◈</span><span data-en="Workspace" data-ar="مساحة العمل">Workspace</span><i>‹</i></div>
-    <div class="tools-panel">
-      <div class="tools-head"><span>ECONOVA</span><small data-en="MARKET INTELLIGENCE WORKSPACE" data-ar="مساحة ذكاء الأسواق">MARKET INTELLIGENCE WORKSPACE</small></div>
-      <a class="tool active" href="#home"><b>⌂</b><span data-en="Overview" data-ar="نظرة عامة">Overview</span><i>01</i></a>
-      <a class="tool" href="#markets"><b>◉</b><span data-en="Markets" data-ar="الأسواق">Markets</span><i>02</i></a>
-      <a class="tool" href="#decision-support"><b>◎</b><span data-en="Decision Support" data-ar="دعم القرار">Decision Support</span><i>03</i></a>
-      <a class="tool" href="#market-intelligence"><b>◌</b><span data-en="Intelligence" data-ar="ذكاء السوق">Intelligence</span><i>04</i></a>
-    </div>
-  </aside>
+<div class="layout">
+<aside class="sidebar">
+  <div class="side-label" data-en="WORKSPACE" data-ar="مساحة العمل">WORKSPACE</div>
+  <nav>
+    <a class="side-link active" href="#overview"><b>⌂</b><span data-en="Overview" data-ar="نظرة عامة">Overview</span></a>
+    <a class="side-link" href="#markets"><b>◉</b><span data-en="Live Market" data-ar="السوق المباشر">Live Market</span></a>
+    <a class="side-link" href="#performance"><b>▤</b><span data-en="Journal" data-ar="السجل">Journal</span></a>
+    <a class="side-link" href="#decision-support"><b>◎</b><span data-en="Decision Support" data-ar="دعم القرار">Decision Support</span></a>
+    <a class="side-link" href="#intelligence"><b>◌</b><span data-en="Market Intelligence" data-ar="ذكاء السوق">Market Intelligence</span></a>
+    <a class="side-link" href="#calendar"><b>◷</b><span data-en="Economic Calendar" data-ar="التقويم الاقتصادي">Economic Calendar</span></a>
+    <a class="side-link" href="#education"><b>◇</b><span data-en="Education" data-ar="التعليم">Education</span></a>
+  </nav>
+  <div class="side-bottom"><a class="side-link" href="#settings"><b>⚙</b><span data-en="Settings" data-ar="الإعدادات">Settings</span></a></div>
+</aside>
 
-  <main id="content">
-    <section class="welcome section-view" id="home">
-      <div class="welcome-top"><div class="eyebrow"><span>ECONOVA / MEMBER</span><i></i><span id="dateLabel">TODAY</span></div><span class="workspace-code">PRIVATE WORKSPACE / 01</span></div>
-      <div class="welcome-copy">
-        <div>
-          <div class="hero-kicker" data-en="MARKET INTELLIGENCE WORKSPACE" data-ar="مساحة ذكاء الأسواق">MARKET INTELLIGENCE WORKSPACE</div>
-          <h1><span data-en="WELCOME BACK," data-ar="أهلًا بعودتك،">WELCOME BACK,</span> <em id="welcomeName">YAZAN</em><br><strong data-en="Your market intelligence workspace" data-ar="مساحة ذكاء الأسواق الخاصة بك">Your market intelligence workspace</strong></h1>
-        </div>
-        <button class="profile-card" id="profileOpenHero" type="button"><div class="profile-card-top"><span class="avatar avatar-large" id="heroAvatar">E</span><span><small data-en="MEMBER PROFILE" data-ar="ملف العضو">MEMBER PROFILE</small><b id="heroName">Member</b><em id="heroEmail">Loading email…</em></span></div><div class="profile-card-foot"><span data-en="Account settings" data-ar="إعدادات الحساب">Account settings</span><strong data-en="Manage profile" data-ar="إدارة الملف">Manage profile <b>→</b></strong></div></button>
-      </div>
+<main id="content">
+<section class="hero" id="overview">
+  <div><div class="eyebrow"><span>ECONOVA / PRIVATE WORKSPACE</span><i></i><span id="dateLabel">TODAY</span></div><h1><span data-en="Welcome back," data-ar="أهلًا بعودتك،">Welcome back,</span> <em id="welcomeName">Yazan</em></h1><p data-en="Your market intelligence workspace" data-ar="مساحة ذكاء الأسواق الخاصة بك">Your market intelligence workspace</p></div>
+  <button class="profile-card" id="profileOpenHero"><span class="avatar avatar-large" id="heroAvatar">E</span><span><small data-en="MEMBER" data-ar="العضو">MEMBER</small><b id="heroName">Member</b><em id="heroEmail">Loading email…</em></span><strong>→</strong></button>
+</section>
 
-      <div class="market-picker" id="markets">
-        <div class="market-title"><span data-en="WHAT ARE YOU TRADING?" data-ar="شو بتتداول؟">WHAT ARE YOU TRADING?</span></div>
-        <div class="market-group">
-          <div class="market-group-label">FUTURES</div>
-          <div class="instrument-picker">
-            <button class="instrument active" type="button" data-symbol="GOLD"><b data-en="GOLD" data-ar="الذهب">GOLD</b><small>GC</small></button>
-            <button class="instrument" type="button" data-symbol="NASDAQ"><b data-en="NASDAQ" data-ar="ناسداك">NASDAQ</b><small>NQ</small></button>
-            <button class="instrument" type="button" data-symbol="SP500"><b>S&amp;P</b><small>ES</small></button>
-            <button class="instrument" type="button" data-symbol="DOLLAR"><b data-en="DOLLAR" data-ar="الدولار">DOLLAR</b><small>DX</small></button>
-          </div>
-        </div>
-        <div class="market-group">
-          <div class="market-group-label">CFD</div>
-          <div class="instrument-picker">
-            <button class="instrument cfd-choice" type="button" data-symbol="GOLD"><b>XAUUSD</b><small>CFD</small></button>
-            <button class="instrument cfd-choice" type="button" data-symbol="NASDAQ"><b>NAS100</b><small>CFD</small></button>
-            <button class="instrument cfd-choice" type="button" data-symbol="SP500"><b>US500</b><small>CFD</small></button>
-            <button class="instrument cfd-choice" type="button" data-symbol="DOLLAR"><b>DXY</b><small>CFD</small></button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="cockpit section-view" id="decision-support">
-      <div class="cockpit-header"><div><div class="eyebrow"><span data-en="MARKET INTELLIGENCE" data-ar="ذكاء السوق">MARKET INTELLIGENCE</span><i></i><span id="selectedMarket">GOLD · FUTURES</span></div><h2 id="instrumentTitle">Gold Futures</h2></div><div class="market-state"><span data-en="MARKET OPEN" data-ar="السوق مفتوح">MARKET OPEN</span><i></i></div></div>
-
-      <div class="signal-grid">
-        <article class="signal-card primary"><div class="card-head"><span data-en="MARKET CONDITION" data-ar="حالة السوق">MARKET CONDITION</span><i>◎</i></div><div class="score-line"><strong>78</strong><span data-en="FAVORABLE CONDITIONS" data-ar="ظروف مواتية">FAVORABLE CONDITIONS</span></div><p data-en="The market currently shows favorable conditions, but momentum is weakening." data-ar="السوق حاليًا يظهر ظروفًا مواتية، لكن الزخم بدأ يضعف.">The market currently shows favorable conditions, but momentum is weakening.</p><div class="factor-list"><span><b>Structure</b><i style="--v:82%"></i><em>82</em></span><span><b>Momentum</b><i style="--v:68%"></i><em>68</em></span><span><b>Liquidity</b><i style="--v:79%"></i><em>79</em></span><span><b data-en="News Risk" data-ar="مخاطر الأخبار">News Risk</b><i style="--v:42%"></i><em>42</em></span></div></article>
-
-        <article class="signal-card"><div class="card-head"><span data-en="YOUR STRATEGY" data-ar="استراتيجيتك">YOUR STRATEGY</span><i>◎</i></div><div class="score-line"><strong>71</strong><span data-en="5 / 7 CONDITIONS MET" data-ar="5 / 7 شروط متحققة">5 / 7 CONDITIONS MET</span></div><div class="rule-list"><span>✓ <b data-en="HTF Structure" data-ar="هيكل HTF">HTF Structure</b></span><span>✓ <b data-en="Liquidity Sweep" data-ar="سحب السيولة">Liquidity Sweep</b></span><span>✓ <b>MSS</b></span><span>✕ <b>FVG</b></span><span>✓ <b data-en="Session" data-ar="الجلسة">Session</b></span><span>✕ <b data-en="News Filter" data-ar="فلتر الأخبار">News Filter</b></span><span>✓ <b data-en="Volatility" data-ar="التذبذب">Volatility</b></span></div><div class="ready-score"><strong>71</strong><span data-en="STRATEGY READY" data-ar="الاستراتيجية جاهزة">STRATEGY READY</span></div></article>
-
-        <article class="signal-card"><div class="card-head"><span data-en="MARKET BIAS" data-ar="انحياز السوق">MARKET BIAS</span><i>↗</i></div><div class="bias"><strong data-en="BULLISH" data-ar="صاعد">BULLISH</strong><b>68%</b></div><div class="bias-rows"><span><b data-en="Structure" data-ar="الهيكل">Structure</b><em>BULLISH</em></span><span><b data-en="Momentum" data-ar="الزخم">Momentum</b><em>BULLISH</em></span><span><b data-en="Liquidity" data-ar="السيولة">Liquidity</b><em>NEUTRAL</em></span><span><b data-en="News" data-ar="الأخبار">News</b><em>BEARISH RISK</em></span></div></article>
-
-        <article class="signal-card performance-card"><div class="card-head"><span data-en="YOUR PERFORMANCE" data-ar="أداؤك">YOUR PERFORMANCE</span><i>◫</i></div><div class="score-line"><strong>84</strong><span data-en="/ 100" data-ar="/ 100">/ 100</span></div><div class="performance-list"><span><b data-en="Consistency" data-ar="الثبات">Consistency</b><em>91</em></span><span><b data-en="Execution" data-ar="التنفيذ">Execution</b><em>82</em></span><span><b data-en="Discipline" data-ar="الانضباط">Discipline</b><em>87</em></span><span><b data-en="Rule Adherence" data-ar="الالتزام بالشروط">Rule Adherence</b><em>76</em></span></div></article>
-      </div>
-
-      <div class="risk-banner"><div><span>⚠</span><strong data-en="MARKET RISK" data-ar="مخاطر السوق">MARKET RISK</strong></div><b data-en="HIGH" data-ar="مرتفع">HIGH</b><p data-en="High-impact event approaching" data-ar="خبر عالي التأثير يقترب">High-impact event approaching</p></div>
-    </section>
-
-    <section class="workspace-section section-view" id="market-intelligence"></section>
-  </main>
-
-  <div class="profile-drawer" id="profileDrawer" aria-hidden="true">
-    <button class="drawer-close" id="profileClose" type="button">×</button>
-    <div class="profile-preview"><span class="avatar avatar-large" id="profileAvatar">E</span><div><small id="profileNamePreview">Member</small><span id="profileEmailPreview"></span></div></div>
-    <form id="profileForm"><label>Full name<input id="fullName" type="text"></label><label>Phone<input id="phone" type="text"></label><label>Email<input id="emailProfile" type="email" disabled></label><label class="avatar-upload">Profile photo<input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp"></label><button id="saveProfile" type="submit">Save profile</button><button id="profileLogout" type="button">Log out</button><p id="profileMessage"></p></form>
+<section class="market-section" id="markets">
+  <div class="section-heading"><div><span class="section-kicker" data-en="MARKET SELECTION" data-ar="اختيار السوق">MARKET SELECTION</span><h2 data-en="What are you trading?" data-ar="شو بتتداول؟">What are you trading?</h2></div><span class="data-status"><i></i><span data-en="Data connected" data-ar="البيانات متصلة">Data connected</span></span></div>
+  <div class="market-tabs"><button class="market-tab active" data-market="FUTURES">FUTURES</button><button class="market-tab" data-market="CFD">CFD</button></div>
+  <div class="asset-grid" id="assetGrid">
+    <button class="asset active" data-symbol="GOLD"><span class="asset-icon gold">Au</span><span><b data-en="Gold" data-ar="الذهب">Gold</b><small>GC1! · Gold Futures</small></span><strong>↗</strong></button>
+    <button class="asset" data-symbol="NASDAQ"><span class="asset-icon blue">NQ</span><span><b>Nasdaq</b><small>NQ1! · Nasdaq Futures</small></span><strong>↗</strong></button>
+    <button class="asset" data-symbol="SP500"><span class="asset-icon purple">S&amp;P</span><span><b>S&amp;P 500</b><small>ES1! · S&amp;P Futures</small></span><strong>↗</strong></button>
+    <button class="asset" data-symbol="DOLLAR"><span class="asset-icon cyan">$</span><span><b data-en="Dollar" data-ar="الدولار">Dollar</b><small>DX1! · Dollar Index</small></span><strong>↗</strong></button>
   </div>
-  <div class="drawer" id="drawer" aria-hidden="true"><button id="drawerClose" type="button">×</button><a href="#home">Overview</a><a href="#markets">Markets</a><a href="#decision-support">Decision Support</a><a href="#market-intelligence">Intelligence</a><button id="drawerProfile" type="button">Profile</button><button id="drawerLogout" type="button">Log out</button></div>
+</section>
+
+<section class="asset-bar" id="decision-support">
+  <div class="asset-title"><span class="asset-icon gold">Au</span><div><small id="assetMarketLabel">GOLD FUTURES</small><h2 id="instrumentTitle">Gold</h2><span id="instrumentSymbol">GC1!</span></div></div>
+  <div class="quote"><small>LAST PRICE</small><strong id="assetPrice">3,642.50</strong><b id="assetChange">+18.40 · +0.51%</b></div>
+  <div class="quote-stat"><small>DAY HIGH</small><b>3,671.20</b></div><div class="quote-stat"><small>DAY LOW</small><b>3,598.80</b></div><div class="quote-stat"><small>24H VOL</small><b>184.2K</b></div>
+</section>
+
+<section class="analytics" id="intelligence">
+<div class="section-heading compact"><div><span class="section-kicker" data-en="MARKET INTELLIGENCE" data-ar="ذكاء السوق">MARKET INTELLIGENCE</span><h2 data-en="Decision cockpit" data-ar="لوحة القرار">Decision cockpit</h2></div><span class="market-open"><i></i><span data-en="MARKET OPEN" data-ar="السوق مفتوح">MARKET OPEN</span></span></div>
+<div class="analytics-grid">
+<article class="metric-card condition"><div class="card-head"><span>MARKET CONDITION</span><b>01</b></div><div class="gauge-wrap"><div class="gauge" style="--score:78"><div><strong>78</strong><small>/100</small></div></div><div><h3>Favorable</h3><p data-en="Conditions remain constructive, but momentum is weakening." data-ar="الظروف ما زالت إيجابية، لكن الزخم بدأ يضعف.">Conditions remain constructive, but momentum is weakening.</p></div></div><div class="mini-bars"><span><b>Structure</b><i><em style="width:82%"></em></i><small>82</small></span><span><b>Momentum</b><i><em style="width:68%"></em></i><small>68</small></span><span><b>Liquidity</b><i><em style="width:79%"></em></i><small>79</small></span><span><b>News Risk</b><i><em style="width:42%"></em></i><small>42</small></span></div></article>
+<article class="metric-card readiness"><div class="card-head"><span>STRATEGY READINESS</span><b>02</b></div><div class="metric-top"><div class="gauge small" style="--score:71"><div><strong>71</strong></div></div><div><h3>5 / 7</h3><p>Conditions met</p></div></div><div class="check-grid"><span class="yes">✓ HTF Structure</span><span class="yes">✓ Liquidity Sweep</span><span class="yes">✓ MSS</span><span class="no">× FVG</span><span class="yes">✓ Session</span><span class="no">× News Filter</span><span class="yes">✓ Volatility</span></div><div class="ready">STRATEGY READY <strong>71%</strong></div></article>
+<article class="metric-card bias"><div class="card-head"><span>MARKET BIAS</span><b>03</b></div><div class="bias-main"><div><small>CURRENT BIAS</small><strong>BULLISH</strong></div><b>68%</b></div><div class="bias-rows"><span><b>Structure</b><em class="positive">BULLISH</em></span><span><b>Momentum</b><em class="positive">BULLISH</em></span><span><b>Liquidity</b><em>NEUTRAL</em></span><span><b>News</b><em class="negative">BEARISH RISK</em></span></div></article>
+<article class="metric-card performance" id="performance"><div class="card-head"><span>YOUR PERFORMANCE</span><b>04</b></div><div class="metric-top"><div class="gauge small" style="--score:84"><div><strong>84</strong></div></div><div><h3>Strong</h3><p>Trading discipline</p></div></div><div class="perf-bars"><span><b>Consistency</b><i><em style="width:91%"></em></i><small>91</small></span><span><b>Execution</b><i><em style="width:82%"></em></i><small>82</small></span><span><b>Discipline</b><i><em style="width:87%"></em></i><small>87</small></span><span><b>Rule Adherence</b><i><em style="width:76%"></em></i><small>76</small></span></div></article>
+<article class="metric-card risk" id="calendar"><div class="card-head"><span>MARKET RISK</span><b>05</b></div><div class="risk-head"><div class="gauge small" style="--score:62"><div><strong>62</strong></div></div><div><h3>Elevated</h3><p>Event sensitivity</p></div></div><div class="events"><span><b>CPI</b><em>HIGH</em><small>Upcoming</small></span><span><b>FOMC</b><em>HIGH</em><small>Upcoming</small></span><span><b>Unemployment</b><em>MED</em><small>Upcoming</small></span></div></article>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="client.js?v=20260908-1"></script>
+</section>
+
+<section class="bottom-grid" id="education">
+<article class="panel chart-panel"><div class="panel-head"><div><span>PRICE ACTION</span><h3 id="chartTitle">Gold Futures · GC1!</h3></div><div class="timeframes"><button>1m</button><button>5m</button><button class="active">15m</button><button>1h</button><button>D</button></div></div><div class="chart"><div class="grid-lines"></div><div class="price-line"></div><div class="candles" id="candles"></div><div class="axis"><span>3,680</span><span>3,660</span><span>3,640</span><span>3,620</span><span>3,600</span></div></div></article>
+<article class="panel news-panel"><div class="panel-head"><div><span>LATEST NEWS</span><h3>Economic intelligence</h3></div><a href="#calendar">View all →</a></div><div class="news-list"><div><em class="high">HIGH</em><p><b>US inflation expectations remain in focus</b><small>Macro Desk · 8 min ago</small></p></div><div><em class="medium">MED</em><p><b>Dollar index holds near session highs</b><small>Market Wire · 21 min ago</small></p></div><div><em class="high">HIGH</em><p><b>Fed speakers ahead of policy decision</b><small>Economic Desk · 34 min ago</small></p></div><div><em class="medium">MED</em><p><b>US yields edge higher in early trade</b><small>Rates Monitor · 51 min ago</small></p></div></div></article>
+<article class="panel ai-panel"><div class="ai-orb">✦</div><span>AI INSIGHTS</span><h3>Market context</h3><p>Structure remains constructive while momentum is losing strength. Liquidity conditions are supportive, but upcoming high-impact events increase downside sensitivity.</p><div class="ai-summary"><span>Overall read</span><strong>FAVORABLE <b>78%</b></strong></div><blockquote>“Clarity comes from rules, not predictions.”</blockquote></article>
+</section>
+</main></div>
+
+<div class="profile-drawer" id="profileDrawer" aria-hidden="true"><button class="drawer-close" id="profileClose">×</button><div class="profile-preview"><span class="avatar avatar-large" id="profileAvatar">E</span><div><small id="profileNamePreview">Member</small><span id="profileEmailPreview"></span></div></div><form id="profileForm"><label>Full name<input id="fullName" type="text"></label><label>Phone<input id="phone" type="text"></label><label>Email<input id="emailProfile" type="email" disabled></label><label class="avatar-upload">Profile photo<input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp"></label><button id="saveProfile" type="submit">Save profile</button><button id="profileLogout" type="button">Log out</button><p id="profileMessage"></p></form></div>
+<div class="mobile-drawer" id="drawer"><button id="drawerClose">×</button><a href="#overview">Overview</a><a href="#markets">Live Market</a><a href="#decision-support">Decision Support</a><a href="#intelligence">Market Intelligence</a><a href="#calendar">Economic Calendar</a><a href="#education">Education</a><button id="drawerProfile">Profile</button><button id="drawerLogout">Log out</button></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="client.js?v=20260908-2"></script>
 </body>
 </html>
