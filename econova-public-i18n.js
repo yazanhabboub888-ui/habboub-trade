@@ -2,7 +2,7 @@
 (()=>{
   'use strict';
   const T={
-    'Tools':'الأدوات','How it works':'كيف يعمل','Membership':'الاشتراك','Stories':'التجارب','Education':'التعليم','Log in':'تسجيل الدخول','Get started':'ابدأ الآن','Explore tools':'استكشف الأدوات','View membership':'عرض العضوية','Start now':'ابدأ الآن','Start free':'ابدأ مجانًا','Get Full Workflow':'احصل على سير العمل الكامل',
+    'Tools':'الأدوات','How it works':'كيف يعمل','Membership':'الاشتراك','Stories':'التجارب','Education':'التعليم','Log in':'تسجيل الدخول','Get started':'ابدأ الآن','Explore tools':'استكشف الأدوات','View membership':'عرض العضوية','Start now':'سجل الآن','Start free':'سجل الآن','Get Full Workflow':'احصل على سير العمل الكامل',
     'ECONOVA INTELLIGENCE':'ذكاء ECONOVA','See the market.':'شوف السوق.','Before you trade.':'قبل ما تتداول.','Live market context':'سياق السوق المباشر','Structured workflow':'سير عمل منظّم','AI-assisted intelligence':'ذكاء مدعوم بالذكاء الاصطناعي',
     'LIVE MARKET ENVIRONMENT':'بيئة السوق المباشرة','● LIVE':'● مباشر','Market Context':'سياق السوق','Market View':'نظرة السوق','Everything starts from one public dashboard.':'كل شيء يبدأ من لوحة عامة واحدة.','Use the navigation to jump through the ECONOVA experience. The public site stays on one page; member tools remain inside the trading environment.':'استخدم القائمة للتنقل داخل تجربة ECONOVA. الموقع العام يبقى في صفحة واحدة، بينما تبقى أدوات الأعضاء داخل بيئة التداول.',
     'Live Stream':'البث المباشر','Live sessions and market context':'جلسات مباشرة وسياق السوق','Follow live market sessions, commentary and context in a focused environment.':'تابع جلسات السوق المباشرة والتعليق والسياق في بيئة مركّزة.',
