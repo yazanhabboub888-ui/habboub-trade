@@ -2,19 +2,21 @@
 const SUPABASE_URL='https://feoyjasuvrqxzhskqzye.supabase.co';
 const SUPABASE_KEY='sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0';
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-const drawer=document.getElementById('drawer');
-const openDrawer=()=>drawer.classList.add('open');
-const closeDrawer=()=>drawer.classList.remove('open');
-document.getElementById('mobileTools')?.addEventListener('click',openDrawer);
-document.getElementById('drawerClose')?.addEventListener('click',closeDrawer);
-document.getElementById('drawerX')?.addEventListener('click',closeDrawer);
-drawer?.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeDrawer));
-const signOut=async()=>{await client.auth.signOut();window.location.replace('../auth.html');};
-document.getElementById('logout')?.addEventListener('click',signOut);
-document.getElementById('mobileLogout')?.addEventListener('click',signOut);
-function updateActive(){const id=location.hash.replace('#','')||'home';document.querySelectorAll('.tool').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));}
-window.addEventListener('hashchange',updateActive);updateActive();
-const d=new Date();document.getElementById('dateLabel').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}).toUpperCase();
-client.auth.getSession().then(({data,error})=>{if(error||!data?.session){window.location.replace('../auth.html');}});
-client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||!session) window.location.replace('../auth.html');});
+const $=id=>document.getElementById(id);
+const drawer=$('drawer'),profileDrawer=$('profileDrawer');
+const openDrawer=()=>drawer?.classList.add('open'),closeDrawer=()=>drawer?.classList.remove('open');
+const openProfile=()=>{profileDrawer?.classList.add('open');profileDrawer?.setAttribute('aria-hidden','false')},closeProfile=()=>{profileDrawer?.classList.remove('open');profileDrawer?.setAttribute('aria-hidden','true')};
+$('mobileTools')?.addEventListener('click',openDrawer);$('drawerClose')?.addEventListener('click',closeDrawer);$('drawerX')?.addEventListener('click',closeDrawer);drawer?.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeDrawer));
+$('profileOpen')?.addEventListener('click',openProfile);$('profileOpenHero')?.addEventListener('click',openProfile);$('profileClose')?.addEventListener('click',closeProfile);$('profileX')?.addEventListener('click',closeProfile);$('drawerProfile')?.addEventListener('click',()=>{closeDrawer();openProfile()});
+const signOut=async()=>{await client.auth.signOut();window.location.replace('../auth.html')};$('profileLogout')?.addEventListener('click',signOut);$('drawerLogout')?.addEventListener('click',signOut);
+function updateActive(){const id=location.hash.replace('#','')||'home';document.querySelectorAll('.tool').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id))}window.addEventListener('hashchange',updateActive);updateActive();
+const d=new Date();$('dateLabel').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}).toUpperCase();
+function setAvatar(el,url,name){if(!el)return;el.innerHTML='';if(url){const img=document.createElement('img');img.src=url;img.alt='Profile photo';el.appendChild(img)}else el.textContent=(name||'M').trim().charAt(0).toUpperCase()||'M'}
+function message(text,ok=true){const e=$('profileMessage');if(e){e.textContent=text;e.style.color=ok?'#67e8a5':'#ff7d8b'}}
+async function loadProfile(session){const user=session.user;const{data,error}=await client.from('profiles').select('full_name,phone,email,avatar_url').eq('id',user.id).maybeSingle();if(error)throw error;const profile=data||{};const email=user.email||profile.email||'';const name=profile.full_name||user.user_metadata?.full_name||email.split('@')[0]||'Member';$('topName').textContent=name;$('heroName').textContent=name;$('heroEmail').textContent=email;$('profileNamePreview').textContent=name;$('profileEmailPreview').textContent=email;$('fullName').value=profile.full_name||'';$('phone').value=profile.phone||'';$('emailProfile').value=email;setAvatar($('topAvatar'),profile.avatar_url,name);setAvatar($('heroAvatar'),profile.avatar_url,name);setAvatar($('profileAvatar'),profile.avatar_url,name);return{user,profile,email,name}}
+let current=null;
+$('profileForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!current)return;const btn=$('saveProfile');btn.disabled=true;message('Saving…');try{const payload={id:current.user.id,full_name:$('fullName').value.trim()||null,phone:$('phone').value.trim()||null,email:current.email,avatar_url:current.profile.avatar_url||null};const{error}=await client.from('profiles').upsert(payload,{onConflict:'id'});if(error)throw error;current.profile={...current.profile,...payload};await loadProfile({user:current.user});message('Profile saved successfully.')}catch(err){message(err?.message||'Could not save your profile.',false)}finally{btn.disabled=false}});
+$('avatarInput')?.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file||!current)return;if(file.size>5*1024*1024){message('Photo must be 5 MB or smaller.',false);e.target.value='';return}if(!['image/jpeg','image/png','image/webp'].includes(file.type)){message('Use JPG, PNG or WebP.',false);e.target.value='';return}message('Uploading photo…');try{const ext=file.name.split('.').pop()?.toLowerCase()||'jpg',path=`${current.user.id}/avatar.${ext}`;const{error}=await client.storage.from('profile-avatars').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'3600'});if(error)throw error;const{data}=client.storage.from('profile-avatars').getPublicUrl(path);const{error:dbError}=await client.from('profiles').upsert({id:current.user.id,full_name:$('fullName').value.trim()||current.profile.full_name||null,phone:$('phone').value.trim()||current.profile.phone||null,email:current.email,avatar_url:data.publicUrl},{onConflict:'id'});if(dbError)throw dbError;current.profile.avatar_url=data.publicUrl;setAvatar($('topAvatar'),data.publicUrl,current.name);setAvatar($('heroAvatar'),data.publicUrl,current.name);setAvatar($('profileAvatar'),data.publicUrl,current.name);message('Profile photo updated.')}catch(err){message(err?.message||'Could not upload the photo.',false)}finally{e.target.value=''}});
+client.auth.getSession().then(async({data,error})=>{if(error||!data?.session){window.location.replace('../auth.html');return}try{current=await loadProfile(data.session)}catch(err){message(err?.message||'Profile could not be loaded.',false)}});
+client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||!session)window.location.replace('../auth.html')});
 })();
