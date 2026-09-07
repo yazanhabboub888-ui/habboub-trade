@@ -6,12 +6,15 @@
 <meta name="theme-color" content="#070a0f">
 <title>ECONOVA — Client</title>
 <link rel="icon" href="../econova-icon.svg">
-<link rel="stylesheet" href="client.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="client.css?v=20260908-1">
 </head>
 <body>
 <div class="app-shell">
   <header class="topbar">
-    <a class="brand" href="#home"><img src="../econova-symbol.svg" alt="ECONOVA"><span><strong>ECONOVA</strong><small>INTELLIGENCE · DECISION · CONTEXT</small></span></a>
+    <a class="brand" href="#home"><img src="../econova-symbol.svg" alt="ECONOVA"><span><strong>ECONOVA</strong><small>AI ECONOMIC INTELLIGENCE</small></span></a>
     <div class="top-actions">
       <button class="top-control" id="languageToggle" type="button" aria-label="Switch language">عربي</button>
       <button class="top-control theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">☼</button>
@@ -25,11 +28,10 @@
     <div class="rail-trigger"><span class="rail-icon">◈</span><span data-en="Workspace" data-ar="مساحة العمل">Workspace</span><i>‹</i></div>
     <div class="tools-panel">
       <div class="tools-head"><span>ECONOVA</span><small data-en="MARKET INTELLIGENCE WORKSPACE" data-ar="مساحة ذكاء الأسواق">MARKET INTELLIGENCE WORKSPACE</small></div>
-      <a class="tool active" href="#home"><b>⌂</b><span data-en="Overview" data-ar="نظرة عامة">Overview<small>Workspace overview</small></span><i>01</i></a>
-      <a class="tool" href="#markets"><b>◉</b><span data-en="Markets" data-ar="الأسواق">Markets<small>Choose an instrument</small></span><i>02</i></a>
-      <a class="tool" href="#journal"><b>◫</b><span data-en="Daily Journal" data-ar="المفكرة اليومية">Daily Journal<small>Trading process</small></span><i>03</i></a>
-      <a class="tool" href="#decision-support"><b>◎</b><span data-en="Decision Support" data-ar="دعم القرار">Decision Support<small>Conditions & strategy</small></span><i>04</i></a>
-      <a class="tool" href="#market-intelligence"><b>◌</b><span data-en="Intelligence" data-ar="ذكاء السوق">Intelligence<small>News & events</small></span><i>05</i></a>
+      <a class="tool active" href="#home"><b>⌂</b><span data-en="Overview" data-ar="نظرة عامة">Overview</span><i>01</i></a>
+      <a class="tool" href="#markets"><b>◉</b><span data-en="Markets" data-ar="الأسواق">Markets</span><i>02</i></a>
+      <a class="tool" href="#decision-support"><b>◎</b><span data-en="Decision Support" data-ar="دعم القرار">Decision Support</span><i>03</i></a>
+      <a class="tool" href="#market-intelligence"><b>◌</b><span data-en="Intelligence" data-ar="ذكاء السوق">Intelligence</span><i>04</i></a>
     </div>
   </aside>
 
@@ -38,54 +40,62 @@
       <div class="welcome-top"><div class="eyebrow"><span>ECONOVA / MEMBER</span><i></i><span id="dateLabel">TODAY</span></div><span class="workspace-code">PRIVATE WORKSPACE / 01</span></div>
       <div class="welcome-copy">
         <div>
-          <div class="hero-kicker" data-en="MARKET INTELLIGENCE SYSTEM" data-ar="نظام ذكاء الأسواق">MARKET INTELLIGENCE SYSTEM</div>
-          <h1><span data-en="Welcome back," data-ar="أهلًا بعودتك،">Welcome back,</span> <em id="welcomeName">Member</em><br><strong data-en="What are we looking at today?" data-ar="شو بدنا نراقب اليوم؟">What are we looking at today?</strong></h1>
-          <p data-en="Choose your market first. ECONOVA will organize the conditions, your strategy rules, your bias and the wider context in one focused workspace." data-ar="اختَر سوقك أولًا. ECONOVA سيرتّب لك حالة السوق، شروط استراتيجيتك، الانحياز والسياق العام في مساحة عمل واحدة.">Choose your market first. ECONOVA will organize the conditions, your strategy rules, your bias and the wider context in one focused workspace.</p>
+          <div class="hero-kicker" data-en="MARKET INTELLIGENCE WORKSPACE" data-ar="مساحة ذكاء الأسواق">MARKET INTELLIGENCE WORKSPACE</div>
+          <h1><span data-en="WELCOME BACK," data-ar="أهلًا بعودتك،">WELCOME BACK,</span> <em id="welcomeName">YAZAN</em><br><strong data-en="Your market intelligence workspace" data-ar="مساحة ذكاء الأسواق الخاصة بك">Your market intelligence workspace</strong></h1>
         </div>
         <button class="profile-card" id="profileOpenHero" type="button"><div class="profile-card-top"><span class="avatar avatar-large" id="heroAvatar">E</span><span><small data-en="MEMBER PROFILE" data-ar="ملف العضو">MEMBER PROFILE</small><b id="heroName">Member</b><em id="heroEmail">Loading email…</em></span></div><div class="profile-card-foot"><span data-en="Account settings" data-ar="إعدادات الحساب">Account settings</span><strong data-en="Manage profile" data-ar="إدارة الملف">Manage profile <b>→</b></strong></div></button>
       </div>
 
       <div class="market-picker" id="markets">
-        <div class="section-heading"><div><small data-en="STEP 01" data-ar="الخطوة 01">STEP 01</small><h2 data-en="Choose your market" data-ar="اختَر سوقك">Choose your market</h2></div><span data-en="FUTURES / CFD" data-ar="فيوتشرز / CFD">FUTURES / CFD</span></div>
-        <div class="market-types">
-          <button class="market-type active" type="button" data-type="futures"><span class="type-index">01</span><b data-en="Futures" data-ar="فيوتشرز">Futures</b><small data-en="Exchange-traded contracts" data-ar="عقود متداولة في البورصة">Exchange-traded contracts</small><i>↗</i></button>
-          <button class="market-type" type="button" data-type="cfd"><span class="type-index">02</span><b>CFD</b><small data-en="Leveraged market instruments" data-ar="أدوات سوق برافعة مالية">Leveraged market instruments</small><i>↗</i></button>
+        <div class="market-title"><span data-en="WHAT ARE YOU TRADING?" data-ar="شو بتتداول؟">WHAT ARE YOU TRADING?</span></div>
+        <div class="market-group">
+          <div class="market-group-label">FUTURES</div>
+          <div class="instrument-picker">
+            <button class="instrument active" type="button" data-symbol="GOLD"><b data-en="GOLD" data-ar="الذهب">GOLD</b><small>GC</small></button>
+            <button class="instrument" type="button" data-symbol="NASDAQ"><b data-en="NASDAQ" data-ar="ناسداك">NASDAQ</b><small>NQ</small></button>
+            <button class="instrument" type="button" data-symbol="SP500"><b>S&amp;P</b><small>ES</small></button>
+            <button class="instrument" type="button" data-symbol="DOLLAR"><b data-en="DOLLAR" data-ar="الدولار">DOLLAR</b><small>DX</small></button>
+          </div>
         </div>
-        <div class="instrument-picker" id="instrumentPicker">
-          <button class="instrument active" type="button" data-symbol="GOLD"><span>GC</span><b data-en="Gold" data-ar="الذهب">Gold</b><small>GOLD FUTURES</small><strong>01</strong></button>
-          <button class="instrument" type="button" data-symbol="NASDAQ"><span>NQ</span><b data-en="Nasdaq" data-ar="ناسداك">Nasdaq</b><small>NASDAQ FUTURES</small><strong>02</strong></button>
-          <button class="instrument" type="button" data-symbol="SP500"><span>ES</span><b data-en="S&P 500" data-ar="S&P 500">S&amp;P 500</b><small>S&amp;P FUTURES</small><strong>03</strong></button>
-          <button class="instrument" type="button" data-symbol="DOLLAR"><span>DX</span><b data-en="Dollar" data-ar="الدولار">Dollar</b><small>USD INDEX</small><strong>04</strong></button>
+        <div class="market-group">
+          <div class="market-group-label">CFD</div>
+          <div class="instrument-picker">
+            <button class="instrument cfd-choice" type="button" data-symbol="GOLD"><b>XAUUSD</b><small>CFD</small></button>
+            <button class="instrument cfd-choice" type="button" data-symbol="NASDAQ"><b>NAS100</b><small>CFD</small></button>
+            <button class="instrument cfd-choice" type="button" data-symbol="SP500"><b>US500</b><small>CFD</small></button>
+            <button class="instrument cfd-choice" type="button" data-symbol="DOLLAR"><b>DXY</b><small>CFD</small></button>
+          </div>
         </div>
       </div>
     </section>
 
     <section class="cockpit section-view" id="decision-support">
-      <div class="cockpit-header"><div><div class="eyebrow"><span data-en="MARKET COCKPIT" data-ar="لوحة السوق">MARKET COCKPIT</span><i></i><span id="selectedMarket">GOLD · FUTURES</span></div><h2 id="instrumentTitle">Gold Futures</h2><p data-en="A structured view of the market, your rules and the context around them." data-ar="قراءة مرتبة للسوق، شروطك والسياق المحيط بها.">A structured view of the market, your rules and the context around them.</p></div><div class="market-state"><span data-en="MARKET OPEN" data-ar="السوق مفتوح">MARKET OPEN</span><i></i></div></div>
-      <div class="event-banner" id="eventBanner">
-        <div class="event-pulse"><span>!</span></div><div class="event-copy"><small data-en="EVENT MODE · HIGH IMPACT" data-ar="وضع الخبر · تأثير مرتفع">EVENT MODE · HIGH IMPACT</small><b data-en="CPI · USD" data-ar="CPI · الدولار">CPI · USD</b><span data-en="Major release approaching · 12 min" data-ar="خبر مهم قادم · 12 دقيقة">Major release approaching · 12 min</span></div><div class="event-outlook"><small data-en="EVENT OUTLOOK" data-ar="توقع الخبر">EVENT OUTLOOK</small><strong>80%</strong><b data-en="USD STRENGTH" data-ar="قوة الدولار">USD STRENGTH</b></div><div class="event-impact"><span>GOLD <b>↓ 74%</b></span><span>NASDAQ <b>↓ 61%</b></span><span>S&amp;P <b>↓ 58%</b></span></div>
-      </div>
+      <div class="cockpit-header"><div><div class="eyebrow"><span data-en="MARKET INTELLIGENCE" data-ar="ذكاء السوق">MARKET INTELLIGENCE</span><i></i><span id="selectedMarket">GOLD · FUTURES</span></div><h2 id="instrumentTitle">Gold Futures</h2></div><div class="market-state"><span data-en="MARKET OPEN" data-ar="السوق مفتوح">MARKET OPEN</span><i></i></div></div>
 
       <div class="signal-grid">
-        <article class="signal-card primary"><div class="card-head"><span data-en="01 · MARKET CONDITION" data-ar="01 · حالة السوق">01 · MARKET CONDITION</span><i>◎</i></div><div class="score-line"><strong>78</strong><span data-en="FAVORABLE CONDITIONS" data-ar="ظروف مواتية">FAVORABLE CONDITIONS</span></div><p data-en="The market currently shows favorable conditions, but momentum is losing strength." data-ar="السوق حاليًا يظهر ظروفًا مواتية، لكن الزخم بدأ يفقد قوته.">The market currently shows favorable conditions, but momentum is losing strength.</p><div class="factor-list"><span><b>Structure</b><i style="--v:82%"></i><em>82</em></span><span><b>Momentum</b><i style="--v:68%"></i><em>68</em></span><span><b>Liquidity</b><i style="--v:79%"></i><em>79</em></span><span><b>News risk</b><i style="--v:42%"></i><em>42</em></span></div></article>
-        <article class="signal-card"><div class="card-head"><span data-en="02 · STRATEGY READINESS" data-ar="02 · جاهزية الاستراتيجية">02 · STRATEGY READINESS</span><i>◎</i></div><div class="score-line"><strong>71</strong><span data-en="5 / 7 RULES MET" data-ar="5 / 7 شروط متحققة">5 / 7 RULES MET</span></div><p data-en="Based on the trading conditions you define, the current market meets most of your requirements." data-ar="بحسب شروط التداول التي تحددها، السوق الحالي يحقق معظم متطلباتك.">Based on the trading conditions you define, the current market meets most of your requirements.</p><div class="rule-list"><span>✓ <b data-en="HTF Structure" data-ar="هيكل HTF">HTF Structure</b></span><span>✓ <b data-en="Liquidity Sweep" data-ar="سحب السيولة">Liquidity Sweep</b></span><span>✓ <b>MSS</b></span><span>✕ <b>FVG</b></span><span>✓ <b data-en="Session" data-ar="الجلسة">Session</b></span><span>✕ <b data-en="News Filter" data-ar="فلتر الأخبار">News Filter</b></span><span>✓ <b data-en="Volatility" data-ar="التذبذب">Volatility</b></span></div></article>
-        <article class="signal-card"><div class="card-head"><span data-en="03 · MARKET BIAS" data-ar="03 · انحياز السوق">03 · MARKET BIAS</span><i>↗</i></div><div class="bias"><strong data-en="BULLISH" data-ar="صاعد">BULLISH</strong><b>68%</b></div><p data-en="Bullish bias with moderate conviction due to weakening momentum." data-ar="انحياز صاعد بثقة متوسطة بسبب ضعف الزخم.">Bullish bias with moderate conviction due to weakening momentum.</p><div class="bias-rows"><span><b data-en="Structure" data-ar="الهيكل">Structure</b><em>BULLISH</em></span><span><b data-en="Momentum" data-ar="الزخم">Momentum</b><em>BULLISH</em></span><span><b data-en="Liquidity" data-ar="السيولة">Liquidity</b><em>NEUTRAL</em></span><span><b data-en="News" data-ar="الأخبار">News</b><em>RISK</em></span></div></article>
-        <article class="signal-card"><div class="card-head"><span data-en="04 · YOUR PERFORMANCE" data-ar="04 · أداؤك">04 · YOUR PERFORMANCE</span><i>◫</i></div><div class="score-line"><strong>84</strong><span data-en="STRONG PERFORMANCE" data-ar="أداء قوي">STRONG PERFORMANCE</span></div><p data-en="Your recent process is consistent, with room to improve rule adherence." data-ar="أداؤك الأخير متناسق، مع مجال لتحسين الالتزام بالشروط.">Your recent process is consistent, with room to improve rule adherence.</p><div class="performance-list"><span><b data-en="Consistency" data-ar="الثبات">Consistency</b><em>91</em></span><span><b data-en="Execution" data-ar="التنفيذ">Execution</b><em>82</em></span><span><b data-en="Discipline" data-ar="الانضباط">Discipline</b><em>87</em></span><span><b data-en="Rule adherence" data-ar="الالتزام بالشروط">Rule adherence</b><em>76</em></span></div></article>
+        <article class="signal-card primary"><div class="card-head"><span data-en="MARKET CONDITION" data-ar="حالة السوق">MARKET CONDITION</span><i>◎</i></div><div class="score-line"><strong>78</strong><span data-en="FAVORABLE CONDITIONS" data-ar="ظروف مواتية">FAVORABLE CONDITIONS</span></div><p data-en="The market currently shows favorable conditions, but momentum is weakening." data-ar="السوق حاليًا يظهر ظروفًا مواتية، لكن الزخم بدأ يضعف.">The market currently shows favorable conditions, but momentum is weakening.</p><div class="factor-list"><span><b>Structure</b><i style="--v:82%"></i><em>82</em></span><span><b>Momentum</b><i style="--v:68%"></i><em>68</em></span><span><b>Liquidity</b><i style="--v:79%"></i><em>79</em></span><span><b data-en="News Risk" data-ar="مخاطر الأخبار">News Risk</b><i style="--v:42%"></i><em>42</em></span></div></article>
+
+        <article class="signal-card"><div class="card-head"><span data-en="YOUR STRATEGY" data-ar="استراتيجيتك">YOUR STRATEGY</span><i>◎</i></div><div class="score-line"><strong>71</strong><span data-en="5 / 7 CONDITIONS MET" data-ar="5 / 7 شروط متحققة">5 / 7 CONDITIONS MET</span></div><div class="rule-list"><span>✓ <b data-en="HTF Structure" data-ar="هيكل HTF">HTF Structure</b></span><span>✓ <b data-en="Liquidity Sweep" data-ar="سحب السيولة">Liquidity Sweep</b></span><span>✓ <b>MSS</b></span><span>✕ <b>FVG</b></span><span>✓ <b data-en="Session" data-ar="الجلسة">Session</b></span><span>✕ <b data-en="News Filter" data-ar="فلتر الأخبار">News Filter</b></span><span>✓ <b data-en="Volatility" data-ar="التذبذب">Volatility</b></span></div><div class="ready-score"><strong>71</strong><span data-en="STRATEGY READY" data-ar="الاستراتيجية جاهزة">STRATEGY READY</span></div></article>
+
+        <article class="signal-card"><div class="card-head"><span data-en="MARKET BIAS" data-ar="انحياز السوق">MARKET BIAS</span><i>↗</i></div><div class="bias"><strong data-en="BULLISH" data-ar="صاعد">BULLISH</strong><b>68%</b></div><div class="bias-rows"><span><b data-en="Structure" data-ar="الهيكل">Structure</b><em>BULLISH</em></span><span><b data-en="Momentum" data-ar="الزخم">Momentum</b><em>BULLISH</em></span><span><b data-en="Liquidity" data-ar="السيولة">Liquidity</b><em>NEUTRAL</em></span><span><b data-en="News" data-ar="الأخبار">News</b><em>BEARISH RISK</em></span></div></article>
+
+        <article class="signal-card performance-card"><div class="card-head"><span data-en="YOUR PERFORMANCE" data-ar="أداؤك">YOUR PERFORMANCE</span><i>◫</i></div><div class="score-line"><strong>84</strong><span data-en="/ 100" data-ar="/ 100">/ 100</span></div><div class="performance-list"><span><b data-en="Consistency" data-ar="الثبات">Consistency</b><em>91</em></span><span><b data-en="Execution" data-ar="التنفيذ">Execution</b><em>82</em></span><span><b data-en="Discipline" data-ar="الانضباط">Discipline</b><em>87</em></span><span><b data-en="Rule Adherence" data-ar="الالتزام بالشروط">Rule Adherence</b><em>76</em></span></div></article>
       </div>
 
-      <div class="context-strip"><div><small data-en="WHY THIS READING?" data-ar="ليش هاي القراءة؟">WHY THIS READING?</small><b data-en="Structure is aligned, liquidity is supportive, but the upcoming event increases uncertainty." data-ar="الهيكل متوافق، والسيولة داعمة، لكن الخبر القادم يرفع مستوى عدم اليقين.">Structure is aligned, liquidity is supportive, but the upcoming event increases uncertainty.</b></div><span data-en="VIEW FULL CONTEXT →" data-ar="عرض السياق الكامل ←">VIEW FULL CONTEXT →</span></div>
+      <div class="risk-banner"><div><span>⚠</span><strong data-en="MARKET RISK" data-ar="مخاطر السوق">MARKET RISK</strong></div><b data-en="HIGH" data-ar="مرتفع">HIGH</b><p data-en="High-impact event approaching" data-ar="خبر عالي التأثير يقترب">High-impact event approaching</p></div>
     </section>
 
-    <section class="workspace-section section-view" id="journal"><div class="section-label"><span>03</span><i></i><span data-en="DAILY JOURNAL" data-ar="المفكرة اليومية">DAILY JOURNAL</span></div><div class="section-title-row"><div><small data-en="PROCESS & REVIEW" data-ar="المتابعة والمراجعة">PROCESS &amp; REVIEW</small><h2 data-en="Your trading record" data-ar="سجل تداولك">Your trading record</h2><p data-en="Keep your decisions, conditions and execution in one place." data-ar="احتفظ بقراراتك وشروطك وتنفيذك في مكان واحد.">Keep your decisions, conditions and execution in one place.</p></div></div></section>
-    <section class="workspace-section section-view" id="market-intelligence"><div class="section-label"><span>04</span><i></i><span data-en="MARKET INTELLIGENCE" data-ar="ذكاء السوق">MARKET INTELLIGENCE</span></div><div class="section-title-row"><div><small data-en="NEWS & EVENTS" data-ar="الأخبار والأحداث">NEWS &amp; EVENTS</small><h2 data-en="Context that changes with the market" data-ar="سياق يتغير مع السوق">Context that changes with the market</h2><p data-en="High-impact events can switch ECONOVA into Event Mode and surface probability-based outlooks." data-ar="الأحداث عالية التأثير يمكنها تحويل ECONOVA إلى وضع الخبر وإظهار توقعات مبنية على الاحتمالات.">High-impact events can switch ECONOVA into Event Mode and surface probability-based outlooks.</p></div></div></section>
+    <section class="workspace-section section-view" id="market-intelligence"></section>
   </main>
+
+  <div class="profile-drawer" id="profileDrawer" aria-hidden="true">
+    <button class="drawer-close" id="profileClose" type="button">×</button>
+    <div class="profile-preview"><span class="avatar avatar-large" id="profileAvatar">E</span><div><small id="profileNamePreview">Member</small><span id="profileEmailPreview"></span></div></div>
+    <form id="profileForm"><label>Full name<input id="fullName" type="text"></label><label>Phone<input id="phone" type="text"></label><label>Email<input id="emailProfile" type="email" disabled></label><label class="avatar-upload">Profile photo<input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp"></label><button id="saveProfile" type="submit">Save profile</button><button id="profileLogout" type="button">Log out</button><p id="profileMessage"></p></form>
+  </div>
+  <div class="drawer" id="drawer" aria-hidden="true"><button id="drawerClose" type="button">×</button><a href="#home">Overview</a><a href="#markets">Markets</a><a href="#decision-support">Decision Support</a><a href="#market-intelligence">Intelligence</a><button id="drawerProfile" type="button">Profile</button><button id="drawerLogout" type="button">Log out</button></div>
 </div>
-
-<div class="mobile-drawer" id="drawer"><div class="drawer-backdrop" id="drawerClose"></div><nav><div class="drawer-brand"><img src="../econova-symbol.svg" alt="ECONOVA"><div><b>ECONOVA</b><small>WORKSPACE</small></div><button id="drawerX" type="button">×</button></div><div class="drawer-section-title" data-en="NAVIGATION" data-ar="التنقل">NAVIGATION</div><a href="#home">⌂ <span data-en="Overview" data-ar="نظرة عامة">Overview</span><b>01</b></a><a href="#markets">◉ <span data-en="Markets" data-ar="الأسواق">Markets</span><b>02</b></a><a href="#journal">◫ <span data-en="Daily Journal" data-ar="المفكرة اليومية">Daily Journal</span><b>03</b></a><a href="#decision-support">◎ <span data-en="Decision Support" data-ar="دعم القرار">Decision Support</span><b>04</b></a><a href="#market-intelligence">◌ <span data-en="Intelligence" data-ar="ذكاء السوق">Intelligence</span><b>05</b></a><div class="drawer-divider"></div><button class="drawer-profile" id="drawerProfile" type="button">◉ <span data-en="Profile" data-ar="الملف الشخصي">Profile</span><b>↗</b></button><button class="drawer-logout" id="drawerLogout" type="button">↗ <span data-en="Sign out" data-ar="تسجيل الخروج">Sign out</span></button></nav></div>
-
-<div class="profile-drawer" id="profileDrawer" aria-hidden="true"><div class="profile-backdrop" id="profileClose"></div><section class="profile-panel"><div class="profile-head"><div><small>ECONOVA / ACCOUNT</small><h2 data-en="Your profile" data-ar="ملفك الشخصي">Your profile</h2><p data-en="Manage your member identity and account details." data-ar="إدارة هويتك وبيانات حسابك.">Manage your member identity and account details.</p></div><button id="profileX" type="button">×</button></div><div class="profile-identity"><label class="avatar-upload"><span class="avatar avatar-profile" id="profileAvatar">E</span><input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp"><span data-en="Change photo" data-ar="تغيير الصورة">Change photo</span></label><div><small>MEMBER</small><h3 id="profileNamePreview">Member</h3><p id="profileEmailPreview">—</p></div></div><form id="profileForm"><label data-en="FULL NAME" data-ar="الاسم الكامل">FULL NAME<input id="fullName" type="text" maxlength="80" autocomplete="name" placeholder="Your full name"></label><label data-en="PHONE NUMBER" data-ar="رقم الهاتف">PHONE NUMBER<input id="phone" type="tel" maxlength="30" autocomplete="tel" placeholder="+970 5X XXX XXXX"></label><label data-en="EMAIL" data-ar="البريد الإلكتروني">EMAIL<input id="emailProfile" type="email" readonly></label><button class="save-profile" id="saveProfile" type="submit" data-en="SAVE CHANGES" data-ar="حفظ التغييرات">SAVE CHANGES <span>→</span></button></form><p class="profile-message" id="profileMessage" role="status"></p><button class="signout-main" id="profileLogout" type="button" data-en="SIGN OUT" data-ar="تسجيل الخروج">SIGN OUT <span>↗</span></button></section></div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="client.js"></script>
+<script src="client.js?v=20260908-1"></script>
 </body>
 </html>
