@@ -27,7 +27,8 @@
   function applyTheme(){const t=theme();document.body.classList.toggle('v-light',t==='light');document.body.classList.toggle('v-dark',t==='dark');const b=$('publicTheme');if(b)b.textContent=t==='light'?'☾':'☀';document.querySelector('meta[name="theme-color"]')?.setAttribute('content',t==='light'?'#f4f7fb':'#060910')}
   function toggleLanguage(){localStorage.setItem(langKey,lang()==='ar'?'en':'ar');applyLanguage()}
   function toggleTheme(){localStorage.setItem(themeKey,theme()==='light'?'dark':'light');applyTheme()}
-  function boot(){applyTheme();applyLanguage();$('publicLang')?.addEventListener('click',toggleLanguage);$('publicTheme')?.addEventListener('click',toggleTheme)}
+  function loadStoriesStyles(){if(document.querySelector('link[data-econova-stories]'))return;const link=document.createElement('link');link.rel='stylesheet';link.href='econova-stories.css?v=20260907-1';link.dataset.econovaStories='true';document.head.appendChild(link)}
+  function boot(){loadStoriesStyles();applyTheme();applyLanguage();$('publicLang')?.addEventListener('click',toggleLanguage);$('publicTheme')?.addEventListener('click',toggleTheme)}
   window.EconovaPublicI18n={applyLanguage,applyTheme,toggleLanguage,toggleTheme};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
