@@ -1,0 +1,102 @@
+/* ECONOVA Light Theme — calm, premium, market-terminal light mode */
+body.light{background:#eef3f8;color:#172536}
+body.light:before{background:radial-gradient(circle at 8% 2%,#3b82f61a,transparent 30%),radial-gradient(circle at 70% 35%,#3b82f60b,transparent 32%),radial-gradient(circle at 35% 100%,#00a67a08,transparent 35%)}
+body.light .topbar{background:rgba(255,255,255,.94);border-bottom-color:#d7e1eb;box-shadow:0 1px 14px rgba(20,43,68,.06)}
+body.light .brand{color:#142337}
+body.light .brand small{color:#728398}
+body.light .top-search{background:#f7f9fc;border-color:#d5e0eb;box-shadow:inset 0 1px 2px rgba(18,43,67,.03)}
+body.light .top-search input{color:#1d3045}
+body.light .top-search input::placeholder{color:#8494a5}
+body.light .search-icon{color:#64788d}
+body.light .live-status{color:#65788c}
+body.light .live-status time{color:#1c2e43}
+body.light .icon-btn,body.light .top-control,body.light .mobile-tools-button{background:#f8fafc;border-color:#d3deea;color:#4d6278}
+body.light .profile-trigger{color:#172536}
+body.light .profile-trigger small{color:#728398}
+body.light .workspace{background:transparent}
+body.light #content{color:#172536}
+body.light .sidebar{background:rgba(248,251,254,.96);border-left-color:#d7e1eb;box-shadow:-8px 0 26px rgba(20,43,68,.04)}
+body.light .side-label{color:#8a9aab}
+body.light .side-link,body.light .signout-side{color:#617489}
+body.light .side-link:hover,body.light .signout-side:hover{background:#edf4fa;color:#1e3c59}
+body.light .side-link.active{background:#e7f2fc;border-color:#c9e1f5;color:#1769aa;box-shadow:inset 3px 0 #1976d2}
+body.light .side-bottom{border-top-color:#dce5ed}
+body.light .hero{background:linear-gradient(180deg,#f8fbfd,#f1f6fa);border-color:#d7e1eb;box-shadow:0 8px 24px rgba(20,43,68,.04)}
+body.light .hero h1{color:#15263a}
+body.light .hero h1 em{color:#1976d2}
+body.light .hero p{color:#617489}
+body.light .secure{color:#718398}
+body.light .selection{background:#f6f9fc;border-color:#d7e1eb}
+body.light .section-title small{color:#1976d2}
+body.light .market-tab,body.light .asset{background:#fff;border-color:#d6e1eb;color:#203247;box-shadow:0 3px 12px rgba(20,43,68,.025)}
+body.light .market-tab:hover,body.light .asset:hover{border-color:#a9c8e2;background:#fbfdff}
+body.light .market-tab.active,body.light .asset.active{background:linear-gradient(145deg,#edf7ff,#f7fbff);border-color:#69aee0;box-shadow:0 5px 18px rgba(37,112,173,.08)}
+body.light .market-tab small{color:#718398}
+body.light .market-tab i,body.light .asset.active>strong{color:#1976d2}
+body.light .choice-icon,body.light .asset-visual{background:#eef4f9;border-color:#d8e3ec}
+body.light .market-tab[data-market="CFD"] .choice-icon{background:transparent}
+body.light .asset-copy b{color:#1c3045}
+body.light .asset-copy small{color:#718398}
+body.light .asset-banner{border-color:#d4e0ea;background:#d4e0ea;box-shadow:0 8px 26px rgba(20,43,68,.07)}
+body.light .asset-banner>div{background:#fff;border-right-color:#d4e0ea}
+body.light .banner-asset small,body.light .banner-price small,body.light .banner-stat small{color:#75879a}
+body.light .banner-asset h2{color:#172a3e}
+body.light .banner-asset>div>span{color:#47708f}
+body.light .banner-asset p{color:#7d8e9f}
+body.light .banner-price strong,body.light .banner-stat strong{color:#172a3e}
+body.light .banner-price b{color:#07956f}
+body.light .banner-state.live{color:#07956f}
+body.light .analytics{color:#172536}
+body.light .metric-card{background:linear-gradient(180deg,#fff,#f9fbfd);border-color:#d5e0ea;box-shadow:0 7px 20px rgba(20,43,68,.045)}
+body.light .card-head{color:#203247}
+body.light .card-head b{color:#8798a9}
+body.light .metric-main p,body.light .metric-top p{color:#64778a}
+body.light .gauge{box-shadow:0 0 18px rgba(22,142,108,.09)}
+body.light .gauge:after{background:#fff;border-color:#dbe5ed}
+body.light .gauge small{color:#53697d}
+body.light .bias-main small,body.light .bias-rows span{color:#718398}
+body.light .bias-main strong{color:#7753b7}
+body.light .bias-rows em{color:#33495f}
+body.light .bias-rows .positive{color:#07956f}
+body.light .bias-rows .negative{color:#d34c55}
+body.light .detail-bars span{color:#64778a}
+body.light .detail-bars i{background:#e1e9f0}
+body.light .detail-bars small{color:#33495f}
+body.light .check-grid{color:#64778a}
+body.light .check-grid .yes{color:#07956f}
+body.light .check-grid .no{color:#d34c55}
+body.light .card-link{background:#f1f7fc;border-color:#b9d6eb;color:#1769aa}
+body.light .card-link:hover{background:#e8f3fb;border-color:#8ebfe0}
+body.light .events span{border-bottom-color:#e1e8ef}
+body.light .events b{color:#30465b}
+body.light .events small{color:#7b8c9d}
+body.light .bottom-grid .panel{background:#fff;border-color:#d5e0ea;box-shadow:0 7px 20px rgba(20,43,68,.045)}
+body.light .panel-head{border-bottom-color:#e1e8ef}
+body.light .panel-head span,body.light .ai-panel>span{color:#24384d}
+body.light .panel-head h3{color:#718398}
+body.light .panel-head a{color:#1976d2}
+body.light .timeframes button{color:#718398}
+body.light .timeframes button.active{background:#e5f1fa;color:#1769aa}
+body.light .grid-lines{background:repeating-linear-gradient(to bottom,transparent 0,transparent 37px,#dfe7ee 38px),repeating-linear-gradient(to right,transparent 0,transparent 58px,#e8eef3 59px)}
+body.light .price-line{border-top-color:#4a9be0}
+body.light .price-line span{background:#3d8dcc}
+body.light .axis{color:#7b8d9f}
+body.light .candles i{background:#4d9fe2;box-shadow:0 0 4px rgba(41,121,255,.18)}
+body.light .candles i.down{background:#7f91a2}
+body.light .news-list>div{border-bottom-color:#e1e8ef}
+body.light .news-list b{color:#263b50}
+body.light .news-list small{color:#7b8c9d}
+body.light .news-list em.high{background:#fdebed;color:#c84a53}
+body.light .news-list em.medium{background:#fff5d9;color:#a77712}
+body.light .ai-panel h3{background:#f2f7fb;color:#40566b;border:1px solid #e0e8ef}
+body.light .ai-panel blockquote{color:#1976d2}
+body.light .ai-panel cite{color:#7b8c9d}
+body.light .footer{color:#718398}
+body.light .drawer,body.light .profile-drawer{background:#f8fbfd;border-left-color:#d5e0ea;box-shadow:0 0 40px rgba(20,43,68,.15)}
+body.light .drawer-overlay{background:rgba(15,31,48,.32)}
+body.light .profile-drawer input{background:#fff;border-color:#d5e0ea;color:#172536}
+body.light .profile-drawer label{color:#64778a}
+body.light .profile-drawer button{background:#eef6fc;border-color:#b9d6eb;color:#1769aa}
+body.light .risk .gauge{background:conic-gradient(#e2555d 62%,#f4dfe1 0)}
+body.light .risk .metric-top h3{color:#d34c55}
+body.light .sparkles{color:#7d92a6}
