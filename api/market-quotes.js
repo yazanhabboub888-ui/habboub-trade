@@ -1,8 +1,8 @@
 const DATASET = 'GLBX.MDP3';
 const INSTRUMENTS = [
-  { key: 'GOLD', symbol: 'GC.v.0' },
-  { key: 'NASDAQ', symbol: 'NQ.v.0' },
-  { key: 'SP500', symbol: 'ES.v.0' },
+  { key: 'GOLD', symbol: 'GC.v.0', frontendSymbol: 'GC=F' },
+  { key: 'NASDAQ', symbol: 'NQ.v.0', frontendSymbol: 'NQ=F' },
+  { key: 'SP500', symbol: 'ES.v.0', frontendSymbol: 'ES=F' },
 ];
 
 const finite = value => Number.isFinite(Number(value)) ? Number(value) : null;
@@ -78,7 +78,8 @@ export default async function handler(req, res) {
       if (!bars.length) {
         return {
           key: instrument.key,
-          symbol: instrument.symbol,
+          symbol: instrument.frontendSymbol,
+          providerSymbol: instrument.symbol,
           price: null,
           previous: null,
           change: null,
@@ -104,7 +105,8 @@ export default async function handler(req, res) {
 
       return {
         key: instrument.key,
-        symbol: instrument.symbol,
+        symbol: instrument.frontendSymbol,
+        providerSymbol: instrument.symbol,
         price: latest.close,
         previous,
         change,
@@ -119,10 +121,11 @@ export default async function handler(req, res) {
     }));
 
     // DXY is intentionally not filled from another provider here.
-    // ECONOVA must not mix market-data vendors for a single dashboard snapshot.
+    // ECONOVA must not mix market-data vendors inside one dashboard snapshot.
     results.push({
       key: 'DOLLAR',
-      symbol: 'DXY',
+      symbol: 'DX-Y.NYB',
+      providerSymbol: 'DXY',
       price: null,
       previous: null,
       change: null,
