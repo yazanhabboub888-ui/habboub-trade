@@ -1,0 +1,1 @@
+{"name":"ECONOVA","short_name":"ECONOVA","description":"Private market intelligence and decision-support workspace.","start_url":"./","scope":"./","display":"standalone","background_color":"#050b13","theme_color":"#07111d","orientation":"portrait-primary","icons":[{"src":"../econova-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
