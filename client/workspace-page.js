@@ -1,4 +1,5 @@
 (()=>{'use strict';
+const themeLink=document.createElement('link');themeLink.rel='stylesheet';themeLink.href='theme-system.css?v=20260913-1';document.head.appendChild(themeLink);
 const SUPABASE_URL='https://feoyjasuvrqxzhskqzye.supabase.co';
 const SUPABASE_KEY='sb_publishable_ehho8PNFtVSRiBn7GaBl9Q_Tl1mYVT0';
 const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
