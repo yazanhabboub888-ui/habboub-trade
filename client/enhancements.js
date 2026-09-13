@@ -1,5 +1,4 @@
 (()=>{'use strict';
-const themeLink=document.createElement('link');themeLink.rel='stylesheet';themeLink.href='theme-system.css?v=20260913-1';document.head.appendChild(themeLink);
 const $=id=>document.getElementById(id);const qsa=s=>[...document.querySelectorAll(s)];const drawer=$('drawer'),profile=$('profileDrawer'),notifications=$('notificationDrawer'),backdrop=$('drawerBackdrop'),palette=$('commandPalette');
 function closePanels(){[drawer,profile,notifications].forEach(x=>x?.classList.remove('open'));[drawer,profile,notifications].forEach(x=>x?.setAttribute('aria-hidden','true'));backdrop?.classList.remove('open')}
 function openPanel(panel){closePanels();panel?.classList.add('open');panel?.setAttribute('aria-hidden','false');if(panel!==drawer)backdrop?.classList.add('open')}
