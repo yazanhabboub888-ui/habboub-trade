@@ -184,7 +184,7 @@ button{color:inherit}
   .bottom-grid{grid-template-columns:1fr 1fr}.ai-panel{grid-column:1/-1}
 }
 @media(max-width:850px){
-  .topbar{height:64px;grid-template-columns:1fr auto;padding:0 14px}.header-center,.profile-trigger,.top-control{display:none}.mobile-header-controls{display:flex}.mobile-tools-button{display:block}
+  .topbar{height:64px;grid-template-columns:1fr auto;padding:0 14px}.header-center,.profile-trigger,.top-actions > .top-control{display:none}.mobile-header-controls{display:flex}.mobile-tools-button{display:block}
   .workspace{display:block;min-height:calc(100vh - 64px)}.sidebar{display:none}#content{padding:22px 14px 0}
   .hero{display:block;padding-bottom:22px}.hero-meta{margin-top:15px}.selection{grid-template-columns:1fr;gap:24px}.asset-banner{grid-template-columns:1fr 1fr}.banner-asset{grid-column:1/-1}.analytics-grid{gap:10px}.metric-card,.metric-card.condition,.metric-card.performance{grid-column:span 12}.bottom-grid{grid-template-columns:1fr}.ai-panel{grid-column:auto}
   .disclaimer{display:block}.disclaimer strong{display:block;margin-bottom:6px}.econova-footer{display:grid;padding:17px 14px}
