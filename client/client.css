@@ -43,7 +43,10 @@ button{color:inherit}
 .profile-trigger b{display:block;margin-top:2px;font-size:10px}
 .avatar{display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));color:#061019;font-weight:800}
 .avatar-mini{width:28px;height:28px;font-size:10px}
-.mobile-tools-button{display:none;width:38px}
+.mobile-header-controls{display:none;align-items:center;gap:5px}
+.mobile-header-button,.mobile-tools-button{height:36px;min-width:36px;padding:0 8px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--muted);cursor:pointer;font-size:8px}
+.mobile-tools-button{display:none;width:36px}
+.mobile-header-button:hover,.mobile-tools-button:hover{border-color:var(--cyan);color:var(--text)}
 
 .workspace{display:grid;grid-template-columns:230px minmax(0,1fr);flex:1;min-height:calc(100vh - 72px)}
 .sidebar{position:sticky;top:72px;height:calc(100vh - 72px);display:flex;flex-direction:column;padding:24px 14px;border-inline-end:1px solid var(--line);background:linear-gradient(180deg,var(--bg-soft),var(--bg))}
@@ -181,7 +184,7 @@ button{color:inherit}
   .bottom-grid{grid-template-columns:1fr 1fr}.ai-panel{grid-column:1/-1}
 }
 @media(max-width:850px){
-  .topbar{height:64px;grid-template-columns:1fr auto;padding:0 14px}.header-center,.profile-trigger,.top-control{display:none}.mobile-tools-button{display:block}
+  .topbar{height:64px;grid-template-columns:1fr auto;padding:0 14px}.header-center,.profile-trigger,.top-control{display:none}.mobile-header-controls{display:flex}.mobile-tools-button{display:block}
   .workspace{display:block;min-height:calc(100vh - 64px)}.sidebar{display:none}#content{padding:22px 14px 0}
   .hero{display:block;padding-bottom:22px}.hero-meta{margin-top:15px}.selection{grid-template-columns:1fr;gap:24px}.asset-banner{grid-template-columns:1fr 1fr}.banner-asset{grid-column:1/-1}.analytics-grid{gap:10px}.metric-card,.metric-card.condition,.metric-card.performance{grid-column:span 12}.bottom-grid{grid-template-columns:1fr}.ai-panel{grid-column:auto}
   .disclaimer{display:block}.disclaimer strong{display:block;margin-bottom:6px}.econova-footer{display:grid;padding:17px 14px}
