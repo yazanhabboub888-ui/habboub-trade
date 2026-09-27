@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#070a12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Pocket Pointer — a Puffin-style virtual mouse playground for iPhone">
+<title>Pocket Pointer</title>
+<link rel="manifest" href="pointer-manifest.webmanifest">
+<link rel="apple-touch-icon" href="econova-icon.svg">
+<link rel="stylesheet" href="pointer.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="dot"></span><div><b>Pocket Pointer</b><small>Virtual mouse for iPhone</small></div></div>
+  <button id="reset" class="iconbtn" aria-label="Reset pointer">↺</button>
+</header>
+
+<main>
+  <section class="urlbar">
+    <input id="url" inputmode="url" value="https://example.com" aria-label="Website URL">
+    <button id="go">Open</button>
+  </section>
+
+  <section class="stage" id="stage">
+    <div class="demo" id="demo">
+      <span class="eyebrow">POINTER TEST AREA</span>
+      <h1>Move the pointer 👆</h1>
+      <p>Use the trackpad below. Tap for left click, two-finger tap for right click, and hold to drag.</p>
+      <div class="demo-actions">
+        <button class="testbtn" id="testClick">Click me</button>
+        <input class="testinput" placeholder="Type here…" id="testInput">
+      </div>
+      <div class="result" id="result">Ready.</div>
+    </div>
+    <iframe id="frame" title="Website preview" sandbox="allow-forms allow-modals allow-popups allow-scripts allow-same-origin"></iframe>
+    <div id="pointer" aria-hidden="true"><span></span></div>
+    <div id="toast" class="toast"></div>
+  </section>
+
+  <section class="controls">
+    <div class="trackpad" id="trackpad">
+      <div class="track-label">TRACKPAD</div>
+      <div class="track-hint">Drag to move • tap = left click • two fingers = right click</div>
+    </div>
+    <div class="mouse-row">
+      <button id="left" class="mouse left">LEFT CLICK</button>
+      <button id="right" class="mouse">RIGHT CLICK</button>
+      <button id="keyboard" class="mouse">⌨ KEYBOARD</button>
+    </div>
+  </section>
+
+  <section class="note">
+    <b>Important:</b> this PWA can demonstrate the pointer and clicks on its own page. iPhone browser security prevents a normal web app from injecting mouse events into arbitrary external websites inside an iframe. A true Puffin-style browser needs a native app/WebView layer.
+  </section>
+</main>
+
+<script src="pointer.js"></script>
+</body>
+</html>
